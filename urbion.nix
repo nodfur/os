@@ -13,8 +13,9 @@
 
 #  hardware.video.hidpi.enable = true;
 #  services.xserver.dpi = 180;
+
   services.xserver.resolutions = [
-    { x = 1920; y = 1200; }
+    { x = 1920; y = 1280; }
   ];
 
   networking.hostName = "urbion";
