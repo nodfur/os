@@ -13,5 +13,5 @@ in {
 
   home-manager.users.mbrock = import ./profile.nix;
 
-  services.xserver.displayManager.autoLogin.user = "mbrock";
+  nix.trustedUsers = ["mbrock"];
 }
