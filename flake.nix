@@ -93,6 +93,7 @@
         linux-src-overlay
         nano-emacs-overlay
         openai-overlay
+        picom-overlay
         telegram-overlay
         urbit-emacs-overlay
         urbit-overlay
