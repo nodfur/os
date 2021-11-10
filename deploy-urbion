@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+nixos-rebuild switch --flake .#urbion --target-host root@urbion --build-host armory -L

@@ -1,0 +1,9 @@
+#+TITLE: The Story of Node.Town
+
+
+* Prologue <2021-09-22 Wed>
+
+  This is the story of a system called _Node.Town_.
+
+  By the time you read this, the system may have spawned on other
+  domains.  The Affero GPL license ensures it's always free software.

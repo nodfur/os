@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -ex
+nixos-rebuild switch --fast --flake /os#"$1" -L --show-trace

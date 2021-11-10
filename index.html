@@ -1,0 +1,58 @@
+<!doctype html>
+<meta charset=utf-8>
+<style>
+  body {
+    background: var(--bg-dark);
+    color: var(--fg);
+    margin: 0;
+    padding: 1.25rem;
+  }
+
+  .zenburn {
+    --bg: #3f3f3f;
+    --bg-dark: #303030;
+    --fg: #dcdccc;
+    --fg-semi: #989890;
+    --fg-dark: #656555;
+  }
+
+  body, code, input {
+    font: 18px "Fantasque Sans Mono";
+    line-height: 1.25;
+  }
+
+  section {
+    background: var(--bg);
+    width: 76ch;
+    border: 4px solid var(--fg-semi);
+    padding: calc(1.25rem / 2);
+    min-height: calc(1.25rem * 8);
+  }
+
+  input {
+    background: var(--bg);
+    color: var(--fg);
+    border: 0px solid var(--fg-semi);
+    border-width: 0 0 2px 0;
+    width: 100%;
+  }
+
+  form {
+    flex-grow: 1;
+  }
+</style>
+<title>Restless OS</title>
+
+<body class=zenburn>
+
+<section style="display: flex; gap: 1.25rem;">
+  <code>
+    <b>less.rest</b>%
+  </code>
+  <form>
+  <input autofocus id=shell />
+  </form>
+</section>
+
+<script>
+</script>
