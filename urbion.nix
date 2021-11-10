@@ -11,13 +11,12 @@
     ./desktop-system.nix
   ];
 
-#  hardware.video.hidpi.enable = true;
-#  services.xserver.dpi = 180;
-
   os.username = "mbrock";
+  os.monospace.size = 18;
 
   services.xserver.resolutions = [
     { x = 1920; y = 1280; }
+    { x = 1920; y = 1200; }
   ];
 
   networking.hostName = "urbion";
