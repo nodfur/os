@@ -55,6 +55,8 @@ in {
     services.xserver.autoRepeatDelay = 200;
     services.xbanish.enable = true;
 
+    services.xserver.displayManager.autoLogin.user = config.os.username;
+
 #    services.xserver.resolutions = [{ x = 3840; y = 2160; }];
 
     services.xserver.layout = "us";

@@ -14,6 +14,8 @@
 #  hardware.video.hidpi.enable = true;
 #  services.xserver.dpi = 180;
 
+  os.username = "mbrock";
+
   services.xserver.resolutions = [
     { x = 1920; y = 1280; }
   ];
