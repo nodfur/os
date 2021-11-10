@@ -4,6 +4,7 @@
   services.picom = {
     enable = true;
     shadow = true;
+    experimentalBackends = true;
     vSync = true;
 
     backend =
