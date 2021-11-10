@@ -19,6 +19,14 @@
     { x = 1920; y = 1200; }
   ];
 
+  services.xserver.xrandrHeads = [{
+    output = "HDMI-1";
+    primary = true;
+    monitorConfig = ''
+      Option "Rotate" "left"
+    '';
+  }];
+
   networking.hostName = "urbion";
 
   environment.systemPackages = with pkgs; [

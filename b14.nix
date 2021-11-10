@@ -27,6 +27,14 @@ in {
 
     ./pi-x.nix
   ];
+  
+  services.xserver.xrandrHeads = [{
+    output = "DisplayPort-2";
+    primary = true;
+    monitorConfig = ''
+      Option "Rotate" "left"
+    '';
+  }];
 
   environment.systemPackages = with pkgs; [
     google-chrome-beta
