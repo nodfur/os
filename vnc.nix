@@ -38,8 +38,8 @@
             export PATH=/run/wrappers/bin:$PATH
 
             ${pkgs.xvfb-run}/bin/xvfb-run -n 1 -s "-screen 0 ${sizeString}" \
-              ${pkgs.dbus.dbus-launch} --exit-with-session emacs \
-                -f exwm-config-restless -mm --fullscreen &
+              ${pkgs.dbus.dbus-launch} --exit-with-session \
+                ${config.services.xserver.windowManager.i3.package}/bin/i3 &
 
             sleep 3
 

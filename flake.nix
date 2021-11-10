@@ -13,11 +13,6 @@
     mailserver.url =
       gitlab:simple-nixos-mailserver/nixos-mailserver/master;
 
-    linux-src = {
-      flake = false;
-      url = github:torvalds/linux;
-    };
-
     urbit-src = {
       flake = false;
       url = github:nodfur/urbit;
@@ -57,7 +52,6 @@
   outputs = {
     self,
     nixpkgs,
-    linux-src,
     home-manager,
     emacs-overlay,
     figlet-fonts,
@@ -90,7 +84,6 @@
       all-overlays = [
         emacs-overlay.overlay
         figlet-fonts-overlay
-        linux-src-overlay
         nano-emacs-overlay
         openai-overlay
         picom-overlay
@@ -103,9 +96,6 @@
         _self: _super: {
           inherit (inputs) figlet-fonts;
         };
-
-      linux-src-overlay =
-        _self: _super: { inherit linux-src; };
 
       openai-overlay =
         import ./openai-overlay.nix;
@@ -236,7 +226,7 @@
 
             (import ./b14.nix)
 
-            # (import ./firecracker-guests.nix { inherit self; })
+            (import ./firecracker-guests.nix { inherit self; })
 
             {
               mailserver = {
@@ -262,75 +252,75 @@
               };
             }
 
-#            {
-#              imports = builtins.map accountModule accounts;
-#            }
+            {
+              imports = builtins.map accountModule accounts;
+            }
 
- ##           {
- ##             restless.firecracker.instances =
- ##               builtins.map
- ##                 ({ number, username, ... }: {
- ##                   inherit number;
- ##                   tapName = "tap${toString number}";
- ##                   hostname = username;
- ##                   localHostname = "${username}.local";
- ##                   ip = "172.16.${toString number}.2";
- ##                 })
- ##                 (import ./accounts.nix);
- ##           }
- ##
- ##           ({ pkgs, ... }: {
- ##             users.users =
- ##               let
- ##                 welcome = pkgs.writeShellScript "welcome" ''
- ##                   catlet() {
- ##                     ${pkgs.figlet}/bin/figlet -f ${figlet-fonts}/$1.flf "$2" \
- ##                       | ${pkgs.lolcat}/bin/lolcat
- ##                   }
- ##
- ##                   echo
- ##                   catlet Bloody node.town
- ##                   echo
- ##
- ##                   echo "Welcome, $(tput bold)$(whoami)$(tput sgr0), to the $(tput dim)node.town$(tput sgr0) cluster."
- ##                   echo
- ##
- ##                   tmp=$(mktemp -d)
- ##                   id="$tmp"/id_ed25519
- ##                   cp "${./id_ed25519}" "$id"
- ##                   chmod 600 "$id"
- ##
- ##                   export NIX_SSHOPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET -i $id"
- ##
- ##                   set -e
- ##                   ssh $NIX_SSHOPTS admin@$(whoami).local os-tailscale
- ##                 '';
- ##
- ##                 mkSshThing = key: ''command="${welcome}",no-port-forwarding,no-x11-forwarding,no-agent-forwarding ${key}'';
- ##
- ##                 mkUser = keys: {
- ##                   isNormalUser = true;
- ##                   openssh.authorizedKeys.keys = builtins.map mkSshThing keys;
- ##                 };
- ##
- ##                 keys = import ./keys.nix;
- ##
- ##               in {
- ##                 lucy = mkUser keys.mbrock;
- ##                 dbrock = mkUser keys.dbrock;
- ##                 rainbreak = mkUser keys.rainbreak;
- ##               };
- ##           })
+            {
+              restless.firecracker.instances =
+                builtins.map
+                  ({ number, username, ... }: {
+                    inherit number;
+                    tapName = "tap${toString number}";
+                    hostname = username;
+                    localHostname = "${username}.local";
+                    ip = "172.16.${toString number}.2";
+                  })
+                  (import ./accounts.nix);
+            }
 
-#            ({ pkgs, ... }: {
-#              environment.systemPackages = [
-#                (pkgs.runCommand "copy-files" {} ''
-#                  mkdir -p $out/var/lib/rig
-#                  ln -s "${self.firecracker-vmlinux}/vmlinux" $out/var/lib/rig/vmlinux
-#                  ln -s "${self.firecracker-rootfs-qemu}/nixos.img" $out/var/lib/rig/rootfs
-#                 '')
-#              ];
-#            })
+            ({ pkgs, ... }: {
+              users.users =
+                let
+                  welcome = pkgs.writeShellScript "welcome" ''
+                    catlet() {
+                      ${pkgs.figlet}/bin/figlet -f ${pkgs.figlet-fonts}/$1.flf "$2" \
+                        | ${pkgs.lolcat}/bin/lolcat
+                    }
+
+                    echo
+                    catlet Bloody node.town
+                    echo
+
+                    echo "Welcome, $(tput bold)$(whoami)$(tput sgr0), to the $(tput dim)node.town$(tput sgr0) cluster."
+                    echo
+
+                    tmp=$(mktemp -d)
+                    id="$tmp"/id_ed25519
+                    cp "${./id_ed25519}" "$id"
+                    chmod 600 "$id"
+
+                    export NIX_SSHOPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET -i $id"
+
+                    set -e
+                    ssh $NIX_SSHOPTS admin@$(whoami).local os-tailscale
+                  '';
+
+                  mkSshThing = key: ''command="${welcome}",no-port-forwarding,no-x11-forwarding,no-agent-forwarding ${key}'';
+
+                  mkUser = keys: {
+                    isNormalUser = true;
+                    openssh.authorizedKeys.keys = builtins.map mkSshThing keys;
+                  };
+
+                  keys = import ./keys.nix;
+
+                in {
+                  lucy = mkUser keys.mbrock;
+                  dbrock = mkUser keys.dbrock;
+                  rainbreak = mkUser keys.rainbreak;
+                };
+            })
+
+            ({ pkgs, ... }: {
+              environment.systemPackages = [
+                (pkgs.runCommand "copy-files" {} ''
+                 mkdir -p $out/var/lib/rig
+                 ln -s "${self.firecracker-vmlinux}/vmlinux" $out/var/lib/rig/vmlinux
+                 ln -s "${self.firecracker-rootfs-qemu}/nixos.img" $out/var/lib/rig/rootfs
+                '')
+             ];
+           })
           ];
         };
 

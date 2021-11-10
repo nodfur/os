@@ -65,22 +65,6 @@
         "type": "github"
       }
     },
-    "linux-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1636402888,
-        "narHash": "sha256-aPcNYKBj6hBJ90ima1p+P8p1u+SD5OnqKJvnjr30//Q=",
-        "owner": "torvalds",
-        "repo": "linux",
-        "rev": "d2f38a3c6507b2520101f9a3807ed98f1bdc545a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "torvalds",
-        "repo": "linux",
-        "type": "github"
-      }
-    },
     "mailserver": {
       "inputs": {
         "blobs": "blobs",
@@ -196,11 +180,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1636458332,
-        "narHash": "sha256-7j4Wm9xYvlyDYnPG9DEXGZkpa4sq3ljQIjiJIN6Y7Lw=",
+        "lastModified": 1636553834,
+        "narHash": "sha256-/HNXZtRfg3Wllc31W+4cya0o/W3Ml/xJMm/ffhz1xPg=",
         "owner": "nodfur",
         "repo": "nixpkgs",
-        "rev": "e8f74ec7918ddbb31f906e408a7ea3884cbd4d47",
+        "rev": "eadb1c77b027b7a302a9b71745e5d4312c862e37",
         "type": "github"
       },
       "original": {
@@ -231,7 +215,6 @@
         "emacs-overlay": "emacs-overlay",
         "figlet-fonts": "figlet-fonts",
         "home-manager": "home-manager",
-        "linux-src": "linux-src",
         "mailserver": "mailserver",
         "mu4e-dashboard": "mu4e-dashboard",
         "mu4e-thread-folding": "mu4e-thread-folding",
