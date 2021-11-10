@@ -4,8 +4,7 @@
   services.picom = {
     enable = true;
     shadow = true;
-    experimentalBackends = true;
-    vSync = true;
+    vSync = config.os.gl;
 
     backend =
       if config.os.gl
