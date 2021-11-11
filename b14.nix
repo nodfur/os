@@ -28,6 +28,9 @@ in {
     ./pi-x.nix
   ];
   
+  boot.kernelPackages =
+    pkgs.linuxPackagesFor (pkgs.linux_latest);
+
   services.xserver.xrandrHeads = [{
     output = "DisplayPort-2";
     primary = true;
