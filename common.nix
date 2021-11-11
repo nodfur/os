@@ -70,6 +70,7 @@
 
     binaryCaches = [
       "https://nodfur.cachix.org"
+      "https://cache.nixos.org/"
     ];
 
     binaryCachePublicKeys = [
