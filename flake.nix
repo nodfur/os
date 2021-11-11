@@ -341,7 +341,7 @@
               nixpkgs.config.allowUnfree = true;
             }
 
-            nixpkgs.lib.sd-image-aarch64-new-kernel
+            nixpkgs.lib.sd-image-aarch64
           ];
         };
 

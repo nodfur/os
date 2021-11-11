@@ -14,9 +14,6 @@
   os.username = "mbrock";
   os.monospace.size = 18;
 
-  boot.kernelPackages =
-    pkgs.linuxPackagesFor (pkgs.linux_5_10);
-
   services.xserver.resolutions = [
     { x = 1920; y = 1280; }
     { x = 1920; y = 1200; }
