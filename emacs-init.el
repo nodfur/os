@@ -3,7 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq nano-font-family-monospaced "Fantasque Sans Mono")
-(setq nano-font-size 12)
+(setq nano-font-size 18)
 
 (setq inhibit-splash-screen t)
 
@@ -149,7 +149,7 @@
 
 (defun restless-rebuild ()
   (interactive)
-  (compile "time sudo make -C /os"))
+  (compile "sudo /os/rebuild"))
 
 (defun os-restart-x ()
   (interactive)

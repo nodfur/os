@@ -219,7 +219,7 @@
         };
 
       systems = {
-        b14 = nixpkgs.lib.nixosSystem {
+        chapel = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = common-modules ++ [
             mailserver.nixosModule

@@ -40,16 +40,18 @@ in {
     google-chrome-beta
     _1password
     _1password-gui
+    google-cloud-sdk
   ];
  
   boot.initrd.kernelModules = ["amdgpu"];
   services.xserver.videoDrivers = ["amdgpu"];
 
   time.timeZone = "Europe/Riga";
-  
+
+  os.username = "mbrock";
+  os.monospace.size = 18;
   os.vnc.size.height = 900;
   os.vnc.size.width = 1440;
-  os.username = "mbrock";
 
   services.xserver.dpi = 180;
 
