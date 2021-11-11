@@ -341,7 +341,9 @@
               nixpkgs.config.allowUnfree = true;
             }
 
-            nixpkgs.lib.sd-image-aarch64
+            ({ modulesPath, ... }: {
+              imports = ["${modulesPath}/installer/sd-card/sd-image-aarch64.nix"];
+            })
           ];
         };
 
