@@ -18,5 +18,7 @@
     ripgrep
     tmux
     sqlite
+
+    cachix
   ];
 }
