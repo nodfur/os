@@ -1,5 +1,17 @@
 {
   "nodes": {
+    "bcm2835-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-CKVkA3pcKOZ2Gp+p7eIBiXMn2VFGKkkGja7bXDuffbQ=",
+        "type": "tarball",
+        "url": "http://www.airspayce.com/mikem/bcm2835/bcm2835-1.70.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "http://www.airspayce.com/mikem/bcm2835/bcm2835-1.70.tar.gz"
+      }
+    },
     "blobs": {
       "flake": false,
       "locked": {
@@ -212,6 +224,7 @@
     },
     "root": {
       "inputs": {
+        "bcm2835-src": "bcm2835-src",
         "emacs-overlay": "emacs-overlay",
         "figlet-fonts": "figlet-fonts",
         "home-manager": "home-manager",
@@ -222,7 +235,8 @@
         "nixpkgs": "nixpkgs_3",
         "picom-src": "picom-src",
         "urbit-emacs": "urbit-emacs",
-        "urbit-src": "urbit-src"
+        "urbit-src": "urbit-src",
+        "waveshare-epaper-demo-src": "waveshare-epaper-demo-src"
       }
     },
     "urbit-emacs": {
@@ -269,6 +283,22 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "waveshare-epaper-demo-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1625909493,
+        "narHash": "sha256-Kex8GJumBKSCJwUauxIDHQVHjZGLWaHd/tX6JjXQKbs=",
+        "owner": "waveshare",
+        "repo": "IT8951-ePaper",
+        "rev": "c0a6e754b599ec476073c99049e7c84f76fefd4e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "waveshare",
+        "repo": "IT8951-ePaper",
         "type": "github"
       }
     }

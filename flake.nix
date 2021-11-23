@@ -46,6 +46,16 @@
     picom-src = {
       flake = false;
       url = github:ibhagwan/picom;
+   };
+
+    bcm2835-src = {
+      flake = false;
+      url = http://www.airspayce.com/mikem/bcm2835/bcm2835-1.70.tar.gz;
+    };
+
+    waveshare-epaper-demo-src = {
+      flake = false;
+      url = github:waveshare/IT8951-ePaper;
     };
   };
 
@@ -61,7 +71,9 @@
     mu4e-dashboard,
     mu4e-thread-folding,
     urbit-emacs,
-    picom-src
+    picom-src,
+    bcm2835-src,
+    waveshare-epaper-demo-src
   }@inputs:
 
     let
@@ -131,6 +143,25 @@
                 aio request
               ];
             };
+        };
+
+      bcm2835-overlay =
+        self: super: {
+          bcm2835 = super.stdenv.mkDerivation {
+            name = "bcm2835";
+            src = bcm2835-src;
+          };
+
+          waveshare-epaper-demo = super.stdenv.mkDerivation {
+            name = "waveshare-epaper-demo";
+            src = "${waveshare-epaper-demo-src}/Raspberry";
+            buildInputs = [self.bcm2835];
+
+            installPhase = ''
+              mkdir -p $out/bin
+              cp epd $out/bin/waveshare-epd
+            '';
+          };
         };
 
       urbit-module =
@@ -217,6 +248,15 @@
             })
           ];
         };
+
+      packages.aarch64-linux.waveshare-epaper-demo =
+        let
+          pkgs = import nixpkgs {
+            system = "aarch64-linux";
+            overlays = [bcm2835-overlay];
+          };
+        in
+          pkgs.waveshare-epaper-demo;
 
       systems = {
         chapel = nixpkgs.lib.nixosSystem {
@@ -340,6 +380,14 @@
             {
               nixpkgs.config.allowUnfree = true;
             }
+
+            ({ pkgs, ... }: {
+              nixpkgs.overlays = [bcm2835-overlay];
+              environment.systemPackages = with pkgs; [
+                bcm2835
+                waveshare-epaper-demo
+              ];
+            })
 
             ({ modulesPath, ... }: {
               imports = ["${modulesPath}/installer/sd-card/sd-image-aarch64.nix"];
