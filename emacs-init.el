@@ -2,8 +2,13 @@
 ;;                          78 character box                                ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(setq nano-font-family-monospaced "Fantasque Sans Mono")
-(setq nano-font-size 18)
+(load-theme 'zenburn t)
+(set-frame-font "Neep-18" nil t)
+
+(require 'gmail nil t)
+
+;; (setq nano-font-family-monospaced "Roboto Mono")
+;; (setq nano-font-size 18)
 
 (setq inhibit-splash-screen t)
 
@@ -178,20 +183,20 @@
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 (projectile-mode +1)
 
-(require 'nano-layout)
-(require 'nano-theme-dark)
+;; (require 'nano-layout)
+;; (require 'nano-theme-light)
 
 (setq font-lock-maximum-decoration nil)
 (setq font-lock-maximum-size nil)
 
-(require 'nano-faces)
-(nano-faces)
+;; (require 'nano-faces)
+;; (nano-faces)
 
-(require 'nano-theme)
-(nano-theme)
+;; (require 'nano-theme)
+;; (nano-theme)
 
-(require 'nano-session)
-(require 'nano-modeline)
+;; (require 'nano-session)
+;; (require 'nano-modeline)
 
 (setq org-return-follows-link t)
 

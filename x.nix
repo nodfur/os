@@ -35,12 +35,12 @@ in {
   options = {
     os.monospace.family = lib.mkOption {
       type = lib.types.str;
-      default = "Fantasque Sans Mono";
+      default = "Neep";
     };
 
     os.monospace.size = lib.mkOption {
       type = lib.types.int;
-      default = 12;
+      default = 18;
     };
 
     os.vm = lib.mkOption {
@@ -73,10 +73,11 @@ in {
     fonts.fonts = with pkgs; [
       dejavu_fonts
       fantasque-sans-mono
+      # iosevka
       # google-fonts
-      # fira-code fira-code-symbols
+      fira-code fira-code-symbols
       jmk-x11-fonts
-      roboto roboto-mono roboto-slab
+      # roboto roboto-mono roboto-slab
     ];
 
     fonts.fontconfig.hinting.enable = false;

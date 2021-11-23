@@ -5,38 +5,51 @@ let
 
 in {
   imports = [
-    ./kernel.nix
-    ./intel.nix
     ./btrfs.nix
-    ./efi.nix
-    ./dvorak.nix
-    
-    ./password.nix
     ./desktop.nix
-    ./vnc.nix
-
+    ./dvorak.nix
+    ./efi.nix
+    ./gmail.nix
     ./i3.nix
-    
+    ./intel.nix
+    ./kernel.nix
     ./node.town.nix
-
-    ./users/mbrock
-
-    # ./hypocaust.nix
-    #./grafana.nix
-    # ./ssbot.nix
-
+    ./password.nix
     ./pi-x.nix
+    ./users/mbrock
+    ./vnc.nix
   ];
+
+  os.gl = true;
+
+  os.gmail = {
+    enable = true;
+    address = "mikael@brockman.se";
+    name = "Mikael Brockman";
+    patterns = [
+      "INBOX" "[Gmail]/Sent Mail" "[Gmail]/All Mail"
+    ];
+  };
   
   boot.kernelPackages =
     pkgs.linuxPackagesFor (pkgs.linux_latest);
 
+  fonts.fonts = with pkgs; [
+    google-fonts
+    iosevka
+  ];
+
+  services.xserver.resolutions = [
+    { x = 2560; y = 1440; }
+    { x = 3840; y = 2160; }
+  ];
+
   services.xserver.xrandrHeads = [{
     output = "DisplayPort-2";
     primary = true;
-    monitorConfig = ''
-      Option "Rotate" "left"
-    '';
+    # monitorConfig = ''
+    #   Option "Rotate" "left"
+    # '';
   }];
 
   environment.systemPackages = with pkgs; [
@@ -52,11 +65,10 @@ in {
   time.timeZone = "Europe/Riga";
 
   os.username = "mbrock";
-  os.monospace.size = 18;
   os.vnc.size.height = 900;
   os.vnc.size.width = 1440;
 
-  services.xserver.dpi = 180;
+  # services.xserver.dpi = 180;
 
   networking.hostName = "chapel";
   networking.interfaces."${internet}".useDHCP = true;
