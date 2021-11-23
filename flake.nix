@@ -57,6 +57,11 @@
       flake = false;
       url = github:waveshare/IT8951-ePaper;
     };
+
+    papertty-src = {
+      flake = false;
+      url = github:joukos/PaperTTY;
+    };
   };
 
   outputs = {
@@ -73,7 +78,8 @@
     urbit-emacs,
     picom-src,
     bcm2835-src,
-    waveshare-epaper-demo-src
+    waveshare-epaper-demo-src,
+    papertty-src
   }@inputs:
 
     let
@@ -161,6 +167,10 @@
               mkdir -p $out/bin
               cp epd $out/bin/waveshare-epd
             '';
+          };
+
+          papertty = super.poetry2nix.mkPoetryApplication {
+            projectDir = papertty-src;
           };
         };
 
@@ -377,6 +387,7 @@
               environment.systemPackages = with pkgs; [
                 bcm2835
                 waveshare-epaper-demo
+                papertty
               ];
             })
 

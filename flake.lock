@@ -206,6 +206,22 @@
         "type": "github"
       }
     },
+    "papertty-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1616224022,
+        "narHash": "sha256-1VQ1jPZBKq7q02uuMTX/OGReYl9+S/4AV6RXeeTjpYA=",
+        "owner": "joukos",
+        "repo": "PaperTTY",
+        "rev": "3ea8286903b98fac071285008b4cc05dd84c2121",
+        "type": "github"
+      },
+      "original": {
+        "owner": "joukos",
+        "repo": "PaperTTY",
+        "type": "github"
+      }
+    },
     "picom-src": {
       "flake": false,
       "locked": {
@@ -233,6 +249,7 @@
         "mu4e-thread-folding": "mu4e-thread-folding",
         "nano-emacs": "nano-emacs",
         "nixpkgs": "nixpkgs_3",
+        "papertty-src": "papertty-src",
         "picom-src": "picom-src",
         "urbit-emacs": "urbit-emacs",
         "urbit-src": "urbit-src",
