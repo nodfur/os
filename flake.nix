@@ -249,15 +249,6 @@
           ];
         };
 
-      packages.aarch64-linux.waveshare-epaper-demo =
-        let
-          pkgs = import nixpkgs {
-            system = "aarch64-linux";
-            overlays = [bcm2835-overlay];
-          };
-        in
-          pkgs.waveshare-epaper-demo;
-
       systems = {
         chapel = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -440,5 +431,14 @@
 
       urbion-img =
         systems.urbion.config.system.build.sdImage;
+
+      packages.aarch64-linux.waveshare-epaper-demo =
+        let
+          pkgs = import nixpkgs {
+            system = "aarch64-linux";
+            overlays = [bcm2835-overlay];
+          };
+        in
+          pkgs.waveshare-epaper-demo;
     };
 }
