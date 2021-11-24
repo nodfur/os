@@ -58,6 +58,10 @@ in {
     _1password-gui
     google-cloud-sdk
   ];
+
+  home-manager.sharedModules = [{
+    programs.vscode.enable = true;
+  }];
  
   boot.initrd.kernelModules = ["amdgpu"];
   services.xserver.videoDrivers = ["amdgpu"];

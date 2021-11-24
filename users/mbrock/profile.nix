@@ -17,11 +17,10 @@
   };
 
   programs.vscode = {
-    enable = false;
+    # enable = true;
     extensions = with pkgs.vscode-extensions; [
       github.copilot
       eamodio.gitlens
-      foam.foam-vscode
     ];
   };
 }

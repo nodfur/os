@@ -62,6 +62,11 @@
       flake = false;
       url = github:joukos/PaperTTY;
     };
+
+    nodfur-it8951-src = {
+      flake = false;
+      url = github:nodfur/nodfur-it8951;
+    };
   };
 
   outputs = {
@@ -79,7 +84,8 @@
     picom-src,
     bcm2835-src,
     waveshare-epaper-demo-src,
-    papertty-src
+    papertty-src,
+    nodfur-it8951-src
   }@inputs:
 
     let
@@ -169,8 +175,9 @@
             '';
           };
 
-          papertty = super.poetry2nix.mkPoetryApplication {
-            projectDir = papertty-src;
+          nodfur-it8951 = super.mkYarnPackage {
+            name = "nodfur-it8951";
+            src = nodfur-it8951-src;
           };
         };
 
@@ -266,6 +273,14 @@
             mailserver.nixosModule
 
             (import ./b14.nix)
+
+            ({ pkgs, ... }: {
+              nixpkgs.overlays = [bcm2835-overlay];
+              environment.systemPackages = with pkgs; [
+                bcm2835
+                waveshare-epaper-demo
+              ];
+            })
 
             (import ./firecracker-guests.nix { inherit self; })
 
@@ -387,7 +402,7 @@
               environment.systemPackages = with pkgs; [
                 bcm2835
                 waveshare-epaper-demo
-                papertty
+                nodfur-it8951
               ];
             })
 
@@ -451,5 +466,14 @@
           };
         in
           pkgs.waveshare-epaper-demo;
+
+      packages.aarch64-linux.nodfur-it8951 =
+        let
+          pkgs = import nixpkgs {
+            system = "aarch64-linux";
+            overlays = [bcm2835-overlay];
+          };
+        in
+          pkgs.nodfur-it8951;
     };
 }
