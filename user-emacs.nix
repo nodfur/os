@@ -30,10 +30,11 @@
       treemacs
       treemacs-magit
       treemacs-projectile
+      vterm
       which-key
       whitespace-cleanup-mode
       zenburn-theme
-      vterm
+      zig-mode
 
       pkgs.nano-emacs
       pkgs.urbit-emacs

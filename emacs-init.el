@@ -154,13 +154,14 @@
 
 (defun restless-rebuild ()
   (interactive)
-  (compile "sudo /os/rebuild"))
+  (compile "os-terminal -e \"sudo /os/rebuild\""))
 
 (defun os-restart-x ()
   (interactive)
   (compile "sudo systemctl restart display-manager"))
 
 (global-set-key (kbd "C-c R") #'restless-rebuild)
+(global-set-key (kbd "C-c c") #'recompile)
 
 (selectrum-mode 1)
 (selectrum-prescient-mode 1)

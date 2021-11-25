@@ -20,5 +20,9 @@
     sqlite
 
     cachix
+
+    zig
+    zls
+    entr
   ];
 }

@@ -467,6 +467,15 @@
         in
           pkgs.waveshare-epaper-demo;
 
+      packages.x86_64-linux.waveshare-epaper-demo =
+        let
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+            overlays = [bcm2835-overlay];
+          };
+        in
+          pkgs.waveshare-epaper-demo;
+
       packages.aarch64-linux.nodfur-it8951 =
         let
           pkgs = import nixpkgs {
