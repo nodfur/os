@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-nixos-rebuild switch --flake .#urbion --target-host urbion --build-host urbion --use-remote-sudo -L
+nixos-rebuild switch --flake .#urbion --target-host urbion --build-host localhost --use-remote-sudo
