@@ -94,9 +94,15 @@
   (global-unset-key (kbd "C-M-o"))
   (global-unset-key (kbd "C-M-h")))
 
+(defun magit-save ()
+  (interactive)
+  (magit-git-command "git save"))
+
 (progn
   (global-set-key (kbd "C-c f") 'projectile-find-file)
   (global-set-key (kbd "C-c s") 'magit-status)
+  (global-set-key (kbd "C-c S") 'magit-save)
+
   (global-set-key (kbd "C-c g") 'projectile-ag)
   (global-set-key (kbd "M-n") 'move-line-down)
   (global-set-key (kbd "M-p") 'move-line-up))
