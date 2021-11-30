@@ -228,7 +228,7 @@
   (menu-bar-mode -1)
   (scroll-bar-mode -1))
 
-(let ((libs '("cffi" "alexandria" "trivial-features")))
+(let ((libs '("cffi" "alexandria" "trivial-features" "babel")))
   (setenv "CL_SOURCE_REGISTRY"
           (mapconcat (lambda (x)
                        (concat "/run/current-system/sw/lib/common-lisp/" x))
