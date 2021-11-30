@@ -80,7 +80,7 @@ in {
       # roboto roboto-mono roboto-slab
     ];
 
-    fonts.fontconfig.hinting.enable = false;
+    fonts.fontconfig.hinting.enable = true;
 
     services.redshift.enable = !config.os.vm;
 

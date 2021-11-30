@@ -24,5 +24,12 @@
     zig
     zls
     entr
+    netpbm
+
+    sbcl
+    lispPackages.cffi
+    lispPackages.alexandria
+    lispPackages.trivial-features
+    lispPackages.babel
   ];
 }

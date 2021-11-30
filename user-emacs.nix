@@ -36,6 +36,8 @@
       zenburn-theme
       zig-mode
 
+      slime
+
       pkgs.nano-emacs
       pkgs.urbit-emacs
     ];

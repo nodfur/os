@@ -5,7 +5,7 @@
 (load-theme 'zenburn t)
 (set-frame-font "Neep-18" nil t)
 
-(require 'gmail nil t)
+; (require 'gmail nil t)
 
 ;; (setq nano-font-family-monospaced "Roboto Mono")
 ;; (setq nano-font-size 18)
@@ -227,3 +227,11 @@
   (tool-bar-mode -1)
   (menu-bar-mode -1)
   (scroll-bar-mode -1))
+
+(let ((libs '("cffi" "alexandria" "trivial-features")))
+  (setenv "CL_SOURCE_REGISTRY"
+          (mapconcat (lambda (x)
+                       (concat "/run/current-system/sw/lib/common-lisp/" x))
+                     libs ":")))
+
+(setq inferior-lisp-program "sbcl")
