@@ -50,8 +50,6 @@ in {
   };
 
   config = {
-    services.xserver.enable = !config.os.vm;
-
     services.xserver.autoRepeatDelay = 200;
     services.xbanish.enable = true;
 

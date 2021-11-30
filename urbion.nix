@@ -11,6 +11,8 @@
     ./desktop-system.nix
   ];
 
+  services.xserver.enable = false;
+
   os.username = "mbrock";
   os.monospace.size = 18;
 

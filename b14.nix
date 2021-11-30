@@ -39,6 +39,7 @@ in {
     iosevka
   ];
 
+  services.xserver.enable = true;
   services.xserver.resolutions = [
     { x = 2560; y = 1440; }
     { x = 3840; y = 2160; }
