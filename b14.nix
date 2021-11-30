@@ -57,6 +57,7 @@ in {
     _1password
     _1password-gui
     google-cloud-sdk
+    zls
   ];
 
   home-manager.sharedModules = [{

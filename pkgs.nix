@@ -22,7 +22,7 @@
     cachix
 
     zig
-    zls
+
     entr
     netpbm
 
