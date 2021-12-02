@@ -60,6 +60,8 @@
   programs.mosh.enable = true;
   services.tailscale.enable = true;
 
+  networking.firewall.trustedInterfaces = ["tailscale0"];
+
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;

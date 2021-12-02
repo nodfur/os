@@ -4,7 +4,7 @@
 
 (load-theme 'zenburn t)
 (set-frame-font "Neep-18" nil t)
-
+(set-frame-font "DM Mono-18" nil t)
 ; (require 'gmail nil t)
 
 ;; (setq nano-font-family-monospaced "Roboto Mono")
