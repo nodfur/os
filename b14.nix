@@ -41,8 +41,8 @@ in {
 
   services.xserver.enable = true;
   services.xserver.resolutions = [
-    { x = 2560; y = 1440; }
     { x = 3840; y = 2160; }
+    { x = 2560; y = 1440; }
   ];
 
   services.xserver.xrandrHeads = [{
@@ -74,7 +74,7 @@ in {
   os.vnc.size.height = 900;
   os.vnc.size.width = 1440;
 
-  # services.xserver.dpi = 180;
+  services.xserver.dpi = 160;
 
   networking.hostName = "chapel";
   networking.interfaces."${internet}".useDHCP = true;

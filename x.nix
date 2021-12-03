@@ -35,12 +35,12 @@ in {
   options = {
     os.monospace.family = lib.mkOption {
       type = lib.types.str;
-      default = "Neep";
+      default = "DM Mono";
     };
 
     os.monospace.size = lib.mkOption {
       type = lib.types.int;
-      default = 18;
+      default = 16;
     };
 
     os.vm = lib.mkOption {
@@ -75,6 +75,7 @@ in {
       # google-fonts
       fira-code fira-code-symbols
       jmk-x11-fonts
+      cm_unicode
       # roboto roboto-mono roboto-slab
     ];
 

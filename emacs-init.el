@@ -2,11 +2,17 @@
 ;;                          78 character box                                ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+<<<<<<< HEAD
 (require 'cl-lib)
 
 ;(load-theme 'zenburn t)
 (set-frame-font "Neep-18" nil t)
 (set-frame-font "DM Mono-18" nil t)
+=======
+(load-theme 'zenburn t)
+;(set-frame-font "Neep-18" nil t)
+(set-frame-font "DM Mono-12" nil t)
+>>>>>>> df693e8 (<mbrock> 3 files changed (+8/-13))
 ; (require 'gmail nil t)
 
 ;; (setq nano-font-family-monospaced "Roboto Mono")
@@ -244,11 +250,5 @@
   (tool-bar-mode -1)
   (menu-bar-mode -1)
   (scroll-bar-mode -1))
-
-;; (let ((libs '("cffi" "alexandria" "trivial-features" "babel")))
-;;   (setenv "CL_SOURCE_REGISTRY"
-;;           (mapconcat (lambda (x)
-;;                        (concat "/run/current-system/sw/lib/common-lisp/" x))
-;;                      libs ":")))
 
 (setq inferior-lisp-program "common-lisp.sh")
