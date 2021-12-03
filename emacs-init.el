@@ -2,7 +2,9 @@
 ;;                          78 character box                                ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(load-theme 'zenburn t)
+(require 'cl-lib)
+
+;(load-theme 'zenburn t)
 (set-frame-font "Neep-18" nil t)
 (set-frame-font "DM Mono-18" nil t)
 ; (require 'gmail nil t)
@@ -43,7 +45,22 @@
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
   (eval-after-load 'tramp
-    '(add-to-list 'tramp-remote-path "/run/current-system/sw/bin"))
+    '(progn
+       (add-to-list 'tramp-remote-path "/run/current-system/sw/bin")
+       (slime-setup
+        '(slime-fancy
+          slime-asdf
+          slime-banner
+          slime-buffer-streams
+          slime-compiler-notes-tree
+          slime-tramp))
+
+       (push (list "^urbion$"
+                   (lambda (emacs-filename)
+                     (subseq emacs-filename (length "/ssh:urbion:")))
+                   (lambda (lisp-filename)
+                     (concat "/ssh:urbion:" lisp-filename)))
+             slime-filename-translations)))
 
   (progn
     (put 'downcase-region 'disabled nil)
@@ -228,10 +245,10 @@
   (menu-bar-mode -1)
   (scroll-bar-mode -1))
 
-(let ((libs '("cffi" "alexandria" "trivial-features" "babel")))
-  (setenv "CL_SOURCE_REGISTRY"
-          (mapconcat (lambda (x)
-                       (concat "/run/current-system/sw/lib/common-lisp/" x))
-                     libs ":")))
+;; (let ((libs '("cffi" "alexandria" "trivial-features" "babel")))
+;;   (setenv "CL_SOURCE_REGISTRY"
+;;           (mapconcat (lambda (x)
+;;                        (concat "/run/current-system/sw/lib/common-lisp/" x))
+;;                      libs ":")))
 
-(setq inferior-lisp-program "sbcl")
+(setq inferior-lisp-program "common-lisp.sh")
