@@ -2,18 +2,25 @@
 ;;                          78 character box                                ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-<<<<<<< HEAD
 (require 'cl-lib)
 
 ;(load-theme 'zenburn t)
 (set-frame-font "Neep-18" nil t)
 (set-frame-font "DM Mono-18" nil t)
-=======
-(load-theme 'zenburn t)
-;(set-frame-font "Neep-18" nil t)
-(set-frame-font "DM Mono-12" nil t)
->>>>>>> df693e8 (<mbrock> 3 files changed (+8/-13))
-; (require 'gmail nil t)
+
+(set-fringe-mode 24)
+
+(set-face-background 'default "#222")
+(set-face-foreground 'default "#ddd")
+
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(default ((t (:background "#222" :foreground "#ddd")))))
+
+;; (require 'gmail nil t)
 
 ;; (setq nano-font-family-monospaced "Roboto Mono")
 ;; (setq nano-font-size 18)
@@ -61,9 +68,10 @@
           slime-compiler-notes-tree
           slime-tramp))
 
+       (require 'cl-lib)
        (push (list "^urbion$"
                    (lambda (emacs-filename)
-                     (subseq emacs-filename (length "/ssh:urbion:")))
+                     (cl-subseq emacs-filename (length "/ssh:urbion:")))
                    (lambda (lisp-filename)
                      (concat "/ssh:urbion:" lisp-filename)))
              slime-filename-translations)))
