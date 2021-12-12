@@ -75,6 +75,7 @@
   outputs = {
     self,
     nixpkgs,
+    flake-utils,
     home-manager,
     emacs-overlay,
     figlet-fonts,
