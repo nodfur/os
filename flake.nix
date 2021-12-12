@@ -501,17 +501,14 @@
             inherit (pkgs) waveshare-epaper-demo;
 
             nodfur-emacs =
-              pkgs.emacsWithPackages (emacs-pkgs pkgs);
+              let
+                emacs = pkgs.emacsWithPackages (emacs-pkgs pkgs);
+              in pkgs.writeShellScriptBin "nodfur-emacs" ''
+                ${emacs}/bin/emacs --load ${./emacs-init.el}
+              '';
 
             nodfur-emacs-packages =
               pkgs.emacsPackages;
-          };
-
-          apps = {
-            nodfur-emacs = {
-              type = "app";
-              program = "${packages.nodfur-emacs}/bin/emacs --load ${./emacs-init.el}";
-            };
           };
         }
       )
