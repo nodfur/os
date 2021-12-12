@@ -113,12 +113,12 @@
         restless-git = super.symlinkJoin {
           name = "restless-git";
           paths = [
-            (pkgs.writeShellScriptBin "git-save" ''
+            (super.writeShellScriptBin "git-save" ''
               git add -A
               git diff HEAD --quiet || git summary | git commit -F-
             '')
 
-            (pkgs.writeShellScriptBin "git-summary" ''
+            (super.writeShellScriptBin "git-summary" ''
               echo -n "<`whoami`> "
               if test `git status --short | wc -l` = 1
               then echo `git status --short` `git shortstat | sed 's,1 file changed ,,'`
@@ -126,7 +126,7 @@
               fi
             '')
 
-            (pkgs.writeShellScriptBin "git-shortstat" ''
+            (super.writeShellScriptBin "git-shortstat" ''
               git diff HEAD --shortstat | cut -c2- | sed s/,//g |
               sed -E 's/([0-9]+) insertions?\(\+\)/+\1/' |
               sed -E 's/([0-9]+) deletions?\(-\)/-\1/' |
