@@ -13,23 +13,16 @@
       company-nixos-options
       default-text-scale
       elixir-mode
-      exwm
-      humanoid-themes
       lsp-mode
       lsp-ui
-      lua-mode
       magit
       nix-mode
-      nov
       paredit
       pdf-tools
       projectile
       rainbow-delimiters
       selectrum
       selectrum-prescient
-      treemacs
-      treemacs-magit
-      treemacs-projectile
       vterm
       which-key
       whitespace-cleanup-mode

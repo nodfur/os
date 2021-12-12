@@ -4,6 +4,9 @@
     nixpkgs.url =
       github:nodfur/nixpkgs/nodfur;
 
+    flake-utils.url =
+      github:numtide/flake-utils;
+
     home-manager.url =
       github:nix-community/home-manager;
 
@@ -120,6 +123,34 @@
         _self: _super: {
           inherit (inputs) figlet-fonts;
         };
+
+      emacs-pkgs = pkgs: epkgs: with epkgs; [
+        ag
+        company
+        company-nixos-options
+        default-text-scale
+        elixir-mode
+        lispy
+        lsp-mode
+        lsp-ui
+        magit
+        nix-mode
+        paredit
+        pdf-tools
+        projectile
+        rainbow-delimiters
+        selectrum
+        selectrum-prescient
+        slime
+        vterm
+        which-key
+        whitespace-cleanup-mode
+        zenburn-theme
+        zig-mode
+
+        pkgs.urbit-emacs
+        pkgs.nano-emacs
+      ];
 
       openai-overlay =
         import ./openai-overlay.nix;
@@ -457,32 +488,27 @@
 
       urbion-img =
         systems.urbion.config.system.build.sdImage;
-
-      packages.aarch64-linux.waveshare-epaper-demo =
+    } // (
+      flake-utils.lib.eachDefaultSystem (system:
         let
           pkgs = import nixpkgs {
-            system = "aarch64-linux";
-            overlays = [bcm2835-overlay];
+            inherit system;
+            overlays = all-overlays;
           };
-        in
-          pkgs.waveshare-epaper-demo;
+        in rec {
+          packages = {
+            inherit (pkgs) waveshare-epaper-demo;
 
-      packages.x86_64-linux.waveshare-epaper-demo =
-        let
-          pkgs = import nixpkgs {
-            system = "x86_64-linux";
-            overlays = [bcm2835-overlay];
+            nodfur-emacs =
+              pkgs.emacsWithPackages (emacs-pkgs pkgs);
           };
-        in
-          pkgs.waveshare-epaper-demo;
 
-      packages.aarch64-linux.nodfur-it8951 =
-        let
-          pkgs = import nixpkgs {
-            system = "aarch64-linux";
-            overlays = [bcm2835-overlay];
+          apps = {
+            nodfur-emacs = {
+              type = "app";
+              program = "${packages.nodfur-emacs}/bin/emacs --load ${./emacs-init.el}";
+            };
           };
-        in
-          pkgs.nodfur-it8951;
+        }
     };
 }

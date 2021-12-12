@@ -2,23 +2,34 @@
 ;;                          78 character box                                ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(when (string-equal system-type "darwin")
+  (setq ring-bell-function 'ignore)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'super))
+
 (require 'cl-lib)
 
-;(load-theme 'zenburn t)
-(set-frame-font "Neep-18" nil t)
 (set-frame-font "DM Mono-18" nil t)
+
+(progn
+  (setq show-paren-delay 0)
+  (show-paren-mode)
+
+  (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'ielm-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'lisp-interaction-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'slime-repl-mode-hook 'rainbow-delimiters-mode))
 
 (set-fringe-mode 24)
 
-(set-face-background 'default "#222")
-(set-face-foreground 'default "#ddd")
-
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:background "#222" :foreground "#ddd")))))
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:background "#111" :foreground "#ddd"))))
+ '(fringe ((t (:background "#111")))))
 
 ;; (require 'gmail nil t)
 
@@ -27,7 +38,7 @@
 
 (setq inhibit-splash-screen t)
 
-(setq-default line-spacing 2)
+(setq-default line-spacing 1)
 
 (setq frame-resize-pixelwise t)
 
@@ -64,6 +75,7 @@
         '(slime-fancy
           slime-asdf
           slime-banner
+          slime-media
           slime-buffer-streams
           slime-compiler-notes-tree
           slime-tramp))
@@ -171,9 +183,24 @@
   (global-set-key (kbd "C-x C--") 'default-text-scale-decrease))
 
 (progn
-  (add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
-  (add-hook 'clojure-mode-hook 'enable-paredit-mode)
-  (add-hook 'lisp-mode-hook 'enable-paredit-mode))
+  (defun setup-sexps ()
+    (interactive)
+    (lispy-mode 1))
+
+  (add-hook 'clojure-mode-hook 'setup-sexps)
+  (add-hook 'emacs-lisp-mode-hook 'setup-sexps)
+  (add-hook 'eval-expression-minibuffer-setup-hook 'setup-sexps)
+  (add-hook 'ielm-mode-hook 'setup-sexps)
+  (add-hook 'lisp-mode-hook 'setup-sexps)
+  (add-hook 'lisp-interaction-mode-hook 'setup-sexps)
+  (add-hook 'slime-repl-mode-hook 'setup-sexps)
+
+  (defun override-slime-del-key ()
+    (define-key slime-repl-mode-map
+      (read-kbd-macro paredit-backward-delete-key) nil))
+
+  ;; (add-hook 'slime-repl-mode-hook 'override-slime-del-key)
+  )
 
 (progn
   (require 'dired)
@@ -206,10 +233,10 @@
 
 (add-hook 'elixir-mode-hook 'lsp)
 
-(progn
-  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-  (setq nov-variable-pitch t)
-  (setq nov-text-width 60))
+;; (progn
+;;   (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+;;   (setq nov-variable-pitch t)
+;;   (setq nov-text-width 60))
 
 (progn
   (require 'which-key)
@@ -259,4 +286,4 @@
   (menu-bar-mode -1)
   (scroll-bar-mode -1))
 
-(setq inferior-lisp-program "common-lisp.sh")
+(setq inferior-lisp-program "sbcl")
