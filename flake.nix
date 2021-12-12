@@ -504,7 +504,7 @@
               let
                 emacs = pkgs.emacsWithPackages (emacs-pkgs pkgs);
               in pkgs.writeShellScriptBin "nodfur-emacs" ''
-                ${emacs}/bin/emacs --load ${./emacs-init.el}
+                ${emacs}/bin/emacs --load ${./emacs-init.el} "$@"
               '';
 
             nodfur-emacs-packages =
