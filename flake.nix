@@ -502,6 +502,9 @@
 
             nodfur-emacs =
               pkgs.emacsWithPackages (emacs-pkgs pkgs);
+
+            nodfur-emacs-packages =
+              pkgs.emacsPackages;
           };
 
           apps = {
