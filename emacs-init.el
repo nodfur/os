@@ -16,6 +16,7 @@
   (show-paren-mode)
 
   (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'scheme-mode-hook 'rainbow-delimiters-mode)
   (add-hook 'ielm-mode-hook 'rainbow-delimiters-mode)
   (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
   (add-hook 'lisp-interaction-mode-hook 'rainbow-delimiters-mode)
@@ -44,6 +45,8 @@
 
 (column-number-mode)
 (setq tab-always-indent 'complete)
+
+(add-hook 'after-init-hook 'global-company-mode)
 
 (progn
   (setq gc-cons-threshold 20000)
@@ -188,6 +191,7 @@
     (lispy-mode 1))
 
   (add-hook 'clojure-mode-hook 'setup-sexps)
+  (add-hook 'scheme-mode-hook 'setup-sexps)
   (add-hook 'emacs-lisp-mode-hook 'setup-sexps)
   (add-hook 'eval-expression-minibuffer-setup-hook 'setup-sexps)
   (add-hook 'ielm-mode-hook 'setup-sexps)

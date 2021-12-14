@@ -31,6 +31,9 @@
 
       slime
 
+      geiser
+      geiser-guile
+
       pkgs.nano-emacs
       pkgs.urbit-emacs
     ];
