@@ -59,6 +59,21 @@
         "type": "github"
       }
     },
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1638122382,
+        "narHash": "sha256-sQzZzAbvKEqN9s0bzWuYmRaA03v40gaJ4+iL1LXjaeI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "74f7e4319258e287b0f9cb95426c9853b282730b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": "nixpkgs"
@@ -259,6 +274,7 @@
         "bcm2835-src": "bcm2835-src",
         "emacs-overlay": "emacs-overlay",
         "figlet-fonts": "figlet-fonts",
+        "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "mailserver": "mailserver",
         "mu4e-dashboard": "mu4e-dashboard",

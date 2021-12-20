@@ -110,6 +110,8 @@
       };
 
       restless-overlay = self: super: {
+        restless-emacs = super.emacsWithPackages (emacs-pkgs super);
+
         restless-git = super.symlinkJoin {
           name = "restless-git";
           paths = [
@@ -138,7 +140,6 @@
       };
 
       all-overlays = [
-        restless-overlay
         emacs-overlay.overlay
         figlet-fonts-overlay
         nano-emacs-overlay
@@ -147,6 +148,7 @@
         telegram-overlay
         urbit-emacs-overlay
         urbit-overlay
+        restless-overlay
       ];
 
       figlet-fonts-overlay =
@@ -160,6 +162,8 @@
         company-nixos-options
         default-text-scale
         elixir-mode
+        geiser
+        geiser-guile
         lispy
         lsp-mode
         lsp-ui

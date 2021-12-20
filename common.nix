@@ -29,10 +29,10 @@
 
     echo
 
-    ${pkgs.figlet}/bin/figlet -f ${pkgs.figlet-fonts}/Bloody.flf \
-      " ${config.networking.hostName}" \
-      | ${pkgs.lolcat}/bin/lolcat
-    echo
+    # ${pkgs.figlet}/bin/figlet -f ${pkgs.figlet-fonts}/Bloody.flf \
+    #   " ${config.networking.hostName}" \
+    #   | ${pkgs.lolcat}/bin/lolcat
+    # echo
   '';
 
   services.openssh.enable = true;

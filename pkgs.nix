@@ -31,5 +31,9 @@
     lispPackages.alexandria
     lispPackages.trivial-features
     lispPackages.babel
+
+    restless-emacs
+
+    guile_3_0
   ];
 }

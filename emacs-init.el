@@ -188,7 +188,8 @@
 (progn
   (defun setup-sexps ()
     (interactive)
-    (lispy-mode 1))
+    (lispy-mode -1)
+    (paredit-mode 1))
 
   (add-hook 'clojure-mode-hook 'setup-sexps)
   (add-hook 'scheme-mode-hook 'setup-sexps)
@@ -291,3 +292,6 @@
   (scroll-bar-mode -1))
 
 (setq inferior-lisp-program "sbcl")
+
+(with-eval-after-load 'geiser-guile
+  (add-to-list 'geiser-guile-load-path "/src/guix"))
