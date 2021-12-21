@@ -2,7 +2,7 @@
 
 {
   services.tailscale.enable = true;
-  services.avahi.enable = true;
+  # services.avahi.enable = true;
 
   nixpkgs.config.allowUnfree = true;
   
@@ -11,13 +11,13 @@
   #   enableSSHSupport = true;
   # };
 
-  services.gnome.gnome-keyring.enable = true;
+  # services.gnome.gnome-keyring.enable = true;
 
   environment.systemPackages = with pkgs; [
-    qutebrowser
+    # qutebrowser
     # firefox
     nodejs-16_x
-    tdesktop
+    # tdesktop
     unzip
     wget
   ];
