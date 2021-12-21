@@ -24,9 +24,6 @@
   ];
 
   environment.interactiveShellInit = ''
-    source $(${pkgs.fzf}/bin/fzf-share)/key-bindings.bash
-    source $(${pkgs.fzf}/bin/fzf-share)/completion.bash
-
     echo
 
     # ${pkgs.figlet}/bin/figlet -f ${pkgs.figlet-fonts}/Bloody.flf \
