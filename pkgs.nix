@@ -12,28 +12,28 @@
 
     ag
     cmake
-    fzf
+    # fzf
     htop
     nix-prefetch-git
     ripgrep
     tmux
-    sqlite
+    # sqlite
 
     cachix
 
     zig
 
     entr
-    netpbm
+    # netpbm
 
     sbcl
-    lispPackages.cffi
-    lispPackages.alexandria
-    lispPackages.trivial-features
-    lispPackages.babel
+    # lispPackages.cffi
+    # lispPackages.alexandria
+    # lispPackages.trivial-features
+    # lispPackages.babel
 
     restless-emacs
 
-    guile_3_0
+    # guile_3_0
   ];
 }
