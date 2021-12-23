@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [
@@ -41,4 +41,28 @@
   environment.systemPackages = with pkgs; [
     # firefox
   ];
+
+  systemd.services.epap = {
+    enable = true;
+    description = "Paper Lisp";
+    wantedBy = ["networking.target"];
+    serviceConfig = let script = pkgs.writeTextFile {
+      name = "epap-start";
+      executable = true;
+      text = ''
+        #!${pkgs.bash}/bin/bash -li
+        set -ex
+        cd ~/common-lisp/epap
+        nix develop --command \
+          sudo -E sbcl --load boot.lisp \
+          --eval '(setq epap::*dry-run* nil)' \
+          --eval '(epap::lets-roll)'
+      '';
+    }; in {
+      User = "mbrock";
+      Type = "forking";
+      ExecStart = "${pkgs.screen}/bin/screen -dmS lisp ${script}";
+      ExecStop = "${pkgs.screen}/bin/screen -S lisp -X quit";
+    };
+  };
 }
