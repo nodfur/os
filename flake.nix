@@ -70,6 +70,8 @@
       flake = false;
       url = github:nodfur/nodfur-it8951;
     };
+
+    zig.url = github:arqv/zig-overlay;
   };
 
   outputs = {
@@ -89,7 +91,8 @@
     bcm2835-src,
     waveshare-epaper-demo-src,
     papertty-src,
-    nodfur-it8951-src
+    nodfur-it8951-src,
+    zig
   }@inputs:
 
     let
@@ -551,6 +554,7 @@
             epap = pkgs.callPackage ./epap/epap.nix {
               inherit (pkgs) restless-git;
               inherit nodfur-emacs nodfur-emacs-packages;
+              zig = zig.packages."${system}"."0.9.0";
             };
           };
         }
