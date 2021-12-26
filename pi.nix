@@ -22,6 +22,7 @@
     wireless = {
       enable = true;
       networks.Restless.psk = "hypermedia";
+      networks.Pixel_6799.psk = "all cats are beautiful";
       interfaces = ["wlan0"];
     };
   };

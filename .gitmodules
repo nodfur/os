@@ -1,0 +1,6 @@
+[submodule "epap/vendor/harfbuzz"]
+	path = epap/vendor/harfbuzz
+	url = https://github.com/harfbuzz/harfbuzz
+[submodule "epap/vendor/freetype"]
+	path = epap/vendor/freetype
+	url = https://github.com/freetype/freetype

@@ -12,6 +12,8 @@
     ./desktop-system.nix
   ];
 
+  hardware.bluetooth.enable = true;
+
   services.xserver.enable = false;
 
   os.username = "dbrock";
@@ -36,12 +38,12 @@
     # firefox
   ];
 
-  system.activationScripts = {
-    epapBoot = ''
-      cd /home/mbrock/common-lisp/epap
-      ./epap-boot
-    '';
-  };
+  # system.activationScripts = {
+  #   epapBoot = ''
+  #     cd /home/mbrock/common-lisp/epap
+  #     ./epap-boot
+  #   '';
+  # };
 
   systemd.services.epap = {
     enable = true;
@@ -55,13 +57,13 @@
         set -ex
         cd ~/common-lisp/epap
         nix develop --command \
-          sudo -E sbcl --core epap-core \
+          sudo -E sbcl --load boot.lisp \
           --eval '(setq epap::*dry-run* nil)' \
           --eval '(foobar)' \
           --eval '(epap::lets-roll)'
       '';
     }; in {
-      User = "mbrock";
+      User = "dbrock";
       Type = "forking";
       ExecStart = "${pkgs.screen}/bin/screen -dmS lisp ${script}";
       ExecStop = "${pkgs.screen}/bin/screen -S lisp -X quit";

@@ -1,0 +1,13 @@
+#+title: epap: an e-paper playground
+#+author: Mikael Brockman
+#+date: [2021-12-12 Sun]
+
+* Introduction
+
+  This is a Common Lisp system for playing with e-paper screens.
+
+  I'm using the [[https://www.waveshare.com/10.3inch-e-paper-hat.htm][Waveshare 10.3" display]] connected via GPIO/SPI to a
+  [[https://www.raspberrypi.com/products/raspberry-pi-400/][Raspberry Pi 400]].
+
+  The only way to run the system is to load it and play around with
+  various Lisp functions; there's no coherent entry point yet.
