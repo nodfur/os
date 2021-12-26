@@ -530,7 +530,9 @@
             overlays = all-overlays;
           };
         in rec {
-          packages = {
+          devShell = packages.epap;
+
+          packages = rec {
             inherit (pkgs)
               restless-git
               waveshare-epaper-demo
@@ -545,6 +547,11 @@
 
             nodfur-emacs-packages =
               pkgs.emacsPackages;
+
+            epap = pkgs.callPackage ./epap/epap.nix {
+              inherit (pkgs) restless-git;
+              inherit nodfur-emacs nodfur-emacs-packages;
+            };
           };
         }
       )
