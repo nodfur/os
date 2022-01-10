@@ -2,7 +2,7 @@
   inputs = {
 
     nixpkgs.url =
-      github:nodfur/nixpkgs/nodfur;
+      path:/src/nixpkgs;
 
     flake-utils.url =
       github:numtide/flake-utils;
@@ -159,35 +159,7 @@
           inherit (inputs) figlet-fonts;
         };
 
-      emacs-pkgs = pkgs: epkgs: with epkgs; [
-        ag
-        company
-        company-nixos-options
-        default-text-scale
-        elixir-mode
-        geiser
-        geiser-guile
-        lispy
-        lsp-mode
-        lsp-ui
-        magit
-        nix-mode
-        paredit
-        pdf-tools
-        projectile
-        rainbow-delimiters
-        selectrum
-        selectrum-prescient
-        slime
-        vterm
-        which-key
-        whitespace-cleanup-mode
-        zenburn-theme
-        zig-mode
-
-        pkgs.urbit-emacs
-        pkgs.nano-emacs
-      ];
+      emacs-pkgs = import ./emacs-pkgs.nix;
 
       openai-overlay =
         import ./openai-overlay.nix;

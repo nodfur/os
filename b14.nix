@@ -32,26 +32,38 @@ in {
   };
   
   boot.kernelPackages =
-    pkgs.linuxPackagesFor (pkgs.linux_latest);
+    pkgs.linuxKernel.packages.linux_5_16;
 
   fonts.fonts = with pkgs; [
     google-fonts
     iosevka
   ];
 
-  services.xserver.enable = true;
-  services.xserver.resolutions = [
-    { x = 3840; y = 2160; }
-    { x = 2560; y = 1440; }
-  ];
+  system.activationScripts = {
+    fixAppleKeyboard = ''
+      file=/sys/module/hid_apple/parameters/swap_opt_cmd
+      test -f $file && echo 1 > $file
+    '';
+  };
 
-  services.xserver.xrandrHeads = [{
-    output = "DisplayPort-2";
-    primary = true;
-    # monitorConfig = ''
-    #   Option "Rotate" "left"
-    # '';
-  }];
+  services.xserver.enable = true;
+#  services.xserver.resolutions = [
+#    { x = 3840; y = 2160; }
+#    { x = 2560; y = 1440; }
+#  ];
+
+#  services.xserver.xrandrHeads = [
+#    {
+#      output = "DisplayPort-3";
+#      monitorConfig = ''
+#        Option "Rotate" "right"
+#      '';
+#    }
+#    {
+#      primary = true;
+#      output = "DisplayPort-5";
+#    }
+#  ];
 
   environment.systemPackages = with pkgs; [
     google-chrome-beta
@@ -59,6 +71,8 @@ in {
     _1password-gui
     google-cloud-sdk
     zls
+    calibre
+    foliate
   ];
 
   users.extraUsers =
@@ -111,7 +125,7 @@ in {
   os.vnc.size.height = 900;
   os.vnc.size.width = 1440;
 
-  services.xserver.dpi = 160;
+  services.xserver.dpi = 150;
 
   networking.hostName = "chapel";
   networking.interfaces."${internet}".useDHCP = true;
