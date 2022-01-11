@@ -224,7 +224,7 @@
 
 (defun restless-rebuild ()
   (interactive)
-  (compile "sudo /os/rebuild"))
+  (compile "os-terminal -e \"sudo /os/rebuild || bash\""))
 
 (defun os-restart-x ()
   (interactive)
@@ -296,3 +296,12 @@
 
 (with-eval-after-load 'geiser-guile
   (add-to-list 'geiser-guile-load-path "/src/guix"))
+
+(progn
+  (global-set-key (kbd "C-:") 'avy-goto-char)
+  (global-set-key (kbd "C-'") 'avy-goto-char-2)
+  (global-set-key (kbd "M-g g") 'avy-goto-line)
+  (global-set-key (kbd "M-g w") 'avy-goto-word-1)
+  (global-set-key (kbd "M-g e") 'avy-goto-word-0)
+
+  (setq avy-keys '(?a ?o ?e ?u ?h ?t ?n ?s)))

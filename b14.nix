@@ -3,6 +3,13 @@
 let
   internet = "wlo1";
 
+  os-fix-apple-keyboard =
+    pkgs.writeShellScriptBin "os-fix-apple-keyboard" ''
+      set -ex
+      file=/sys/module/hid_apple/parameters/swap_opt_cmd
+      test -f $file && echo 1 > $file
+    '';
+
 in {
   imports = [
     ./btrfs.nix
@@ -41,8 +48,7 @@ in {
 
   system.activationScripts = {
     fixAppleKeyboard = ''
-      file=/sys/module/hid_apple/parameters/swap_opt_cmd
-      test -f $file && echo 1 > $file
+      ${os-fix-apple-keyboard}/bin/os-fix-apple-keyboard
     '';
   };
 
@@ -73,6 +79,7 @@ in {
     zls
     calibre
     foliate
+    os-fix-apple-keyboard
   ];
 
   users.extraUsers =

@@ -29,4 +29,4 @@ with epkgs; [
 
   pkgs.urbit-emacs
   pkgs.nano-emacs
-];
+]
