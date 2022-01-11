@@ -3,6 +3,7 @@
   writeText,
   writeShellScriptBin,
 
+  zig,
   pkg-config,
   openssl,
   libpng,
@@ -39,7 +40,7 @@ in stdenv.mkDerivation {
     pstree
     rlwrap
     gdb
-
+    zig
     sbcl
 
     (texlive.combine {

@@ -72,6 +72,7 @@ in {
 #  ];
 
   environment.systemPackages = with pkgs; [
+    pavucontrol
     google-chrome-beta
     _1password
     _1password-gui
@@ -132,7 +133,15 @@ in {
   os.vnc.size.height = 900;
   os.vnc.size.width = 1440;
 
-  services.xserver.dpi = 150;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
+
+  services.xserver.dpi = 200;
 
   networking.hostName = "chapel";
   networking.interfaces."${internet}".useDHCP = true;

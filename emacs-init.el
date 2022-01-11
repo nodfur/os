@@ -9,7 +9,7 @@
 
 (require 'cl-lib)
 
-(set-frame-font "FiraCode-16" nil t)
+(set-frame-font "DM Mono-24" nil t)
 ;(set-frame-font "neep-20" nil t)
 
 (progn
@@ -30,8 +30,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:background "#111" :foreground "#ddd"))))
- '(fringe ((t (:background "#111")))))
+ '(default ((t (:background "#000" :foreground "#ddd"))))
+ '(fringe ((t (:background "#000")))))
 
 ;; (require 'gmail nil t)
 
