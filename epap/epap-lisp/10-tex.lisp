@@ -20,7 +20,7 @@
 
 (defun latex-preamble ()
   (format t "
-\\documentclass[14pt,twocolumn]{extarticle}
+\\documentclass[12pt,twocolumn]{extarticle}
 \\usepackage[
   paperwidth=209.66mm,paperheight=157.25mm,
   margin=0.8cm,includefoot]{geometry}
@@ -148,7 +148,6 @@
 
 \\textbf{The nuclear family is not by itself a viable social form.}
 
-\Huge{
 Until a few years ago, human society was based on the extended family:
 a family of at least three generations, with parents, children,
 grandparents, uncles, aunts, and cousins, all living together in a
@@ -213,7 +212,7 @@ everyone would tend to meet toward the end of the day. Again,
 according to the style of the family, this might be a separate
 building, with workshop and gardens, or one wing of a house, or the
 entire first floor of a two or three story building.
-}")
+")
 
 (defun latex-demo ()
   (with-display

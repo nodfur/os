@@ -415,7 +415,28 @@
 (defparameter *a2-mode* 6)
 (defparameter *initialize-mode* 0)
 
-(defun-with-dry-run display-area (&key address rectangle mode)
+(defparameter *invert-levels* t)
+
+(defun canvas-to-png (canvas)
+  (let* ((height (array-dimension canvas 0))
+         (width (array-dimension canvas 1))
+         (png (make-instance 'zpng:png
+                             :color-type :grayscale
+                             :width width
+                             :height height))
+         (image (zpng:data-array png)))
+    (dotimes (y height png)
+      (dotimes (x width)
+        (setf (aref image y x 0)
+              (let ((level (* 255 (aref canvas y x))))
+                (if *invert-levels*
+                    level
+                    (- 255 level))))))))
+
+(defun save-local-canvas ()
+  (zpng:write-png (canvas-to-png *local-framebuffer*) "frame.png"))
+
+(defun-with-dry-run really-display-area (&key address rectangle mode)
   (destructuring-bind (&key x y w h) rectangle
     (let* ((x% (round-down-to-word x))
            (y% (round-down-to-word y))
@@ -440,6 +461,13 @@
            (write-command :display-area)
            (write-word-packets
             (list x% y% w% h% *initialize-mode*))))))))
+
+(defun display-area (&key address rectangle mode)
+  (if *dry-run*
+      (progn
+        (save-local-canvas))
+      (really-display-area
+       :address address :rectangle rectangle :mode mode)))
 
 (defun full-screen-rectangle ()
   (list :x 0 :y 0 :w *display-width* :h *display-height*))

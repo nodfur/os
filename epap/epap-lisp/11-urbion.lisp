@@ -85,7 +85,7 @@
 
 (defun boot ()
   (setf *freetype* nil)
-  (setf *dry-run* nil)
+  ; (setf *dry-run* nil)
   (start-display)
   (progn
     (blank)

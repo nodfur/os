@@ -125,7 +125,7 @@
 ;;                        :element-type 'bit
 ;;                        :initial-element 1)))
 
-(defun-with-dry-run display-area-monochrome (x y width height)
+(defun display-area-monochrome (x y width height)
   (display-area :address *framebuffer-address*
                 :rectangle (list :x x :y y :w width :h height)
                 :mode :fast-monochrome))
@@ -174,7 +174,7 @@
   (destructuring-bind (&key width rows &allow-other-keys) bitmap
     (copy-area-to-framebuffer x y width rows)))
 
-(defun-with-dry-run display-bitmap-area (bitmap x y)
+(defun display-bitmap-area (bitmap x y)
   (destructuring-bind (&key width rows &allow-other-keys) bitmap
     (display-area-monochrome x y width rows)))
 
@@ -236,18 +236,3 @@
 ;;   (sb-sprof:with-profiling
 ;;       (:max-samples 4000 :report :flat :loop nil)
 ;;     (time-poem anecdote-of-the-jar)))
-
-(defun canvas-to-png (canvas)
-  (let* ((height (array-dimension canvas 0))
-         (width (array-dimension canvas 1))
-         (png (make-instance 'zpng:png
-                             :color-type :grayscale
-                             :width width
-                             :height height))
-         (image (zpng:data-array png)))
-    (dotimes (y height png)
-      (dotimes (x width)
-        (setf (aref image y x 0)
-              (- 255 (* 255 (aref canvas y x))))))))
-
-;; (zpng:write-png (canvas-to-png *local-framebuffer*) "frame.png")

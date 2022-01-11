@@ -1,34 +1,46 @@
 {
-  stdenv,
-  writeText,
-  writeShellScriptBin,
-
-  zig,
-  pkg-config,
-  openssl,
-  libpng,
-
   bashInteractive,
   coreutils,
-  pstree,
-  rlwrap,
+  feh,
+  freetype,
   gdb,
-
-  restless-git,   # the `git save' command
-
-  nodfur-emacs,   # our own Emacs configuration
+  harfbuzz,
+  libpng,
+  nodfur-emacs,
   nodfur-emacs-packages,
-
-  sbcl,           # Steel Bank Common Lisp
-  texlive,        # TeX, LaTeX, XeTeX, etc
-  freetype,       # for loading and rendering fonts
-  harfbuzz        # for shaping text words
+  openssl,
+  pkg-config,
+  pstree,
+  restless-git,
+  rlwrap,
+  sbcl,
+  stdenv,
+  texlive,
+  writeShellScriptBin,
+  writeText,
+  zig
 }:
 
 let
   epap-emacs = writeShellScriptBin "epap-emacs" ''
     exec ${nodfur-emacs}/bin/nodfur-emacs boot.lisp --execute "(slime)" "$@"
   '';
+
+  latex = texlive.combine {
+    inherit (texlive)
+      crop
+      dvipng
+      ebgaramond
+      etoolbox
+      extsizes
+      fontaxes
+      geometry
+      parskip
+      scheme-basic
+      titlesec
+      xkeyval
+    ;
+  };
 
 in stdenv.mkDerivation {
   name = "epap";
@@ -37,38 +49,19 @@ in stdenv.mkDerivation {
   buildInputs = [
     bashInteractive
     coreutils
-    pstree
-    rlwrap
-    gdb
-    zig
-    sbcl
-
-    (texlive.combine {
-      inherit (texlive)
-        scheme-basic
-        ebgaramond
-        etoolbox
-        extsizes
-        parskip
-        geometry
-        crop
-        titlesec
-        xkeyval
-        fontaxes
-        dvipng
-      ;})
-
-    restless-git
-    nodfur-emacs
     epap-emacs
-
-    pkg-config
-    openssl
+    feh
+    gdb
+    latex
     libpng
-
-    # freetype
-    # harfbuzz
-
+    nodfur-emacs
+    openssl
+    pkg-config
+    pstree
+    restless-git
+    rlwrap
+    sbcl
+    zig
   ];
 
   EMACS_SITE_LISP = "${nodfur-emacs-packages.slime}/share/emacs/site-lisp";

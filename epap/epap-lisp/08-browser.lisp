@@ -22,7 +22,7 @@
 (in-package #:epap-web)
 
 (defun web-app () 
-  (start (make-instance 'easy-acceptor :port 80)))
+  (start (make-instance 'easy-acceptor :port 8000)))
 
 (define-easy-handler (epap-root :uri "/") ()
   (with-html-string
