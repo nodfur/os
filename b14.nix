@@ -1,7 +1,7 @@
 { pkgs, lib, ... }:
 
 let
-  internet = "wlo1";
+  internet = "enp9s0";
 
   os-fix-apple-keyboard =
     pkgs.writeShellScriptBin "os-fix-apple-keyboard" ''
@@ -75,6 +75,7 @@ in {
     feh
     pavucontrol
     google-chrome-beta
+    firefox
     _1password
     _1password-gui
     google-cloud-sdk
@@ -175,7 +176,7 @@ in {
 
   networking.firewall.allowedTCPPorts = [1029];
 
-  networking.wireless.enable = true;
+  networking.wireless.enable = false;
   networking.wireless.interfaces = ["wlo1"];
    
   networking.wireless.networks.Restless.psk = "hypermedia";

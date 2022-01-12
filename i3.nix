@@ -8,6 +8,7 @@
     i3status
     i3lock
     lxappearance
+    unclutter-xfixes
   ];
 
   environment.pathsToLink = ["/libexec"];

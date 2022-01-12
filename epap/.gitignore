@@ -6,3 +6,4 @@ tmp/*.*
 **/zig-cache
 epap-boot
 epap-core
+frame.png

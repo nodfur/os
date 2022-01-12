@@ -9,7 +9,7 @@
 
 (require 'cl-lib)
 
-(set-frame-font "DM Mono-24" nil t)
+(set-frame-font "DM Mono-20" nil t)
 ;(set-frame-font "neep-20" nil t)
 
 (progn
