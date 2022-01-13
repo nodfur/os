@@ -415,7 +415,7 @@
 (defparameter *a2-mode* 6)
 (defparameter *initialize-mode* 0)
 
-(defparameter *invert-levels* t)
+(defparameter *invert-levels* nil)
 
 (defun canvas-to-png (canvas)
   (let* ((height (array-dimension canvas 0))
@@ -434,7 +434,9 @@
                     (- 255 level))))))))
 
 (defun save-local-canvas ()
-  (zpng:write-png (canvas-to-png *local-framebuffer*) "frame.png"))
+  (zpng:write-png (canvas-to-png *local-framebuffer*) "frame2.png")
+  (uiop:rename-file-overwriting-target "frame2.png" "frame.png")
+  t)
 
 (defun-with-dry-run really-display-area (&key address rectangle mode)
   (destructuring-bind (&key x y w h) rectangle

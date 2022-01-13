@@ -72,18 +72,19 @@ in {
 #  ];
 
   environment.systemPackages = with pkgs; [
-    feh
-    pavucontrol
-    google-chrome-beta
-    firefox
     _1password
     _1password-gui
-    google-cloud-sdk
-    zls
     calibre
+    feh
+    firefox
     foliate
+    google-chrome-beta
+    google-cloud-sdk
+    mpv
     os-fix-apple-keyboard
+    pavucontrol
     screen
+    zls
   ];
 
   systemd.services.epap = {

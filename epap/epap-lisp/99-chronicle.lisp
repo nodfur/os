@@ -222,13 +222,6 @@ html { color: #222; }
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (date :saturday 11 :december 2021
   "I'm alone overnight and playing with Lisp.")
-
-;; (hmm (thinking about "TeX")
-;;   ((1) well knuth did a good job)
-;;   ((2) and we can just install it)
-;;   ((3) then typeset everything))
 

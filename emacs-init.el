@@ -9,7 +9,8 @@
 
 (require 'cl-lib)
 
-(set-frame-font "DM Mono-20" nil t)
+;(set-frame-font "Iosevka-26" nil t)
+(set-frame-font "DM Mono-14" nil t)
 ;(set-frame-font "neep-20" nil t)
 
 (progn
@@ -40,7 +41,7 @@
 
 (setq inhibit-splash-screen t)
 
-(setq-default line-spacing 1)
+(setq-default line-spacing 5)
 
 (setq frame-resize-pixelwise t)
 
@@ -305,3 +306,11 @@
   (global-set-key (kbd "M-g e") 'avy-goto-word-0)
 
   (setq avy-keys '(?a ?o ?e ?u ?h ?t ?n ?s)))
+
+(setq image-auto-resize 'fit-width)
+
+(add-hook 'image-minor-mode-hook
+          (lambda ()
+            (interactive)
+            (setq left-fringe-width 0)
+            (setq right-fringe-width 0)))

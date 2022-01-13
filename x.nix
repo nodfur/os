@@ -77,6 +77,7 @@ in {
       jmk-x11-fonts
       cm_unicode
       # roboto roboto-mono roboto-slab
+      _3270font
     ];
 
     fonts.fontconfig.hinting.enable = true;
