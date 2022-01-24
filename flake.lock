@@ -296,6 +296,23 @@
         "type": "github"
       }
     },
+    "paperwm-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1641940696,
+        "narHash": "sha256-6AUUu63oWxRw9Wpxe0f7xvt7iilvQfhpAB8SYG4yP8Q=",
+        "owner": "PaperWM-community",
+        "repo": "PaperWM",
+        "rev": "b66aaf13e8f4cdf0e2f9078fb3e75703535b822c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "PaperWM-community",
+        "ref": "next-release",
+        "repo": "PaperWM",
+        "type": "github"
+      }
+    },
     "picom-src": {
       "flake": false,
       "locked": {
@@ -326,6 +343,7 @@
         "nixpkgs": "nixpkgs_3",
         "nodfur-it8951-src": "nodfur-it8951-src",
         "papertty-src": "papertty-src",
+        "paperwm-src": "paperwm-src",
         "picom-src": "picom-src",
         "urbit-emacs": "urbit-emacs",
         "urbit-src": "urbit-src",

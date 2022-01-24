@@ -72,6 +72,11 @@
     };
 
     zig.url = github:arqv/zig-overlay;
+
+    paperwm-src = {
+      flake = false;
+      url = github:PaperWM-community/PaperWM/next-release;
+    };
   };
 
   outputs = {
@@ -92,7 +97,8 @@
     waveshare-epaper-demo-src,
     papertty-src,
     nodfur-it8951-src,
-    zig
+    zig,
+    paperwm-src
   }@inputs:
 
     let
@@ -152,7 +158,18 @@
         urbit-emacs-overlay
         urbit-overlay
         restless-overlay
+        paperwm-overlay
       ];
+
+      paperwm-overlay =
+        self: super: {
+          gnomeExtensions = super.gnomeExtensions // {
+            paperwm = super.gnomeExtensions.paperwm.overrideDerivation (old: {
+              version = "pre-41.0";
+              src = paperwm-src;
+            });
+          };
+        };
 
       figlet-fonts-overlay =
         _self: _super: {

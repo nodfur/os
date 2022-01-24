@@ -17,7 +17,8 @@ in {
     ./dvorak.nix
     ./efi.nix
     ./gmail.nix
-    ./i3.nix
+#    ./i3.nix
+    ./paperwm.nix
     ./intel.nix
     ./kernel.nix
     ./node.town.nix
@@ -71,10 +72,16 @@ in {
 #    }
 #  ];
 
+  services.mongodb.enable = true;
+
   environment.systemPackages = with pkgs; [
-    _1password
-    _1password-gui
+    gdb
     calibre
+    clang
+    clang-tools
+    emscripten
+    wasmtime
+    electron_16
     feh
     firefox
     foliate
@@ -85,6 +92,7 @@ in {
     pavucontrol
     screen
     zls
+    zoom-us
   ];
 
   systemd.services.epap = {

@@ -236,7 +236,7 @@ entire first floor of a two or three story building.
              (swank::read-from-minibuffer-in-emacs "GPT-3: ")))
       (unless prompt (return))
       (push (format nil "\\textsc{Prompt.} ~a" prompt) lines)
-      (let ((babble (openai:answer-question prompt 20)))
+      (let ((babble (openai:answer-question prompt 50)))
         (push (format nil "\\textsc{Answer.} ~a"
                       (ppcre:regex-replace-all "&" babble "\\\\&")) lines))
       (display-image

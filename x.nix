@@ -47,6 +47,11 @@ in {
       type = lib.types.bool;
       default = false;
     };
+
+    os.wayland = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+    };
   };
 
   config = {
@@ -80,11 +85,11 @@ in {
       _3270font
     ];
 
-    fonts.fontconfig.hinting.enable = true;
+    fonts.fontconfig.hinting.enable = false;
 
-    services.redshift.enable = !config.os.vm;
+    services.redshift.enable = !config.os.vm && !config.os.wayland;
 
-    programs.ssh.setXAuthLocation = true;
-    services.openssh.forwardX11 = true;
+    programs.ssh.setXAuthLocation = !config.os.wayland;
+    services.openssh.forwardX11 = !config.os.wayland;
   };
 }

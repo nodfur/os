@@ -10,7 +10,8 @@
 (require 'cl-lib)
 
 ;(set-frame-font "Iosevka-26" nil t)
-(set-frame-font "DM Mono-14" nil t)
+;(set-frame-font "DM Mono-14" nil t)
+(set-frame-font "FiraCode-14" nil t)
 ;(set-frame-font "neep-20" nil t)
 
 (progn
@@ -26,12 +27,14 @@
 
 (set-fringe-mode 24)
 
+(load-theme 'zenburn t)
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:background "#000" :foreground "#ddd"))))
+ '(default ((t (:background "#000"))))
  '(fringe ((t (:background "#000")))))
 
 ;; (require 'gmail nil t)
@@ -41,7 +44,7 @@
 
 (setq inhibit-splash-screen t)
 
-(setq-default line-spacing 5)
+(setq-default line-spacing 1)
 
 (setq frame-resize-pixelwise t)
 
@@ -239,6 +242,11 @@
 (prescient-persist-mode 1)
 
 (add-hook 'elixir-mode-hook 'lsp)
+(add-hook 'c-mode-hook 'lsp)
+
+(setq lsp-idle-delay 0.1)
+(setq lsp-enable-on-type-formatting nil)
+(setq lsp-before-save-edits nil)
 
 ;; (progn
 ;;   (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
@@ -314,3 +322,20 @@
             (interactive)
             (setq left-fringe-width 0)
             (setq right-fringe-width 0)))
+
+;; *
+
+(quail-define-package
+ "iast-postfix" "UTF-8" "InR<" t
+  "Input method for Indic transliteration with postfix modifiers.
+
+     Long vowels are dealt with by doubling.
+
+     |                  | postfix | examples             |
+     |------------------+---------+----------------------|
+     | macron           |         | aa  -> ā    ee  -> ē |
+     | diacritic below  | .       | d.  -> ḍ    rr. -> ṝ |
+     | diacritic above  | '       | s'  -> ś    n'  -> ṅ |
+     | tilde            | ~       | n~  -> ñ             |
+  "
+  nil t nil nil nil nil nil nil nil nil t)
