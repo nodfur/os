@@ -150,7 +150,8 @@ wisp_alloc (wisp_t *ctx, size_t n)
 wisp_value_t *
 wisp_alloc_value (wisp_t *ctx, wisp_tag_t tag)
 {
-  wisp_value_t *value = wisp_alloc (ctx, sizeof (wisp_value_t));
+  wisp_value_t *value =
+    wisp_alloc (ctx, sizeof (wisp_value_t));
 
   value->tag = tag;
 
@@ -609,6 +610,17 @@ wisp_dump (wisp_t *ctx,
     }
 }
 
+void
+wisp_dump_heap (wisp_t *ctx)
+{
+  printf ("wisp heap v0\n");
+  printf ("size %lu\n", ctx->heap_size);
+  printf ("base %p\n", ctx->live_heap);
+  printf ("tail %p\n", ctx->live_heap_tail);
+  printf ("package LISP %p\n", ctx->packages.LISP);
+
+}
+
 int
 main (int argc, char **argv)
 {
@@ -622,6 +634,8 @@ main (int argc, char **argv)
 
   wisp_dump (&ctx, foo);
   printf ("\n");
+
+  wisp_dump_heap (&ctx);
 
   wisp_stop (&ctx);
 }
