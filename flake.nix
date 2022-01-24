@@ -2,7 +2,7 @@
   inputs = {
 
     nixpkgs.url =
-      path:/src/nixpkgs;
+      github:nodfur/nixpkgs;
 
     flake-utils.url =
       github:numtide/flake-utils;
@@ -324,6 +324,11 @@
         };
 
       systems = {
+        igloo = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = common-modules ++ [(import ./igloo.nix)];
+        };
+
         chapel = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = common-modules ++ [
