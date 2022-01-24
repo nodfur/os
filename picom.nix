@@ -10,14 +10,14 @@
       then "glx"
       else "xrender";
 
-    # shadow = true;
-    # settings = {
-    #   "corner-radius" = 10;
-    #   "shadow-radius" = 48;
-    #   "shadow-offset-x" = -8;
-    #   "shadow-offset-y" = -8;
-    #   "shadow-opacity" = 0.4;
-    #   "rounded-corners-exclude" = "window_type = 'dock'";
-    # };
+    shadow = true;
+    settings = {
+      "corner-radius" = 16;
+      "shadow-radius" = 60;
+      "shadow-offset-x" = -8;
+      "shadow-offset-y" = -8;
+      "shadow-opacity" = 0.4;
+      "rounded-corners-exclude" = "window_type = 'dock'";
+    };
   };
 }
