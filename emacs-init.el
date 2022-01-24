@@ -225,7 +225,7 @@
 
 (defun restless-rebuild ()
   (interactive)
-  (compile "os-terminal -e \"sudo /os/rebuild || bash\""))
+  (compile "sudo /os/rebuild"))
 
 (defun os-restart-x ()
   (interactive)

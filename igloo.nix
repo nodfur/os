@@ -9,6 +9,7 @@
     ./kernel.nix
     ./password.nix
     ./users/mbrock
+    ./wisp.nix
   ];
 
   os.gl = true;
@@ -81,4 +82,13 @@
   };
 
   # hardware.opengl.extraPackages = [pkgs.vaapiIntel];
+
+  services.xserver.libinput.enable = true;
+  services.xserver.videoDrivers = ["intel"];
+
+  services.xserver.deviceSection = ''
+    Driver "intel"
+    Option "AccelMethod" "sna"
+    Option "TearFree" "true"
+  '';
 }

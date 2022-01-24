@@ -71,6 +71,7 @@ in {
       '')
 
       hsetroot
+      xlibs.xbacklight
     ];
 
     fonts.fonts = with pkgs; [
