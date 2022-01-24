@@ -4,6 +4,7 @@
   imports = [
     ../../user-emacs.nix
     ../../user-mail.nix
+    ../../user-basic.nix
   ];
 
   programs.git = {

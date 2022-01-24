@@ -9,10 +9,7 @@
 
 (require 'cl-lib)
 
-;(set-frame-font "Iosevka-26" nil t)
-;(set-frame-font "DM Mono-14" nil t)
-(set-frame-font "FiraCode-14" nil t)
-;(set-frame-font "neep-20" nil t)
+(set-frame-font "DM Mono-13" nil t)
 
 (progn
   (setq show-paren-delay 0)

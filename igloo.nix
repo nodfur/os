@@ -37,7 +37,7 @@
   networking.wireless.interfaces = ["wlp2s0"];
 
   networking.wireless.networks = {
-    GrandPoet_Free = "GRANDPOET";
+    GrandPoet_Free.psk = "GRANDPOET";
     Restless.psk = "hypermedia";
   };
 
@@ -46,7 +46,9 @@
 
   nix.maxJobs = lib.mkDefault 4;
 
-  boot.initrd.kernelModules = ["fbcon" "ipheth"];
+  os.monospace.size = 14;
+
+  # boot.initrd.kernelModules = ["fbcon" "ipheth"];
   boot.kernelModules = ["kvm-intel" "wl"];
 
   boot.kernelParams = [ "i915.enable_ips=0" "snd_hda_intel.index=1" ];

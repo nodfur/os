@@ -4,20 +4,18 @@ let
   cmd = name: value: { inherit name value; };
 
   menu-commands = [
+    (cmd "xterm" ''os-terminal'')
+
     (cmd "Rebuild System"
-      ''
-        os-terminal -e "sudo make -C /os || bash"
-      '')
+      ''os-terminal -e "sudo make -C /os || bash"'')
 
     (cmd "Restart Desktop"
-      ''
-        sudo systemctl restart display-manager
-      '')
+      ''sudo systemctl restart display-manager'')
 
     (cmd "Emacs"
       ''emacs'')
 
-    (cmd "Google Chrome"
+    (cmd "Chrome"
       ''google-chrome-beta'')
 
     (cmd "Firefox"
