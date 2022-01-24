@@ -20,13 +20,15 @@ typedef int32_t wisp_fixnum_t;
 
 typedef struct wisp_value wisp_value_t;
 
-typedef struct wisp_basics {
-  wisp_value_t *NIL;
-  wisp_value_t *PACKAGE;
-  wisp_value_t *QUOTE;
-  wisp_value_t *T;
+typedef wisp_fixnum_t wisp_ptr_t;
 
-  wisp_value_t *DONE;
+typedef struct wisp_basics {
+  wisp_ptr_t NIL;
+  wisp_ptr_t PACKAGE;
+  wisp_ptr_t QUOTE;
+  wisp_ptr_t T;
+
+  wisp_ptr_t DONE;
 } wisp_basics_t;
 
 typedef struct wisp {
@@ -37,7 +39,7 @@ typedef struct wisp {
   void *idle_heap;
 
   struct {
-    wisp_value_t *LISP;
+    wisp_ptr_t LISP;
   } packages;
 
   wisp_basics_t symbols;
@@ -52,23 +54,14 @@ typedef enum wisp_tag {
 } wisp_tag_t;
 
 typedef struct wisp_cons {
-  wisp_value_t *car;
-  wisp_value_t *cdr;
+  wisp_ptr_t car;
+  wisp_ptr_t cdr;
 } wisp_cons_t;
 
 struct wisp_value {
   wisp_tag_t tag;
-
-  union {
-    wisp_fixnum_t fixnum;
-    wisp_value_t *car;
- };
-
-  union {
-    wisp_value_t *cdr;
-    void *data;
-    wisp_value_t **values;
-  };
+  wisp_ptr_t car;
+  wisp_ptr_t cdr;
 };
 
 const size_t WISP_VALUE_SIZE_1 =
@@ -127,7 +120,7 @@ wisp_not_implemented (wisp_t *ctx)
   wisp_crash (ctx, WISP_ERROR_NOT_IMPLEMENTED);
 }
 
-void *
+wisp_ptr_t
 wisp_alloc (wisp_t *ctx, size_t n)
 {
   if (wisp_free_space (ctx) < n)
@@ -144,35 +137,44 @@ wisp_alloc (wisp_t *ctx, size_t n)
   fprintf (stderr, "; wisp: alloc %lu %p\n", n, pointer);
 #endif
 
-  return pointer;
+  return pointer - ctx->live_heap;
 }
 
-wisp_value_t *
+#define WISP_REF(ctx, x) \
+  ((wisp_value_t *) ((ctx)->live_heap + (x)))
+
+#define WISP_REF_I(ctx, x, i) \
+  ((wisp_value_t *) \
+   ((ctx)->live_heap + (x) + (i) * sizeof (wisp_fixnum_t)))
+
+// #define WISP_VECTOR_REF(ctx, vector, index) (WISP_REF (ctx, (vector))[index])
+
+wisp_ptr_t
 wisp_alloc_value (wisp_t *ctx, wisp_tag_t tag)
 {
-  wisp_value_t *value =
+  wisp_ptr_t value =
     wisp_alloc (ctx, sizeof (wisp_value_t));
 
-  value->tag = tag;
+  (WISP_REF (ctx, value))->tag = tag;
 
   return value;
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_cons (wisp_t *ctx,
-           wisp_value_t *car,
-           wisp_value_t *cdr)
+           wisp_ptr_t car,
+           wisp_ptr_t cdr)
 {
-  wisp_value_t *value =
+  wisp_ptr_t value =
     wisp_alloc_value (ctx, WISP_TAG_CONS);
 
-  value->car = car;
-  value->cdr = cdr;
+  WISP_REF (ctx, value)->car = car;
+  WISP_REF (ctx, value)->cdr = cdr;
 
   return value;
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_vector (wisp_t *ctx,
              wisp_fixnum_t entries,
              ...)
@@ -180,56 +182,58 @@ wisp_vector (wisp_t *ctx,
   va_list args;
   va_start (args, entries);
 
-  wisp_value_t *value =
+  wisp_ptr_t value =
     wisp_alloc_value (ctx, WISP_TAG_VECTOR);
 
-  value->fixnum = entries;
-
-  wisp_value_t **data =
+  wisp_ptr_t data =
     wisp_alloc (ctx, entries * sizeof (wisp_value_t));
 
+  wisp_fixnum_t *data_ptr = ctx->live_heap + data;
+
   for (int i = 0; i < entries; i++)
-    data[i] = va_arg (args, wisp_value_t *);
+    data_ptr[i] = va_arg (args, wisp_fixnum_t);
 
   va_end (args);
 
-  value->data = data;
+  WISP_REF (ctx, value)->car = entries;
+  WISP_REF (ctx, value)->cdr = data;
 
   return value;
 }
 
-wisp_value_t *
+wisp_fixnum_t
 wisp_fixnum (wisp_t *ctx,
              wisp_fixnum_t fixnum)
 {
-  wisp_value_t *value = wisp_alloc_value (ctx, WISP_TAG_FIXNUM);
+  wisp_ptr_t value = wisp_alloc_value (ctx, WISP_TAG_FIXNUM);
 
-  value->fixnum = fixnum;
-  value->data = 0;
+  WISP_REF (ctx, value)->car = fixnum;
+  WISP_REF (ctx, value)->cdr = 0;
 
   return value;
 }
 
 
-wisp_value_t *
+wisp_ptr_t
 wisp_string_n (wisp_t *ctx,
                const char *start,
                int length)
 {
-  wisp_value_t *value =
+  wisp_ptr_t value =
     wisp_alloc_value (ctx, WISP_TAG_BYTES);
 
-  value->fixnum = length;
+  WISP_REF (ctx, value)->car = length;
+  WISP_REF (ctx, value)->cdr = wisp_alloc (ctx, length + 1);
 
-  value->data = wisp_alloc (ctx, length + 1);
-  memcpy (value->data, start, length);
+  char *buffer = (char *) WISP_REF (ctx, WISP_REF (ctx, value)->cdr);
 
-  ((char *) value->data)[length] = 0;
+  buffer[length] = 0;
+  memcpy (buffer, start, length);
 
   return value;
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_string (wisp_t *ctx,
              const char *string)
 {
@@ -252,107 +256,104 @@ wisp_assert (wisp_t *ctx,
 
 #define WISP_ASSERT(ctx, test) (wisp_assert (ctx, test, #test))
 
-#define WISP_VECTOR_REF(vector, index) ((vector)->values[index])
-
-wisp_value_t *
-wisp_vector_get (wisp_t *ctx,
-                 wisp_value_t *vector,
-                 int index)
-{
-  return WISP_VECTOR_REF (vector, index);
-}
 
 void
 wisp_vector_set (wisp_t *ctx,
-                 wisp_value_t *vector,
+                 wisp_ptr_t vector,
                  int index,
-                 wisp_value_t *value)
+                 wisp_ptr_t value)
 {
-  WISP_VECTOR_REF (vector, index) = value;
+  wisp_ptr_t *x = ctx->live_heap + vector + index * sizeof (wisp_ptr_t);
+  *x = value;
 }
 
 bool
 wisp_equal (wisp_t *ctx,
-            wisp_value_t *a,
-            wisp_value_t *b)
+            wisp_ptr_t a,
+            wisp_ptr_t b)
 {
-  wisp_tag_t tag = a->tag;
+  wisp_value_t *aa = WISP_REF (ctx, a);
+  wisp_value_t *bb = WISP_REF (ctx, b);
 
-  if (tag != b->tag)
+  wisp_tag_t tag = aa->tag;
+
+  if (tag != bb->tag)
     return false;
 
   switch (tag)
     {
     case WISP_TAG_FIXNUM:
-      return a->fixnum == b->fixnum;
+      return aa->car == bb->car;
 
     case WISP_TAG_BYTES:
-      return a->fixnum == b->fixnum
-        && !memcmp (a->data, b->data, a->fixnum);
+      return aa->car == bb->car
+        && !memcmp (ctx->live_heap + aa->cdr,
+                    ctx->live_heap + bb->cdr,
+                    aa->car);
 
     default:
       wisp_not_implemented (ctx);
     }
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_intern (wisp_t *ctx,
-             wisp_value_t *package,
-             wisp_value_t *name)
+             wisp_ptr_t package,
+             wisp_ptr_t name)
 {
-  WISP_ASSERT (ctx, package->tag == WISP_TAG_VECTOR);
-  WISP_ASSERT (ctx, package->fixnum == 3);
-  WISP_ASSERT (ctx, WISP_VECTOR_REF (package, 0) == ctx->symbols.PACKAGE);
+  WISP_ASSERT (ctx, WISP_REF (ctx, package)->tag == WISP_TAG_VECTOR);
+  WISP_ASSERT (ctx, WISP_REF (ctx, package)->car == 3);
+  // WISP_ASSERT (ctx, WISP_VECTOR_REF (package, 0) == ctx->symbols.PACKAGE);
 
-  wisp_value_t *symbols = WISP_VECTOR_REF (package, 2);
-  wisp_value_t *current = symbols;
+  wisp_ptr_t symbols = WISP_REF (ctx, package)->cdr + 2;
+  wisp_ptr_t current = symbols;
 
-  while (current->tag == WISP_TAG_CONS)
+  while (WISP_REF (ctx, current)->tag == WISP_TAG_CONS)
     {
-      wisp_value_t *symbol = current->car;
+      wisp_ptr_t symbol = WISP_REF (ctx, current)->car;
 
-      if (wisp_equal (ctx, symbol->car, name))
+      if (wisp_equal (ctx, WISP_REF (ctx, symbol)->car, name))
         return symbol;
 
-      current = current->cdr;
+      current = WISP_REF (ctx, current)->cdr;
     }
 
-  wisp_value_t *symbol = wisp_alloc_value (ctx, WISP_TAG_SYMBOL);
+  wisp_ptr_t symbol = wisp_alloc_value (ctx, WISP_TAG_SYMBOL);
 
-  fprintf (stderr, "; wisp: new symbol: %s\n", (char *) name->data);
+  fprintf (stderr, "; wisp: new symbol: %s\n", (char *) (WISP_REF (ctx, WISP_REF (ctx, name)->cdr)));
 
-  symbol->car = name;
+  WISP_REF (ctx, symbol)->car = name;
 
-  WISP_VECTOR_REF (package, 2) =
-    wisp_cons (ctx, symbol, symbols);
+  wisp_ptr_t *xs = ctx->live_heap + package;
+  xs[2] = wisp_cons (ctx, symbol, symbols);
 
   return symbol;
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_symbol (wisp_t *ctx,
              const char *name)
 {
   fprintf (stderr, "; wisp: new symbol: %s\n", name);
 
-  wisp_value_t *value =
+  wisp_ptr_t value =
     wisp_alloc_value (ctx, WISP_TAG_SYMBOL);
 
-  value->car = wisp_string (ctx, name);
-  value->cdr = 0;
+  WISP_REF (ctx, value)->car = wisp_string (ctx, name);
+  WISP_REF (ctx, value)->cdr = 0;
 
   return value;
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_nil (wisp_t *ctx)
 {
   return ctx->symbols.NIL;
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_package (wisp_t *ctx,
-              wisp_value_t *name)
+              wisp_ptr_t name)
 {
   return
     wisp_vector (ctx, 3,
@@ -394,7 +395,8 @@ wisp_start (size_t heap_size)
     wisp_package (&ctx, wisp_string (&ctx, "LISP"));
 
   // Put NIL and PACKAGE in the symbol list of the LISP package.
-  WISP_VECTOR_REF (ctx.packages.LISP, 2) =
+  wisp_ptr_t *symbols = ctx.live_heap + ctx.packages.LISP;
+  symbols[2] =
     wisp_cons (&ctx, ctx.symbols.NIL,
                wisp_cons (&ctx, ctx.symbols.PACKAGE, ctx.symbols.NIL));
 
@@ -419,14 +421,14 @@ wisp_stop (wisp_t *ctx)
 // as Wisp values on the Wisp heap.
 
 typedef struct wisp_machine {
-  wisp_value_t *term;
-  wisp_value_t *scopes;
-  wisp_value_t *plan;
+  wisp_ptr_t term;
+  wisp_ptr_t scopes;
+  wisp_ptr_t plan;
 } wisp_machine_t;
 
 bool
 wisp_is_constant_variable (wisp_t *ctx,
-                           wisp_value_t *term)
+                           wisp_ptr_t term)
 {
   if (term == ctx->symbols.NIL)
     return true;
@@ -439,9 +441,9 @@ wisp_is_constant_variable (wisp_t *ctx,
 
 bool
 wisp_is_term_irreducible (wisp_t *ctx,
-                          wisp_value_t *term)
+                          wisp_ptr_t term)
 {
-  switch (term->tag)
+  switch (WISP_REF (ctx, term)->tag)
     {
     case WISP_TAG_FIXNUM:
     case WISP_TAG_VECTOR:
@@ -452,16 +454,16 @@ wisp_is_term_irreducible (wisp_t *ctx,
       return wisp_is_constant_variable (ctx, term);
 
     case WISP_TAG_CONS:
-      return term->car == ctx->symbols.QUOTE;
+      return WISP_REF (ctx, term)->car == ctx->symbols.QUOTE;
     }
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_step (wisp_t *ctx,
            wisp_machine_t *machine)
 {
-  wisp_value_t *term = machine->term;
-  wisp_value_t *plan = machine->plan;
+  wisp_ptr_t term = machine->term;
+  wisp_ptr_t plan = machine->plan;
 
   if (wisp_is_term_irreducible (ctx, term))
     {
@@ -474,10 +476,10 @@ wisp_step (wisp_t *ctx,
   wisp_not_implemented (ctx);
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_read (wisp_t *ctx, const char **stream);
 
-wisp_value_t *
+wisp_ptr_t
 wisp_read_list (wisp_t *ctx,
                 const char **stream)
 {
@@ -486,16 +488,16 @@ wisp_read_list (wisp_t *ctx,
   if (c == ')')
     return wisp_nil (ctx);
 
-  wisp_value_t *car =
+  wisp_ptr_t car =
     wisp_read (ctx, stream);
 
-  wisp_value_t *cdr =
+  wisp_ptr_t cdr =
     wisp_read_list (ctx, stream);
 
   return wisp_cons (ctx, car, cdr);
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_read_symbol (wisp_t *ctx,
                   const char **stream)
 {
@@ -506,10 +508,10 @@ wisp_read_symbol (wisp_t *ctx,
 
   int length = after - *stream;
 
-  wisp_value_t *name =
+  wisp_ptr_t name =
     wisp_string_n (ctx, *stream, length);
 
-  uint8_t *string = name->data;
+  uint8_t *string = ctx->live_heap + WISP_REF (ctx, name)->cdr;
 
   for (int i = 0; i < length; i++)
     string[i] = toupper (string[i]);
@@ -519,7 +521,7 @@ wisp_read_symbol (wisp_t *ctx,
   return wisp_intern (ctx, ctx->packages.LISP, name);
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_read_fixnum (wisp_t *ctx,
                   const char **stream)
 {
@@ -545,7 +547,7 @@ wisp_read_fixnum (wisp_t *ctx,
   return wisp_fixnum (ctx, atoi (digits));
 }
 
-wisp_value_t *
+wisp_ptr_t
 wisp_read (wisp_t *ctx,
            const char **stream)
 {
@@ -576,20 +578,22 @@ wisp_read (wisp_t *ctx,
 
 void
 wisp_dump (wisp_t *ctx,
-           wisp_value_t *value)
+           wisp_ptr_t ptr)
 {
+  wisp_value_t *value = WISP_REF (ctx, ptr);
+
   switch (value->tag)
     {
     case WISP_TAG_FIXNUM:
-      printf ("%d", value->fixnum);
+      printf ("%d", value->car);
       break;
 
     case WISP_TAG_BYTES:
-      printf ("\"%.*s\"", value->fixnum, (char *) value->data);
+      printf ("\"%.*s\"", value->car, (char *) (ctx->live_heap + value->cdr));
       break;
 
     case WISP_TAG_SYMBOL:
-      printf ("%.*s", value->car->fixnum, (char *) value->car->data);
+      printf ("%.*s", WISP_REF (ctx, value->car)->car, (char *) ctx->live_heap + WISP_REF (ctx, value->car)->cdr);
       break;
 
     case WISP_TAG_CONS:
@@ -615,10 +619,12 @@ wisp_dump_heap (wisp_t *ctx)
 {
   printf ("wisp heap v0\n");
   printf ("size %lu\n", ctx->heap_size);
-  printf ("base %p\n", ctx->live_heap);
-  printf ("tail %p\n", ctx->live_heap_tail);
-  printf ("package LISP %p\n", ctx->packages.LISP);
-
+  printf ("tail %lu\n", ctx->live_heap_tail - ctx->live_heap);
+  printf ("package LISP %u\n", ctx->packages.LISP);
+  printf ("heap ");
+  for (void *x = ctx->live_heap; x < ctx->live_heap_tail; x++)
+    printf ("%02x", *((char *) x));
+  printf ("\n");
 }
 
 int
@@ -630,7 +636,7 @@ main (int argc, char **argv)
 
   const char *foo_s = "(let ((x 1)) x)";
 
-  wisp_value_t *foo = wisp_read (&ctx, &foo_s);
+  wisp_ptr_t foo = wisp_read (&ctx, &foo_s);
 
   wisp_dump (&ctx, foo);
   printf ("\n");
