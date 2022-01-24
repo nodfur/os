@@ -38,7 +38,7 @@ in {
       "INBOX" "[Gmail]/Sent Mail" "[Gmail]/All Mail"
     ];
   };
-  
+
   boot.kernelPackages =
     pkgs.linuxKernel.packages.linux_5_16;
 
@@ -118,7 +118,7 @@ in {
       ExecStop = "${pkgs.screen}/bin/screen -S lisp -X quit";
     };
   };
-  
+
   users.extraUsers =
     let buildUser = (i: {
       "guixbuilder${i}" = {                   # guixbuilder$i
@@ -159,7 +159,7 @@ in {
   home-manager.sharedModules = [{
     programs.vscode.enable = true;
   }];
- 
+
   boot.initrd.kernelModules = ["amdgpu"];
   services.xserver.videoDrivers = ["amdgpu"];
 
@@ -187,9 +187,9 @@ in {
 
   networking.wireless.enable = false;
   networking.wireless.interfaces = ["wlo1"];
-   
+
   networking.wireless.networks.Restless.psk = "hypermedia";
-  
+
   # services.hypocaust = {
   #   enable = true;
   #   domainName = "b14.beam.node.town";
@@ -198,13 +198,13 @@ in {
   # };
 
   system.stateVersion = "21.05";
-  
+
   location.longitude = 18.0645;
   location.latitude = 59.3328;
 
   hardware.bluetooth.enable = true;
 
   powerManagement.cpuFreqGovernor = lib.mkDefault "ondemand";
-  
+
   nix.maxJobs = lib.mkDefault 16;
 }
