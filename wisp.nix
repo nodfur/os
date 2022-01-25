@@ -2,12 +2,14 @@
 
 {
   environment.systemPackages = with pkgs; [
-    ddd
-    gdb
     clang
     clang-tools
+    ddd
     emscripten
+    gdb
     wasmtime
+    zig
+    zls
   ];
 
   system.activationScripts = {

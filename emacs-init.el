@@ -9,7 +9,7 @@
 
 (require 'cl-lib)
 
-(set-frame-font "Iosevka-13" nil t)
+(set-frame-font "DM Mono-18" nil t)
 
 (progn
   (setq show-paren-delay 0)
@@ -240,6 +240,7 @@
 
 (add-hook 'elixir-mode-hook 'lsp)
 (add-hook 'c-mode-hook 'lsp)
+(add-hook 'zig-mode-hook 'lsp)
 
 (setq lsp-idle-delay 0.1)
 (setq lsp-enable-on-type-formatting nil)

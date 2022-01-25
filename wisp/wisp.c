@@ -1,11 +1,3 @@
-//
-// This is a Lisp interpreter that compiles to WebAssembly.
-//
-// Wisp supports first-class delimited continuations.
-//
-// The Wisp execution state is serializable like in Smalltalk.
-//
-
 #define WISP_DEBUG_ALLOC 0
 
 #include <ctype.h>
@@ -17,10 +9,9 @@
 #include <string.h>
 
 typedef int32_t wisp_fixnum_t;
+typedef wisp_fixnum_t wisp_ptr_t;
 
 typedef struct wisp_value wisp_value_t;
-
-typedef wisp_fixnum_t wisp_ptr_t;
 
 typedef struct wisp_basics {
   wisp_ptr_t NIL;
@@ -34,8 +25,8 @@ typedef struct wisp_basics {
 typedef struct wisp {
   size_t heap_size;
 
-  void *live_heap;
-  void *live_heap_tail;
+  void *heap;
+  void *heap_tail;
   void *idle_heap;
 
   struct {
@@ -46,17 +37,12 @@ typedef struct wisp {
 } wisp_t;
 
 typedef enum wisp_tag {
-  WISP_TAG_SYMBOL,
-  WISP_TAG_FIXNUM,
-  WISP_TAG_CONS,
-  WISP_TAG_VECTOR,
-  WISP_TAG_BYTES
+  WISP_TAG_SYMBOL  = 0,
+  WISP_TAG_FIXNUM  = 1,
+  WISP_TAG_CONS    = 2,
+  WISP_TAG_VECTOR  = 3,
+  WISP_TAG_BYTES   = 4
 } wisp_tag_t;
-
-typedef struct wisp_cons {
-  wisp_ptr_t car;
-  wisp_ptr_t cdr;
-} wisp_cons_t;
 
 struct wisp_value {
   wisp_tag_t tag;
@@ -64,17 +50,11 @@ struct wisp_value {
   wisp_ptr_t cdr;
 };
 
-const size_t WISP_VALUE_SIZE_1 =
-  sizeof (wisp_tag_t) + sizeof (wisp_fixnum_t);
-
-const size_t WISP_VALUE_SIZE_2 =
-  sizeof (wisp_tag_t) + sizeof (wisp_cons_t);
-
 size_t
 wisp_free_space (wisp_t *ctx)
 {
   size_t live_bytes_used =
-    ctx->live_heap_tail - ctx->live_heap;
+    ctx->heap_tail - ctx->heap;
 
   size_t live_bytes_left =
     ctx->heap_size - live_bytes_used;
@@ -129,19 +109,19 @@ wisp_alloc (wisp_t *ctx, size_t n)
   if (wisp_free_space (ctx) < n)
     wisp_crash (ctx, WISP_ERROR_HEAP_FULL);
 
-  void *pointer = ctx->live_heap_tail;
+  void *pointer = ctx->heap_tail;
 
-  ctx->live_heap_tail += n;
+  ctx->heap_tail += n;
 
 #if WISP_DEBUG_ALLOC
   fprintf (stderr, "; wisp: alloc %lu %p\n", n, pointer);
 #endif
 
-  return pointer - ctx->live_heap;
+  return pointer - ctx->heap;
 }
 
 #define WISP_REF(ctx, x) \
-  ((wisp_value_t *) ((ctx)->live_heap + (x)))
+  ((wisp_value_t *) ((ctx)->heap + (x)))
 
 #define WISP_TAG(ctx, x) (WISP_REF (ctx, x)->tag)
 #define WISP_CAR(ctx, x) (WISP_REF (ctx, x)->car)
@@ -186,10 +166,12 @@ wisp_vector (wisp_t *ctx,
   wisp_ptr_t data =
     wisp_alloc (ctx, entries * sizeof (wisp_value_t));
 
-  wisp_fixnum_t *data_ptr = ctx->live_heap + data;
-
   for (int i = 0; i < entries; i++)
-    data_ptr[i] = va_arg (args, wisp_fixnum_t);
+    {
+      wisp_fixnum_t *ptr =
+        ctx->heap + data + i * sizeof (wisp_ptr_t);
+      ptr[i] = va_arg (args, wisp_fixnum_t);
+    }
 
   va_end (args);
 
@@ -261,7 +243,7 @@ wisp_vector_set (wisp_t *ctx,
                  int index,
                  wisp_ptr_t value)
 {
-  wisp_ptr_t *x = ctx->live_heap + vector + index * sizeof (wisp_ptr_t);
+  wisp_ptr_t *x = ctx->heap + vector + index * sizeof (wisp_ptr_t);
   *x = value;
 }
 
@@ -287,8 +269,8 @@ wisp_equal (wisp_t *ctx,
 
     case WISP_TAG_BYTES:
       return a_car == b_car
-        && !memcmp (ctx->live_heap + a_cdr,
-                    ctx->live_heap + b_cdr,
+        && !memcmp (ctx->heap + a_cdr,
+                    ctx->heap + b_cdr,
                     a_car);
 
     default:
@@ -304,7 +286,7 @@ wisp_intern (wisp_t *ctx,
   WISP_ASSERT (ctx, WISP_TAG (ctx, package) == WISP_TAG_VECTOR);
   WISP_ASSERT (ctx, WISP_CAR (ctx, package) == 3);
 
-  wisp_ptr_t symbols = WISP_CDR (ctx, package) + 2;
+  wisp_ptr_t symbols = WISP_CDR (ctx, package) + 3 * sizeof (wisp_ptr_t);
   wisp_ptr_t current = symbols;
 
   while (WISP_TAG (ctx, current) == WISP_TAG_CONS)
@@ -319,12 +301,13 @@ wisp_intern (wisp_t *ctx,
 
   wisp_ptr_t symbol = wisp_alloc_value (ctx, WISP_TAG_SYMBOL);
 
-  fprintf (stderr, "; wisp: new symbol: %s\n",
+  fprintf (stderr, "; wisp: new symbol #<%d>: %s\n",
+           symbol,
            (char *) (WISP_REF (ctx, WISP_CDR (ctx, name))));
 
   WISP_CAR (ctx, symbol) = name;
 
-  wisp_ptr_t *xs = ctx->live_heap + package;
+  wisp_ptr_t *xs = ctx->heap + package;
   xs[2] = wisp_cons (ctx, symbol, symbols);
 
   return symbol;
@@ -334,10 +317,10 @@ wisp_ptr_t
 wisp_symbol (wisp_t *ctx,
              const char *name)
 {
-  fprintf (stderr, "; wisp: new symbol: %s\n", name);
-
   wisp_ptr_t value =
     wisp_alloc_value (ctx, WISP_TAG_SYMBOL);
+
+  fprintf (stderr, "; wisp: new symbol #<%d>: %s\n", value, name);
 
   WISP_CAR (ctx, value) = wisp_string (ctx, name);
   WISP_CDR (ctx, value) = 0;
@@ -369,21 +352,21 @@ wisp_package (wisp_t *ctx,
 wisp_t
 wisp_start (size_t heap_size)
 {
-  uint8_t *live_heap = malloc (heap_size);
+  uint8_t *heap = malloc (heap_size);
   uint8_t *idle_heap = malloc (heap_size);
 
   size_t heap_megabytes = heap_size / (1024 * 1024);
 
   fprintf (stderr, "; wisp: live heap %p (%lu MB)\n",
-           live_heap, heap_megabytes);
+           heap, heap_megabytes);
 
   fprintf (stderr, "; wisp: idle heap %p (%lu MB)\n",
            idle_heap, heap_megabytes);
 
   wisp_t ctx = (wisp_t) {
     .heap_size = heap_size,
-    .live_heap = live_heap,
-    .live_heap_tail = live_heap,
+    .heap = heap,
+    .heap_tail = heap,
     .idle_heap = idle_heap,
   };
 
@@ -395,7 +378,7 @@ wisp_start (size_t heap_size)
     wisp_package (&ctx, wisp_string (&ctx, "LISP"));
 
   // Put NIL and PACKAGE in the symbol list of the LISP package.
-  wisp_ptr_t *symbols = ctx.live_heap + ctx.packages.LISP;
+  wisp_ptr_t *symbols = ctx.heap + ctx.packages.LISP;
   symbols[2] =
     wisp_cons (&ctx, ctx.symbols.NIL,
                wisp_cons (&ctx, ctx.symbols.PACKAGE, ctx.symbols.NIL));
@@ -410,7 +393,7 @@ wisp_start (size_t heap_size)
 void
 wisp_stop (wisp_t *ctx)
 {
-  free (ctx->live_heap);
+  free (ctx->heap);
   free (ctx->idle_heap);
   fprintf (stderr, "; wisp: stop\n");
 }
@@ -503,15 +486,14 @@ wisp_read_symbol (wisp_t *ctx,
 {
   const char *after = *stream + 1;
 
-  while (isalpha (*after))
-    ++after;
+  while (isalpha (*after++));
 
   int length = after - *stream;
 
   wisp_ptr_t name =
     wisp_string_n (ctx, *stream, length);
 
-  uint8_t *string = ctx->live_heap + WISP_CDR (ctx, name);
+  uint8_t *string = ctx->heap + WISP_CDR (ctx, name);
 
   for (int i = 0; i < length; i++)
     string[i] = toupper (string[i]);
@@ -527,8 +509,7 @@ wisp_read_fixnum (wisp_t *ctx,
 {
   const char *after = *stream + 1;
 
-  while (isdigit (*after))
-    ++after;
+  while (isdigit (*after++));
 
   int length = after - *stream;
 
@@ -582,6 +563,8 @@ wisp_dump (wisp_t *ctx,
 {
   wisp_value_t *value = WISP_REF (ctx, ptr);
 
+  // printf ("<dump %d>", value->tag);
+
   switch (value->tag)
     {
     case WISP_TAG_FIXNUM:
@@ -590,15 +573,15 @@ wisp_dump (wisp_t *ctx,
 
     case WISP_TAG_BYTES:
       {
-        char *data = ctx->live_heap + value->cdr;
+        char *data = ctx->heap + value->cdr;
         printf ("\"%.*s\"", value->car, data);
         break;
       }
 
     case WISP_TAG_SYMBOL:
       {
-        char *data = ctx->live_heap + WISP_REF (ctx, value->car)->cdr;
-        printf ("%.*s", WISP_CAR (ctx, value->car), data);
+        char *data = ctx->heap + WISP_REF (ctx, value->car)->cdr;
+        printf (":%.*s", WISP_CAR (ctx, value->car), data);
         break;
       }
 
@@ -615,9 +598,26 @@ wisp_dump (wisp_t *ctx,
 
       break;
 
+    case WISP_TAG_VECTOR:
+      {
+        printf ("[%d ", value->car);
+        for (int i = 0; i < value->car; i++)
+          {
+            wisp_ptr_t x = value->cdr + i * sizeof (wisp_value_t);
+            wisp_dump (ctx, x);
+            if (i + 1 < value->car)
+              printf (" ");
+          }
+        printf ("]");
+
+        break;
+      }
+
     default:
       wisp_not_implemented (ctx);
     }
+
+  // printf ("</dump %d>", value->tag);
 }
 
 void
@@ -625,10 +625,10 @@ wisp_dump_heap (wisp_t *ctx)
 {
   printf ("wisp heap v0\n");
   printf ("size %lu\n", ctx->heap_size);
-  printf ("tail %lu\n", ctx->live_heap_tail - ctx->live_heap);
+  printf ("tail %lu\n", ctx->heap_tail - ctx->heap);
   printf ("package LISP %u\n", ctx->packages.LISP);
   printf ("heap ");
-  for (void *x = ctx->live_heap; x < ctx->live_heap_tail; x++)
+  for (void *x = ctx->heap; x < ctx->heap_tail; x++)
     printf ("%02x", *((char *) x));
   printf ("\n");
 }
@@ -644,8 +644,8 @@ main (int argc, char **argv)
 
   wisp_ptr_t foo = wisp_read (&ctx, &foo_s);
 
-  // wisp_dump (&ctx, foo);
-  // printf ("\n");
+  wisp_dump (&ctx, ctx.packages.LISP);
+  printf ("\n");
 
   wisp_dump_heap (&ctx);
 
