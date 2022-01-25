@@ -77,6 +77,7 @@ in {
     fonts.fonts = with pkgs; [
       dejavu_fonts
       fantasque-sans-mono
+      emacs-all-the-icons-fonts
       # iosevka
       # google-fonts
       fira-code fira-code-symbols

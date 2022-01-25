@@ -17,34 +17,22 @@
     | Tag | Hex | Type            |
     |-----+-----+-----------------|
     | 000 | 0x0 | FIXNUM          |
-    | 100 | 0x4 | FIXNUM          |
+    | 001 | 0x1 | FUNCTION-PTR    |
     | 010 | 0x2 | OTHER-IMMEDIATE |
-    | 110 | 0x6 | OTHER-IMMEDIATE |
-    | 011 | 0x3 | CONS-PTR        |
+    | 011 | 0x3 | LIST-PTR        |
+    | 100 | 0x4 | FIXNUM          |
     | 101 | 0x5 | STRUCT-PTR      |
+    | 110 | 0x6 | OTHER-IMMEDIATE |
     | 111 | 0x7 | OTHER-PTR       |
     |-----+-----+-----------------|
 
-*** Immediate words
-
-    The IMMEDIATE-TYPE includes the 2-bit lowtag which is
-    always `10`.  It is more efficient to compare them
-    as bytes.
-
-    |------+----------------|
-    | Bits | Field          |
-    |------+----------------|
-    |   24 | IMMEDIATE-DATA |
-    |    8 | IMMEDIATE-TYPE |
-    |------+----------------|
-
-    |----------+-----+--------------------|
-    |      Tag | Hex | Type               |
-    |----------+-----+--------------------|
-    | 00000010 | 0x2 | SYMBOL-DATA        |
-    | 00000110 | 0x6 | SIMPLE-VECTOR-DATA |
-    |----------+-----+--------------------|
 
 *** Symbols
 
-    A symbol is an OTHER-POINTER to a SYMBOL-DATA.
+    A symbol is an OTHER-PTR to a SYMBOL-DATA.
+
+    But NIL is also used as a LIST-PTR.
+
+*** Packages
+
+    A package is an OTHER-PTR

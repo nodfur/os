@@ -9,18 +9,31 @@
 
 (require 'cl-lib)
 
-(set-frame-font "DM Mono-18" nil t)
+(set-frame-font "DM Mono-11" nil t)
 
-(progn
-  (setq show-paren-delay 0)
-  (show-paren-mode)
+(defun doom-modeline--font-height ()
+  "Calculate the actual char height of the mode-line."
+  (let ((height (face-attribute 'mode-line :height)))
+    ;; WORKAROUND: Fix tall issue of 27 on Linux
+    ;; @see https://github.com/seagle0128/doom-modeline/issues/271
+    (round
+     (* (if (or (<= doom-modeline-height 0)
+                (and (>= emacs-major-version 27)
+                     (not (eq system-type 'darwin))))
+            0.6
+          (if doom-modeline-icon 1.68 1.25))
+        (cond ((integerp height) (/ height 10))
+              ((floatp height) (* height (frame-char-height)))
+              (t (frame-char-height)))))))
 
-  (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
-  (add-hook 'scheme-mode-hook 'rainbow-delimiters-mode)
-  (add-hook 'ielm-mode-hook 'rainbow-delimiters-mode)
-  (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
-  (add-hook 'lisp-interaction-mode-hook 'rainbow-delimiters-mode)
-  (add-hook 'slime-repl-mode-hook 'rainbow-delimiters-mode))
+(doom-modeline-mode 1)
+
+(setq display-time-24hr-format t
+      display-time-day-and-date nil
+      display-time-default-load-average nil)
+
+(display-time-mode 1)
+(display-battery-mode 1)
 
 (set-fringe-mode 24)
 

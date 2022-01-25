@@ -2,25 +2,22 @@
 
 {
   services.tailscale.enable = true;
-  # services.avahi.enable = true;
 
   nixpkgs.config.allowUnfree = true;
   
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # services.gnome.gnome-keyring.enable = true;
-
   environment.systemPackages = with pkgs; [
-    # qutebrowser
-    # firefox
     nodejs-16_x
-    # tdesktop
+    tdesktop
     unzip
     wget
+    python3
+    ruby
   ];
+
+  nix.extraOptions = ''
+    keep-outputs = true
+    keep-derivations = true
+  '';
 
   nixpkgs.config.permittedInsecurePackages = [
     "libgit2-0.27.10"

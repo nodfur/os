@@ -16,8 +16,11 @@
     setupCommonLisp = let user = config.os.username; in ''
       mkdir -p /home/${user}/common-lisp
       cd /home/${user}/common-lisp
-      ln -sf /os/epap
-      chown ${user}:users . epap
+      for x in epap wisp; do
+        echo linking $PWD/$x -> /os/$x
+        ln -sf /os/"$x"
+      done
+      chown ${user}:users . *
     '';
   };
 

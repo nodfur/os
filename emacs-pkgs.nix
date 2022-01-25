@@ -2,15 +2,20 @@ pkgs: epkgs:
 
 with epkgs; [
   ag
+  all-the-icons
   avy
   company
   company-nixos-options
   default-text-scale
+  direnv
+  doom-modeline
   elixir-mode
+  flycheck
   geiser
   geiser-guile
   lispy
   lsp-mode
+  lsp-treemacs
   lsp-ui
   magit
   nix-mode
@@ -21,6 +26,7 @@ with epkgs; [
   selectrum
   selectrum-prescient
   slime
+  treemacs
   vterm
   which-key
   whitespace-cleanup-mode

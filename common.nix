@@ -6,8 +6,8 @@
     ./bash.nix
   ];
 
-  environment.systemPackages = [
-    (pkgs.writeShellScriptBin "os-setup" ''
+  environment.systemPackages = with pkgs; [
+    (writeShellScriptBin "os-setup" ''
       set -ex
 
       if [ -d /os ]; then
@@ -20,16 +20,16 @@
       fi
     '')
 
-    pkgs.restless-git
+    restless-git
   ];
 
   environment.interactiveShellInit = ''
     echo
 
-    # ${pkgs.figlet}/bin/figlet -f ${pkgs.figlet-fonts}/Bloody.flf \
-    #   " ${config.networking.hostName}" \
-    #   | ${pkgs.lolcat}/bin/lolcat
-    # echo
+    ${pkgs.figlet}/bin/figlet -f ${pkgs.figlet-fonts}/Bloody.flf \
+      " ${config.networking.hostName}" \
+      | ${pkgs.lolcat}/bin/lolcat
+    echo
   '';
 
   services.openssh.enable = true;

@@ -1,7 +1,7 @@
-default: clean wisp
+default: clean run
 
 %.wasm: %.c
-	emcc $< -o $@
+	emcc -g $< -o $@
 
 wisp: wisp.c
 	$(CC) -g wisp.c -o wisp
@@ -13,3 +13,6 @@ run: wisp
 
 run-wasm: wisp.wasm
 	wasmtime $<
+
+gdb-wasm: wisp.wasm
+	gdb --args wasmtime run -g wisp.wasm

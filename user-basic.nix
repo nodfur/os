@@ -6,4 +6,9 @@
 
   home.file.".config/i3/config".source = ./i3.config;
   home.file.".config/i3status/config".source = ./i3status.config;
+
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
 }
