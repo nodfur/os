@@ -56,6 +56,7 @@ static const wisp_word_t NIL =
 
 static wisp_word_t PACKAGE = -1;
 static wisp_word_t COMMON_LISP = -1;
+static wisp_word_t QUOTE = -1;
 
 wisp_word_t
 wisp_fixnum (int32_t x)
@@ -419,6 +420,10 @@ wisp_start ()
 
   common_lisp_header[3] =
     wisp_cons (PACKAGE, common_lisp_header[3]);
+
+  QUOTE =
+    wisp_intern_symbol (wisp_string ("QUOTE"),
+                        COMMON_LISP);
 }
 
 void
@@ -492,6 +497,54 @@ wisp_dump (wisp_word_t word)
     }
 }
 
+typedef struct {
+  wisp_word_t term;
+  wisp_word_t scopes;
+  wisp_word_t plan;
+} wisp_machine_t;
+
+bool
+wisp_term_irreducible (wisp_word_t term)
+{
+  switch (term & WISP_LOWTAG_MASK)
+    {
+    case WISP_LOWTAG_OTHER_PTR:
+    case WISP_LOWTAG_FIXNUM_0:
+    case WISP_LOWTAG_FIXNUM_1:
+      return true;
+
+    default:
+      if (term == NIL)
+        return true;
+
+      if (WISP_IS_LIST (term))
+        return false;
+
+      wisp_crash ("strange term");
+    }
+}
+
+bool
+wisp_eval (wisp_machine_t *machine)
+{
+  wisp_word_t term = machine->term;
+  wisp_word_t scopes = machine->scopes;
+  wisp_word_t plan = machine->plan;
+
+  if (wisp_term_irreducible (term))
+    {
+      if (machine->plan == NIL)
+        return true;
+      else
+        wisp_crash ("unknown plan");;
+    }
+  else if (WISP_IS_LIST (machine->term))
+    {
+
+
+    }
+}
+
 int
 main ()
 {
@@ -499,7 +552,8 @@ main ()
 
   wisp_start ();
 
-  const char *example = "(defun () foo (1 2 3) (1 2 3))";
+  const char *example =
+    "(defun () foo (1 2 3) (1 2 3))";
 
   wisp_dump (wisp_read (&example));
 
