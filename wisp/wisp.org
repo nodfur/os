@@ -13,22 +13,23 @@
 
 *** Lowtag values
 
-    |-----+------------|
-    | Tag | Type       |
-    |-----+------------|
-    | 000 | FIXNUM     |
-    | 100 | FIXNUM     |
-    | 010 | IMMEDIATE  |
-    | 110 | IMMEDIATE  |
-    | 011 | CONS-PTR   |
-    | 101 | STRUCT-PTR |
-    | 111 | OTHER-PTR  |
-    |-----+------------|
+    |-----+-----+-----------------|
+    | Tag | Hex | Type            |
+    |-----+-----+-----------------|
+    | 000 | 0x0 | FIXNUM          |
+    | 100 | 0x4 | FIXNUM          |
+    | 010 | 0x2 | OTHER-IMMEDIATE |
+    | 110 | 0x6 | OTHER-IMMEDIATE |
+    | 011 | 0x3 | CONS-PTR        |
+    | 101 | 0x5 | STRUCT-PTR      |
+    | 111 | 0x7 | OTHER-PTR       |
+    |-----+-----+-----------------|
 
 *** Immediate words
 
-    The IMMEDIATE-TYPE includes the 2-bit lowtag which is always `10`.
-    It is more efficient to compare them as bytes.
+    The IMMEDIATE-TYPE includes the 2-bit lowtag which is
+    always `10`.  It is more efficient to compare them
+    as bytes.
 
     |------+----------------|
     | Bits | Field          |
@@ -37,9 +38,13 @@
     |    8 | IMMEDIATE-TYPE |
     |------+----------------|
 
-    |----------+-----+---------------|
-    |      Tag | Hex | Type          |
-    |----------+-----+---------------|
-    | 00000010 | 0x2 | SYMBOL        |
-    | 00000110 | 0x6 | SIMPLE-VECTOR |
-    |----------+-----+---------------|
+    |----------+-----+--------------------|
+    |      Tag | Hex | Type               |
+    |----------+-----+--------------------|
+    | 00000010 | 0x2 | SYMBOL-DATA        |
+    | 00000110 | 0x6 | SIMPLE-VECTOR-DATA |
+    |----------+-----+--------------------|
+
+*** Symbols
+
+    A symbol is an OTHER-POINTER to a SYMBOL-DATA.
