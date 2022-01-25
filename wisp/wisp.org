@@ -1,0 +1,45 @@
+* Local Variables :noexport:
+  Local Variables:
+  fill-column: 60
+  End:
+
+* Wisp Internals
+
+** Memory Layout
+
+   A wisp word is 32 bits.
+
+   The least 3 significant bits hold a tag, the /lowtag/.
+
+*** Lowtag values
+
+    |-----+------------|
+    | Tag | Type       |
+    |-----+------------|
+    | 000 | FIXNUM     |
+    | 100 | FIXNUM     |
+    | 010 | IMMEDIATE  |
+    | 110 | IMMEDIATE  |
+    | 011 | CONS-PTR   |
+    | 101 | STRUCT-PTR |
+    | 111 | OTHER-PTR  |
+    |-----+------------|
+
+*** Immediate words
+
+    The IMMEDIATE-TYPE includes the 2-bit lowtag which is always `10`.
+    It is more efficient to compare them as bytes.
+
+    |------+----------------|
+    | Bits | Field          |
+    |------+----------------|
+    |   24 | IMMEDIATE-DATA |
+    |    8 | IMMEDIATE-TYPE |
+    |------+----------------|
+
+    |----------+-----+---------------|
+    |      Tag | Hex | Type          |
+    |----------+-----+---------------|
+    | 00000010 | 0x2 | SYMBOL        |
+    | 00000110 | 0x6 | SIMPLE-VECTOR |
+    |----------+-----+---------------|
