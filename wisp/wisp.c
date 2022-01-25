@@ -122,7 +122,10 @@ wisp_read_list (const char **stream)
   char c = **stream;
 
   if (c == ')')
-    return NIL;
+    {
+      ++*stream;
+      return NIL;
+    }
 
   wisp_word_t car = wisp_read (stream);
   wisp_word_t cdr = wisp_read_list (stream);
@@ -318,7 +321,7 @@ wisp_read_symbol (const char **stream)
 
   while (isalpha (*after++));
 
-  int length = after - *stream;
+  int length = after - *stream - 1;
 
   wisp_word_t name =
     wisp_string_n (*stream, length);
@@ -341,7 +344,7 @@ wisp_read_fixnum (const char **stream)
 
   while (isdigit (*after++));
 
-  int length = after - *stream;
+  int length = after - *stream - 1;
 
   if (length > 10)
     wisp_not_implemented ();
@@ -496,11 +499,9 @@ main ()
 
   wisp_start ();
 
-  const char *example = "(defun foo () 1 2 3)";
+  const char *example = "(defun () foo (1 2 3) (1 2 3))";
 
   wisp_dump (wisp_read (&example));
-
-  wisp_crash ("foo");
 
   return 0;
 }
