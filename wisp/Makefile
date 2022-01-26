@@ -1,15 +1,17 @@
-default: clean wisp
+default: clean wisp wisp.wasm test
 
-%.wasm: %.c
-	emcc -g $< -o $@
+CFLAGS += -g -O0
 
-wisp: wisp.c
-	$(CC) -g wisp.c -o wisp
+wisp.wasm: wisp.c wisp-read.c
+	emcc $(CFLAGS) $^ -o $@
 
-clean:; rm -f wisp wisp.wasm
+wisp: wisp.c wisp-read.c
+	$(CC) $(CFLAGS) $^ -o wisp
 
-run: wisp
-	./wisp
+clean:; rm -f wisp *.wasm *.o
+
+test: wisp
+	./wisp test
 
 run-wasm: wisp.wasm
 	wasmtime $<

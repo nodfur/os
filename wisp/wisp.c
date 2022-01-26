@@ -1,88 +1,29 @@
 #define WISP_DEBUG_ALLOC 0
 
-#include <assert.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "wisp.h"
 
-typedef uint32_t wisp_word_t;
+void *heap;
 
-typedef enum {
-  WISP_BUILTIN_LAMBDA = 1,
-  WISP_BUILTIN_MACRO,
-  WISP_BUILTIN_CONS,
-  WISP_BUILTIN_SET_SYMBOL_FUNCTION,
-} wisp_builtin_t;
+size_t heap_size = 1024 * 1024 * 4;
+size_t heap_used = 0;
 
-#define WISP_LOWTAG_BITS 3
-#define WISP_WIDETAG_BITS 8
-
-#define WISP_LOWTAG_MASK  ((1 << WISP_LOWTAG_BITS) - 1)
-#define WISP_WIDETAG_MASK ((1 << WISP_WIDETAG_BITS) - 1)
-
-#define WISP_LOWTAG(x)  ((x) & WISP_LOWTAG_MASK)
-#define WISP_WIDETAG(x) ((x) & WISP_WIDETAG_MASK)
-
-typedef enum wisp_lowtag {
-  /* 0 */ WISP_LOWTAG_FIXNUM_0,
-  /* 1 */ WISP_LOWTAG_FUNCTION_PTR,
-  /* 2 */ WISP_LOWTAG_OTHER_IMMEDIATE_0,
-  /* 3 */ WISP_LOWTAG_LIST_PTR,
-  /* 4 */ WISP_LOWTAG_FIXNUM_1,
-  /* 5 */ WISP_LOWTAG_STRUCT_PTR,
-  /* 6 */ WISP_LOWTAG_OTHER_IMMEDIATE_1,
-  /* 7 */ WISP_LOWTAG_OTHER_PTR,
-} wisp_lowtag_t;
-
-typedef enum wisp_widetag {
-  WISP_WIDETAG_INSTANCE = 0xC2,
-  WISP_WIDETAG_STRING = 0x32,
-  WISP_WIDETAG_SYMBOL = 0xAE,
-  WISP_WIDETAG_BUILTIN = 0xA2,
-} wisp_widetag_t;
-
-#define WISP_IS_FIXNUM(x) (((x) & 3) == 0)
-#define WISP_IS_OTHER_IMMEDIATE(x) (((x) & 3) == 2)
-#define WISP_IS_PTR(x) ((x) & 1)
-
-#define WISP_IS_OTHER_PTR(x) \
-  (WISP_LOWTAG(x) == WISP_LOWTAG_OTHER_PTR)
-#define WISP_IS_LIST_PTR(x) \
-  (WISP_LOWTAG(x) == WISP_LOWTAG_LIST_PTR)
-#define WISP_IS_STRUCT_PTR(x) \
-  (WISP_LOWTAG(x) == WISP_LOWTAG_STRUCT_PTR)
-
-#define WISP_ALIGNED_PROPERLY(x) \
-  (((x) & WISP_LOWTAG_MASK) == 0)
+wisp_word_t APPLY;
+wisp_word_t CLOSURE;
+wisp_word_t COMMON_LISP;
+wisp_word_t EVAL;
+wisp_word_t LAMBDA;
+wisp_word_t MACRO;
+wisp_word_t PACKAGE;
+wisp_word_t PARAMS;
+wisp_word_t QUOTE;
+wisp_word_t SCOPE;
+wisp_word_t SET_SYMBOL_FUNCTION;
 
 wisp_word_t
 wisp_align (wisp_word_t x)
 {
   return (x + WISP_LOWTAG_MASK + 1) & ~WISP_LOWTAG_MASK;
 }
-
-static void *heap;
-static size_t heap_size = 1024 * 1024 * 4;
-static size_t heap_used = 0;
-
-static const wisp_word_t NIL =
-  WISP_LOWTAG_LIST_PTR;
-
-static wisp_word_t PACKAGE = -1;
-static wisp_word_t COMMON_LISP = -1;
-static wisp_word_t QUOTE = -1;
-static wisp_word_t APPLY = -1;
-static wisp_word_t EVAL = -1;
-static wisp_word_t SCOPE = -1;
-static wisp_word_t CLOSURE = -1;
-static wisp_word_t LAMBDA = -1;
-static wisp_word_t MACRO = -1;
-static wisp_word_t PARAMS = -1;
-static wisp_word_t SET_SYMBOL_FUNCTION = -1;
 
 wisp_word_t
 wisp_fixnum (int32_t x)
@@ -158,25 +99,6 @@ wisp_header_word_data (uint32_t header)
   return header >> 8;
 }
 
-wisp_word_t
-wisp_read (const char **s);
-
-wisp_word_t
-wisp_read_list (const char **stream)
-{
-  char c = **stream;
-
-  if (c == ')')
-    {
-      ++*stream;
-      return NIL;
-    }
-
-  wisp_word_t car = wisp_read (stream);
-  wisp_word_t cdr = wisp_read_list (stream);
-
-  return wisp_cons (car, cdr);
-}
 
 #define WISP_INSTANCE_HEADER(n) \
   (wisp_header_word ((n) + 1, WISP_WIDETAG_INSTANCE))
@@ -250,7 +172,9 @@ wisp_string_buffer (wisp_word_t *header)
 __inline__
 static void debugger (void)
 {
+#ifndef __EMSCRIPTEN__
   __asm__ volatile ("int $0x03");
+#endif
 }
 
 __attribute__ ((noreturn))
@@ -413,88 +337,6 @@ wisp_string (const char *source)
 {
   return wisp_string_n (source, strlen (source));
 }
-
-wisp_word_t
-wisp_read_symbol (const char **stream)
-{
-  const char *after = *stream + 1;
-
-  while (isalpha (*after) || (*after == '-'))
-    ++after;
-
-  int length = ++after - *stream - 1;
-
-  wisp_word_t name =
-    wisp_string_n (*stream, length);
-
-  char *data =
-    wisp_string_buffer (wisp_deref (name));
-
-  for (int i = 0; i < length; i++)
-    data[i] = toupper (data[i]);
-
-  *stream = after - 1;
-
-  return wisp_intern_symbol (name, COMMON_LISP);
-}
-
-wisp_word_t
-wisp_read_fixnum (const char **stream)
-{
-  const char *after = *stream + 1;
-
-  while (isdigit (*after++));
-
-  int length = after - *stream - 1;
-
-  if (length > 10)
-    wisp_not_implemented ();
-
-  char digits[length];
-
-  for (int i = 0; i < length; i++)
-    digits[i] = (*stream)[i];
-
-  digits[length] = 0;
-
-  *stream = after - 1;
-
-  return wisp_fixnum (atoi (digits));
-}
-
-wisp_word_t
-wisp_read (const char **stream)
-{
-  while (isspace (**stream))
-    ++*stream;
-
-  char c = **stream;
-
-  if (c == 0)
-    wisp_not_implemented ();
-
-  if (c == '(')
-    {
-      ++*stream;
-      return wisp_read_list (stream);
-    }
-
-  if (isalpha (c))
-    return wisp_read_symbol (stream);
-
-  if (isdigit (c))
-    return wisp_read_fixnum (stream);
-
-  if (c == '\'')
-    {
-      ++*stream;
-      return wisp_cons (QUOTE,
-                        wisp_cons (wisp_read (stream), NIL));
-    }
-
-  wisp_not_implemented ();
-}
-
 
 wisp_word_t
 wisp_intern_lisp (const char *name)
@@ -1308,7 +1150,7 @@ wisp_eval_code (const char *code)
 }
 
 int
-main ()
+main (int argc, char **argv)
 {
   wisp_start ();
   wisp_setup ();
@@ -1342,28 +1184,25 @@ main ()
      "                                (cons body nil))) nil)))))"
      );
 
-  /* wisp_eval_code */
-  /*   ("(defun foo (x y) x)"); */
-
-  /* wisp_eval_code */
-  /*   ("(foo 'x 'y)"); */
-
-  while (true)
+  if (argc == 0)
     {
-      printf ("> ");
-      size_t n = 0;
-      char *buffer = 0;
-      if (getline (&buffer, &n, stdin) != -1)
+      while (true)
         {
-          wisp_word_t result = wisp_eval_code (buffer);
-          wisp_dump (result);
-          printf ("\n");
-          free (buffer);
-        }
-      else
-        {
-          printf ("\n");
-          return 0;
+          printf ("> ");
+          size_t n = 0;
+          char *buffer = 0;
+          if (getline (&buffer, &n, stdin) != -1)
+            {
+              wisp_word_t result = wisp_eval_code (buffer);
+              wisp_dump (result);
+              printf ("\n");
+              free (buffer);
+            }
+          else
+            {
+              printf ("\n");
+              return 0;
+            }
         }
     }
 
