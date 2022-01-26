@@ -1184,7 +1184,7 @@ main (int argc, char **argv)
      "                                (cons body nil))) nil)))))"
      );
 
-  if (argc == 0)
+  if (argc == 1)
     {
       while (true)
         {
