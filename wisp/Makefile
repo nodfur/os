@@ -1,4 +1,4 @@
-default: clean run
+default: clean wisp
 
 %.wasm: %.c
 	emcc -g $< -o $@

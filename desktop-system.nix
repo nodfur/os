@@ -13,6 +13,7 @@
     python3
     ruby
     scrot
+    rlwrap
   ];
 
   nix.extraOptions = ''
