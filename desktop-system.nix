@@ -12,6 +12,7 @@
     wget
     python3
     ruby
+    scrot
   ];
 
   nix.extraOptions = ''

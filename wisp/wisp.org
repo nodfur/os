@@ -33,6 +33,30 @@
 
     But NIL is also used as a LIST-PTR.
 
+
+
 *** Packages
 
     A package is an OTHER-PTR
+
+** CEK Machine
+
+   To evaluate Lisp code, we use a style of interpreter
+   known in the literature as the CEK machine, named after
+   its three registers: Control, Environment, Kontinuation.
+
+   We call the registers `term`, `scopes`, and `plan`.
+
+   See the [[file:wisp.c::wisp_step (wisp_machine_t *machine)][`wisp_step()`]] function.
+
+*** Plans
+
+    | Plan              | Meaning             |
+    |-------------------+---------------------|
+    | NIL               | Computation is done |
+    | [APPLY vs ts e k] |                     |
+    | [CALL vs e k]     |                     |
+
+    A call like `(f x y)` ...
+
+* A Wispy Dream

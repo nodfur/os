@@ -33,7 +33,7 @@
         forceSSL = true;
         useACMEHost = "node.town";
         locations."/" = {
-          root = "/srv/www";
+          root = "/os/www/node.town/";
         };
 
         locations."/vpn/b14" = {

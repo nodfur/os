@@ -1,0 +1,61 @@
+<!doctype html>
+<title>Node.Town</title>
+<style>
+  /* @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap'); */
+
+  html, input { font: 22px/1.5 "DM Mono", monospace; }
+  html { height: 100vh; background: #fa23; }
+  body {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  * { margin: 0; padding: 0; }
+
+  h1, h2 { font-weight: 500; }
+  h1 { line-height: 1.5rem; letter-spacing: -0.04em; }
+  h2 { line-height: 1.5rem; font-size: 20px; color: #000a; }
+
+  header { padding-bottom: .5rem; }
+
+  article {
+    background: #fc2;
+    padding: 1.5rem;
+    padding-bottom: 1rem;
+    box-shadow: 6px 6px 0px 0px #fa2a;
+    border-radius: 6px;
+  }
+
+  p {
+    margin: 0.5em 0;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  a {
+    text-decoration: none;
+    letter-spacing: -0.04em;
+  }
+</style>
+
+<article>
+  <header>
+    <h1>Node.Town</h1>
+    <h2>Restless Hypermedia, Inc.</h2>
+  </header>
+  <p>We&rsquo;re building portable computers.
+  <p>Not just, like, laptops or tablets.
+  <p>Portable&mdash; um, in a spiritual sense.
+  <h2 style="text-align: right">
+    <a href="https://twitter.com/nodetown">@nodetown</a>
+  </h2>
+</article>
+
+<script>
+  setTimeout(() => location.reload(), 1000)
+</script>

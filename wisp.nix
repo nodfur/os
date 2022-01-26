@@ -17,8 +17,10 @@
       mkdir -p /home/${user}/common-lisp
       cd /home/${user}/common-lisp
       for x in epap wisp; do
-        echo linking $PWD/$x -> /os/$x
-        ln -sf /os/"$x"
+        if [ ! -e $x ]; then
+          echo linking $PWD/$x -> /os/$x
+          ln -s /os/"$x"
+        fi
       done
       chown ${user}:users . *
     '';

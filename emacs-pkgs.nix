@@ -1,12 +1,15 @@
 pkgs: epkgs:
 
 with epkgs; [
+
   ag
   all-the-icons
   avy
   company
   company-nixos-options
   default-text-scale
+  delight
+  # diminish
   direnv
   doom-modeline
   elixir-mode
@@ -27,6 +30,7 @@ with epkgs; [
   selectrum-prescient
   slime
   treemacs
+  treemacs-all-the-icons
   vterm
   which-key
   whitespace-cleanup-mode

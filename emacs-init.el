@@ -1,6 +1,6 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                          78 character box                                ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 68 character box                                               ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (when (string-equal system-type "darwin")
   (setq ring-bell-function 'ignore)
@@ -9,24 +9,7 @@
 
 (require 'cl-lib)
 
-(set-frame-font "DM Mono-11" nil t)
-
-(defun doom-modeline--font-height ()
-  "Calculate the actual char height of the mode-line."
-  (let ((height (face-attribute 'mode-line :height)))
-    ;; WORKAROUND: Fix tall issue of 27 on Linux
-    ;; @see https://github.com/seagle0128/doom-modeline/issues/271
-    (round
-     (* (if (or (<= doom-modeline-height 0)
-                (and (>= emacs-major-version 27)
-                     (not (eq system-type 'darwin))))
-            0.6
-          (if doom-modeline-icon 1.68 1.25))
-        (cond ((integerp height) (/ height 10))
-              ((floatp height) (* height (frame-char-height)))
-              (t (frame-char-height)))))))
-
-(doom-modeline-mode 1)
+(set-frame-font "Iosevka-13" nil t)
 
 (setq display-time-24hr-format t
       display-time-day-and-date nil
@@ -39,13 +22,30 @@
 
 (load-theme 'zenburn t)
 
+;;; Line 25
+
+(setq window-divider-default-right-width 8)
+(window-divider-mode 1)
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:background "#000"))))
- '(fringe ((t (:background "#000")))))
+ '(default ((t (:background "#000" :height 130))))
+ '(fringe ((t (:background "#000"))))
+ '(line-number ((t (:background "#000"))))
+
+ '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
+ '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
+ '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
+ '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
+ '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
+
+
+ '(window-divider ((t (:foreground "#222"))))
+ '(window-divider-first-pixel ((t (:foreground "#222"))))
+ '(window-divider-last-pixel ((t (:foreground "#222")))))
 
 ;; (require 'gmail nil t)
 
@@ -98,7 +98,6 @@
           slime-compiler-notes-tree
           slime-tramp))
 
-       (require 'cl-lib)
        (push (list "^urbion$"
                    (lambda (emacs-filename)
                      (cl-subseq emacs-filename (length "/ssh:urbion:")))
@@ -193,12 +192,27 @@
   (global-set-key (kbd "M-/") 'hippie-expand)
   (global-set-key (kbd "M-h") 'backward-kill-word)
   (global-set-key (kbd "RET") 'newline)
+  )
 
+(defun my-zoom-in ()
+  (interactive)
+  (default-text-scale-increase)
+  ;(setq doom-modeline-height (/ (frame-char-height) 2))
+  ;; (doom-modeline-refresh-bars)
+  ;; (doom-modeline--bar)
+  )
+
+(defun my-zoom-out ()
+  (interactive)
+  (default-text-scale-decrease)
+  ;(setq doom-modeline-height (/ (frame-char-height) 2))
+  ;; (doom-modeline-refresh-bars)
+  ;; (doom-modeline--bar)
   )
 
 (progn
-  (global-set-key (kbd "C-x C-+") 'default-text-scale-increase)
-  (global-set-key (kbd "C-x C--") 'default-text-scale-decrease))
+  (global-set-key (kbd "C-x C-+") 'my-zoom-in)
+  (global-set-key (kbd "C-x C--") 'my-zoom-out))
 
 (progn
   (defun setup-sexps ()
@@ -350,3 +364,69 @@
      | tilde            | ~       | n~  -> ñ             |
   "
   nil t nil nil nil nil nil nil nil nil t)
+
+(setq doom-modeline-buffer-encoding nil)
+
+;; (doom-modeline-def-modeline 'my-simple-line
+;;   '(bar matches buffer-info remote-host
+;;         buffer-position parrot selection-info)
+;;   '(misc-info battery minor-modes input-method
+;;               major-mode process vcs checker))
+
+;; (doom-modeline-set-modeline 'my-simple-line 'default)
+
+(defun doom-modeline--font-height ()
+  "Calculate the actual char height of the mode-line."
+  (let ((height (face-attribute 'mode-line :height)))
+    ;; WORKAROUND: Fix tall issue of 27 on Linux
+    ;; @see https://github.com/seagle0128/doom-modeline/issues/271
+    (round
+     (* (if (or (<= doom-modeline-height 0)
+                (and (>= emacs-major-version 27)
+                     (not (eq system-type 'darwin))))
+            0.65
+                                        ;(if doom-modeline-icon 1.68 1.25)
+          )
+        (cond ((integerp height) (/ height 10))
+              ((floatp height) (* height (frame-char-height)))
+              (t (frame-char-height)))))))
+
+;; (progn
+;;   (doom-modeline-mode 0)
+;;   (doom-modeline-mode 1))
+
+(setq treemacs-user-mode-line-format 'none)
+
+(setq treemacs-indentation 1)
+(setq treemacs-width 22)
+(setq treemacs-no-png-images t)
+
+(treemacs)
+(treemacs-follow-mode)
+(treemacs-tag-follow-mode)
+(treemacs-git-mode 'deferred)
+(treemacs-filewatch-mode)
+
+(defun my-treemacs-hook ()
+  (interactive)
+  (setq-local line-spacing 0))
+
+(treemacs-resize-icons 22)
+
+(with-current-buffer (treemacs-get-local-buffer)
+  (my-treemacs-hook))
+
+
+
+
+(add-hook 'treemacs-mode-hook 'my-treemacs-hook)
+;; (diminish 'company-mode)
+;; (diminish 'paredit-mode)
+;; (diminish 'which-key-mode)
+;; (diminish 'whitespace-cleanup-mode)
+;; (diminish 'eldoc-mode)
+
+(delight
+ '((emacs-lisp-mode "Elisp" :major)
+   (paredit-mode)
+   (company-mode)))
