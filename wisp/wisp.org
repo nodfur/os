@@ -1,8 +1,3 @@
-* Local Variables :noexport:
-  Local Variables:
-  fill-column: 60
-  End:
-
 * Wisp
 ** Image-based Lisp for WebAssembly
 ** Wisp REPL
@@ -72,3 +67,8 @@
     | [CALL vs e k]     |                     |
 
     A call like `(f x y)` ...
+
+* Local Variables :noexport:
+  Local Variables:
+  fill-column: 60
+  End:
