@@ -1,5 +1,4 @@
-* Wisp
-** Image-based Lisp for WebAssembly
+* Wisp: image-based Lisp for WebAssembly
 ** Wisp REPL
 ** Wisp Continuations
 ** Wisp Images
