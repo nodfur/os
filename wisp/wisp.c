@@ -4,7 +4,9 @@
 
 void *heap;
 
-size_t heap_size = 1024 * 1024 * 4;
+#define MEGABYTES (1024 * 1024)
+
+size_t heap_size = 4 * MEGABYTES;
 size_t heap_used = 0;
 
 wisp_word_t APPLY;
@@ -20,12 +22,6 @@ wisp_word_t SCOPE;
 wisp_word_t SET_SYMBOL_FUNCTION;
 
 wisp_word_t
-wisp_align (wisp_word_t x)
-{
-  return (x + WISP_LOWTAG_MASK + 1) & ~WISP_LOWTAG_MASK;
-}
-
-wisp_word_t
 wisp_fixnum (int32_t x)
 {
   return x << 2;
@@ -38,7 +34,7 @@ wisp_alloc_raw (wisp_word_t size, wisp_lowtag_t tag)
   assert (heap_used + size < heap_size);
 
 #if WISP_DEBUG_ALLOC
-  fprintf (stderr, "; alloc %x %d\n", tag, size);
+  WISP_DEBUG ("alloc %x %d\n", tag, size);
 #endif
 
   uint32_t i = heap_used;
@@ -46,11 +42,6 @@ wisp_alloc_raw (wisp_word_t size, wisp_lowtag_t tag)
 
   return i ^ tag;
 }
-
-#define WISP_WORD_SIZE 4
-#define WISP_HEADER_WORD_SIZE (2 * WISP_WORD_SIZE)
-#define WISP_CONS_SIZE (2 * WISP_WORD_SIZE)
-#define WISP_SYMBOL_SIZE (wisp_align (6 * WISP_WORD_SIZE))
 
 wisp_word_t *
 wisp_deref (wisp_word_t ptr)
@@ -98,14 +89,6 @@ wisp_header_word_data (uint32_t header)
 {
   return header >> 8;
 }
-
-
-#define WISP_INSTANCE_HEADER(n) \
-  (wisp_header_word ((n) + 1, WISP_WIDETAG_INSTANCE))
-
-#define WISP_SYMBOL_HEADER \
-  (wisp_header_word (WISP_SYMBOL_SIZE, WISP_WIDETAG_SYMBOL))
-
 
 wisp_word_t
 wisp_alloc_words (int words,
@@ -181,7 +164,7 @@ __attribute__ ((noreturn))
 void
 wisp_crash (const char *error)
 {
-  fprintf (stderr, "wisp crash: %s\n", error);
+  WISP_DEBUG ("crash: %s\n", error);
   debugger ();
   exit (1);
 }
@@ -206,14 +189,13 @@ wisp_equal (wisp_word_t a,
   wisp_word_t widetag = a & WISP_WIDETAG_MASK;
   wisp_word_t widetag_b = b & WISP_WIDETAG_MASK;
 
-  /* fprintf (stderr, ";; comparing %d (%d) and %d (%d)\n", */
-  /*          a, lowtag, b, lowtag_b); */
+  /* WISP_DEBUG ("comparing %d (%d) and %d (%d)\n", */
+  /*             a, lowtag, b, lowtag_b); */
 
   switch (lowtag)
     {
     case WISP_LOWTAG_OTHER_PTR:
       {
-        /* fprintf (stderr, ";; comparing strings\n"); */
         wisp_word_t *a_header = wisp_deref (a);
         wisp_word_t *b_header = wisp_deref (b);
 
@@ -259,10 +241,6 @@ wisp_word_t
 wisp_intern_symbol (wisp_word_t name,
                     wisp_word_t package)
 {
-  /* fprintf (stderr, */
-  /*          "; %s", */
-  /*          wisp_string_buffer (wisp_deref (name))); */
-
   wisp_word_t *package_header =
     wisp_deref (package);
 
@@ -283,10 +261,7 @@ wisp_intern_symbol (wisp_word_t name,
       wisp_word_t symbol_name = symbol_header[4];
 
       if (wisp_equal (symbol_name, name))
-        {
-          /* fprintf (stderr, " found %d\n", car); */
-          return car;
-        }
+        return car;
 
       cur = cdr;
     }
@@ -297,8 +272,6 @@ wisp_intern_symbol (wisp_word_t name,
 
   symbol_header[5] = package;
   package_header[3] = wisp_cons (symbol, package_header[3]);
-
-  /* fprintf (stderr, " created %d\n", symbol); */
 
   return symbol;
 }
@@ -347,6 +320,8 @@ wisp_intern_lisp (const char *name)
 void
 wisp_start ()
 {
+  fprintf (stderr, "; allocating %lu MB heap\n", heap_size / MEGABYTES);
+
   heap = malloc (heap_size);
 
   wisp_word_t *words = heap;
@@ -442,12 +417,12 @@ wisp_dump (wisp_word_t word)
 
   else if (WISP_IS_STRUCT_PTR (word))
     {
-      fprintf (stderr, "#<STRUCT ");
+      fprintf (stderr, "«");
 
       wisp_word_t *struct_header = wisp_deref (word);
 
       wisp_dump (struct_header[1]);
-      fprintf (stderr, " @%x>", word & ~WISP_LOWTAG_MASK);
+      fprintf (stderr, " 0x%X»", word & ~WISP_LOWTAG_MASK);
     }
 
   else if (WISP_IS_OTHER_PTR (word))
@@ -468,13 +443,6 @@ wisp_dump (wisp_word_t word)
     }
 }
 
-typedef struct {
-  bool value;
-  wisp_word_t term;
-  wisp_word_t scopes;
-  wisp_word_t plan;
-} wisp_machine_t;
-
 wisp_word_t *
 wisp_is_symbol (wisp_word_t value)
 {
@@ -487,32 +455,6 @@ wisp_is_symbol (wisp_word_t value)
     return header;
   else
     return 0;
-}
-
-bool
-wisp_term_irreducible (wisp_word_t term)
-{
-  switch (term & WISP_LOWTAG_MASK)
-    {
-    case WISP_LOWTAG_FIXNUM_0:
-    case WISP_LOWTAG_FIXNUM_1:
-      return true;
-
-    default:
-      if (term == NIL)
-        return true;
-
-      if (WISP_IS_LIST_PTR (term))
-        return false;
-
-      if (WISP_IS_STRUCT_PTR (term))
-        return true;
-
-      if (wisp_is_symbol (term))
-        return false;
-
-      wisp_crash ("strange term");
-    }
 }
 
 wisp_word_t
@@ -535,38 +477,6 @@ wisp_is_instance (wisp_word_t word,
   return 0;
 }
 
-wisp_word_t
-wisp_make_apply_plan (wisp_word_t callee,
-                      wisp_word_t values,
-                      wisp_word_t terms,
-                      wisp_word_t scopes,
-                      wisp_word_t next)
-{
-  return wisp_make_instance
-    (APPLY, 5, callee, values, terms, scopes, next);
-}
-
-typedef struct __attribute__ ((__packed__)) {
-  wisp_word_t callee;
-  wisp_word_t values;
-  wisp_word_t terms;
-  wisp_word_t scopes;
-  wisp_word_t next;
-} wisp_apply_plan_t;
-
-typedef struct __attribute__ ((__packed__)) {
-  wisp_word_t params;
-  wisp_word_t body;
-  wisp_word_t scopes;
-  wisp_word_t macro;
-} wisp_closure_t;
-
-wisp_apply_plan_t *
-wisp_get_apply_plan (wisp_word_t *header)
-{
-  return (wisp_apply_plan_t *) (header + 2);
-}
-
 wisp_closure_t *
 wisp_ensure_function (wisp_word_t value)
 {
@@ -574,22 +484,6 @@ wisp_ensure_function (wisp_word_t value)
     wisp_is_instance (value, CLOSURE);
 
   return (wisp_closure_t *) (header + 2);
-}
-
-wisp_closure_t *
-wisp_get_closure (wisp_word_t value)
-{
-  wisp_word_t *symbol_header = wisp_is_symbol (value);
-
-  wisp_word_t *closure_header =
-    symbol_header
-    ? wisp_is_instance (symbol_header[6], CLOSURE)
-    : wisp_is_instance (value, CLOSURE);
-
-  if (closure_header)
-    return (wisp_closure_t *) (closure_header + 2);
-  else
-    wisp_crash ("not a function");
 }
 
 int
@@ -606,28 +500,6 @@ wisp_length (wisp_word_t list)
   return i;
 }
 
-wisp_word_t
-wisp_lambda_list_to_params (wisp_word_t lambda_list)
-{
-  int length = wisp_length (lambda_list);
-  wisp_word_t slots[length];
-
-  /* fprintf (stderr, ";; %d ", length); */
-  /* wisp_dump (lambda_list); */
-  /* fprintf (stderr, "\n"); */
-
-  for (int i = 0; i < length; i++)
-    {
-      wisp_word_t *cons = wisp_deref (lambda_list);
-      slots[i] = cons[0];
-      lambda_list = cons[1];
-    }
-
-  wisp_word_t params =
-    wisp_make_instance_with_slots (PARAMS, length, slots);
-
-  return params;
-}
 
 void
 wisp_set_symbol_function (wisp_word_t symbol,
@@ -636,400 +508,11 @@ wisp_set_symbol_function (wisp_word_t symbol,
   wisp_word_t *header = wisp_deref (symbol);
   header[6] = value;
 
-  fprintf (stderr, "; setting function ");
+  fprintf (stderr, "; FUNCTION ");
   wisp_dump (symbol);
-  fprintf (stderr, ": ");
+  fprintf (stderr, " ← ");
   wisp_dump (value);
   fprintf (stderr, "\n");
-}
-
-wisp_machine_t
-wisp_step_into_function (wisp_machine_t *machine,
-                         bool backwards,
-                         wisp_apply_plan_t *apply_plan)
-{
-  // We've evaluated all the subforms of a function application.
-  // Now switch the machine term to the closure body, the machine
-  // scopes to the closure scopes extended with the bound parameters,
-  // and the machine plan to the continuation of the apply plan.
-
-  wisp_closure_t *closure =
-    wisp_get_closure (apply_plan->callee);
-
-  wisp_word_t *parameter_struct =
-    wisp_deref (closure->params);
-
-  wisp_word_t parameter_count =
-    wisp_header_word_data (parameter_struct[0]) - 1;
-
-  /* fprintf (stderr, "; stepping into "); */
-  /* wisp_dump (apply_plan->callee); */
-  /* fprintf (stderr, " %d\n", parameter_count); */
-
-  wisp_word_t *parameter_names =
-    parameter_struct + 2;
-
-  wisp_word_t scope_slots[2 * parameter_count];
-
-  wisp_word_t values =
-    apply_plan->values;
-
-  for (int i = 0; i < parameter_count; i++)
-    {
-      int parameter_index = backwards
-        ? parameter_count - i - 1
-        : i;
-
-      assert (values != NIL);
-
-      wisp_word_t *cons = wisp_deref (values);
-      wisp_word_t car = cons[0];
-      wisp_word_t cdr = cons[1];
-
-      scope_slots[parameter_index * 2] =
-        parameter_names[parameter_index];
-
-      scope_slots[parameter_index * 2 + 1] =
-        car;
-
-      values = cdr;
-    }
-
-  wisp_word_t parameter_scope =
-    wisp_make_instance_with_slots
-    (SCOPE, 2 * parameter_count, scope_slots);
-
-  if (WISP_WIDETAG (closure->body) == WISP_WIDETAG_BUILTIN)
-    {
-      wisp_word_t builtin = closure->body >> 8;
-      /* fprintf (stderr, ";; builtin %d\n", builtin); */
-
-      switch (builtin)
-        {
-        case WISP_BUILTIN_LAMBDA:
-          {
-            wisp_word_t lambda_list = scope_slots[1];
-            wisp_word_t lambda_body = scope_slots[3];
-
-            wisp_word_t lambda_params =
-              wisp_lambda_list_to_params (lambda_list);
-
-            wisp_word_t closure = wisp_make_instance
-              (CLOSURE, 4,
-               lambda_params,
-               lambda_body,
-               machine->scopes,
-               NIL);
-
-            return (wisp_machine_t) {
-              .term = closure,
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next
-            };
-          }
-
-        case WISP_BUILTIN_MACRO:
-          {
-            wisp_word_t macro_list = scope_slots[1];
-            wisp_word_t macro_body = scope_slots[3];
-
-            wisp_word_t macro_params =
-              wisp_lambda_list_to_params (macro_list);
-
-            wisp_word_t closure = wisp_make_instance
-              (CLOSURE, 4,
-               macro_params,
-               macro_body,
-               machine->scopes,
-               MACRO);
-
-            return (wisp_machine_t) {
-              .term = closure,
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next
-            };
-          }
-
-        case WISP_BUILTIN_SET_SYMBOL_FUNCTION:
-          {
-            wisp_set_symbol_function
-              (scope_slots[1], scope_slots[3]);
-
-            return (wisp_machine_t) {
-              .term = scope_slots[3],
-              .value = false,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next
-            };
-          }
-
-        case WISP_BUILTIN_CONS:
-          {
-            return (wisp_machine_t) {
-              .term = wisp_cons (scope_slots[1], scope_slots[3]),
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next,
-            };
-          }
-
-        default:
-          wisp_crash ("unknown builtin");
-        }
-    }
-
-  if (closure->macro == NIL)
-    return (wisp_machine_t) {
-      .term = closure->body,
-      .value = false,
-      .scopes = wisp_cons (parameter_scope, closure->scopes),
-      .plan = apply_plan->next
-    };
-
-  else
-    {
-      wisp_word_t eval_plan =
-        wisp_make_instance (EVAL, 2,
-                            machine->scopes,
-                            apply_plan->next);
-
-      return (wisp_machine_t) {
-        .term = closure->body,
-        .value = false,
-        .scopes = wisp_cons (parameter_scope, closure->scopes),
-        .plan = eval_plan
-      };
-    }
-
-}
-
-bool
-wisp_find_binding_in_scope (wisp_word_t scope,
-                            wisp_word_t symbol,
-                            wisp_word_t *result)
-{
-  wisp_word_t *header = wisp_deref (scope);
-  wisp_word_t *slots = header + 2;
-  int size = wisp_header_word_data (header[0]) / 2;
-  for (int i = 0; i < size; i++)
-    {
-      wisp_word_t variable = slots[i * 2];
-      if (variable == symbol)
-        {
-          *result = slots[i * 2 + 1];
-          return true;
-        }
-    }
-
-  return false;
-}
-
-bool
-wisp_find_binding (wisp_word_t scopes,
-                   wisp_word_t symbol,
-                   wisp_word_t *result)
-{
-  if (scopes == NIL)
-    return false;
-
-  wisp_word_t *scopes_cons = wisp_deref (scopes);
-
-  wisp_word_t scopes_car = scopes_cons[0];
-  wisp_word_t scopes_cdr = scopes_cons[1];
-
-  if (wisp_find_binding_in_scope (scopes_car, symbol, result))
-    return true;
-
-  return wisp_find_binding (scopes_cdr, symbol, result);
-}
-
-bool
-wisp_step (wisp_machine_t *machine)
-{
-  wisp_word_t term = machine->term;
-  wisp_word_t scopes = machine->scopes;
-  wisp_word_t plan = machine->plan;
-
-  /* if (machine->value) */
-  /*   fprintf (stderr, "; value: "); */
-  /* else */
-  /*   fprintf (stderr, "; term: "); */
-  /* wisp_dump (term); */
-  /* printf ("\n"); */
-
-  /* fprintf (stderr, "; plan: "); */
-  /* wisp_dump (plan); */
-  /* printf ("\n"); */
-
-  if (machine->value || wisp_term_irreducible (term))
-    {
-      if (plan == NIL)
-        return false;
-
-      else if (WISP_IS_STRUCT_PTR (plan))
-        {
-          wisp_word_t *header = wisp_deref (plan);
-          wisp_word_t type = wisp_struct_header_type (header);
-
-          if (type == APPLY)
-            {
-              wisp_apply_plan_t *apply_plan =
-                wisp_get_apply_plan (header);
-
-              wisp_word_t terms = apply_plan->terms;
-              if (terms == NIL)
-                {
-                  wisp_word_t new_apply_plan =
-                    wisp_make_apply_plan
-                    (apply_plan->callee,
-                     wisp_cons (term, apply_plan->values),
-                     NIL,
-                     apply_plan->scopes,
-                     apply_plan->next);
-
-                  *machine = wisp_step_into_function
-                    (machine,
-                     true,
-                     wisp_get_apply_plan
-                     (wisp_deref (new_apply_plan)));
-
-                  return true;
-                }
-              else
-                {
-                  wisp_word_t *cons =
-                    wisp_deref (terms);
-
-                  wisp_word_t car = cons[0];
-                  wisp_word_t cdr = cons[1];
-
-                  wisp_word_t next_apply_plan =
-                    wisp_make_apply_plan
-                    (apply_plan->callee,
-                     wisp_cons (term, apply_plan->values),
-                     cdr,
-                     apply_plan->scopes,
-                     apply_plan->next);
-
-                  machine->term = car;
-                  machine->value = false;
-                  machine->plan = next_apply_plan;
-
-                  return true;
-                }
-            }
-
-          else if (type == EVAL)
-            {
-              /* fprintf (stderr, "; eval\n"); */
-              machine->value = false;
-              machine->scopes = header[2];
-              machine->plan = header[3];
-              return true;
-            }
-        }
-    }
-
-  else if (WISP_IS_LIST_PTR (term))
-    {
-      wisp_word_t *cons = wisp_deref (term);
-      wisp_word_t car = cons[0];
-      wisp_word_t cdr = cons[1];
-
-      if (car == QUOTE)
-        {
-          machine->term = wisp_car (cdr);
-          machine->value = true;
-          return true;
-        }
-
-      else
-        {
-          // Evaluate a function call (f x y z).
-          if (WISP_IS_OTHER_PTR (car))
-            {
-              wisp_word_t *header = wisp_deref (car);
-              if (header[0] == WISP_SYMBOL_HEADER)
-                {
-                  if (cdr == NIL)
-                    {
-                      // XXX: It's not necessary to allocate a plan on
-                      // the heap here.
-
-                      wisp_word_t apply_plan =
-                        wisp_make_apply_plan
-                        (car, NIL, NIL, scopes, plan);
-
-                      *machine =
-                        wisp_step_into_function
-                        (machine,
-                         false,
-                         wisp_get_apply_plan
-                         (wisp_deref (apply_plan)));
-
-                      return true;
-                    }
-                  else
-                    {
-                      wisp_closure_t *closure =
-                        wisp_get_closure (car);
-
-                      if (closure->macro == NIL)
-                        {
-                          wisp_word_t *term_list = wisp_deref (cdr);
-                          wisp_word_t first_term = term_list[0];
-                          wisp_word_t remaining_terms = term_list[1];
-
-                          wisp_word_t apply_plan = wisp_make_apply_plan
-                            (car, NIL, remaining_terms, scopes, plan);
-
-                          machine->term = first_term;
-                          machine->value = false;
-                          machine->plan = apply_plan;
-
-                          return true;
-                        }
-                      else
-                        {
-                          wisp_word_t apply_plan = wisp_make_apply_plan
-                            (car, cdr, NIL, scopes, plan);
-
-                          *machine =
-                            wisp_step_into_function
-                            (machine,
-                             false,
-                             wisp_get_apply_plan
-                             (wisp_deref (apply_plan)));
-
-                          return true;
-                        }
-                    }
-                }
-
-            }
-        }
-    }
-
-  else if (wisp_is_symbol (term))
-    {
-      wisp_word_t binding;
-
-      /* wisp_dump (machine->scopes); */
-
-      if (wisp_find_binding (machine->scopes, term, &binding))
-        {
-          machine->term = binding;
-          machine->value = true;
-          return true;
-        }
-
-      else
-        wisp_crash ("unbound variable");
-    }
-
-  wisp_crash ("bad term");
 }
 
 wisp_machine_t
@@ -1131,20 +614,11 @@ wisp_eval_code (const char *code)
 {
   wisp_word_t term = wisp_read (&code);
 
-  /* fprintf (stderr, "\n> "); */
-
-  /* wisp_dump (term); */
-  /* fprintf (stderr, "\n"); */
-
   wisp_machine_t machine =
     wisp_initial_machine (term);
 
   while (wisp_step (&machine))
     ;
-
-  /* fprintf (stderr, "=> "); */
-  /* wisp_dump (machine.term); */
-  /* fprintf (stderr, "\n"); */
 
   return machine.term;
 }
@@ -1189,6 +663,7 @@ main (int argc, char **argv)
       while (true)
         {
           printf ("> ");
+          fflush (stdout);
           size_t n = 0;
           char *buffer = 0;
           if (getline (&buffer, &n, stdin) != -1)

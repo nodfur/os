@@ -12,6 +12,30 @@
 
 typedef uint32_t wisp_word_t;
 
+typedef struct {
+  bool value;
+  wisp_word_t term;
+  wisp_word_t scopes;
+  wisp_word_t plan;
+} wisp_machine_t;
+
+typedef struct __attribute__ ((__packed__)) {
+  wisp_word_t callee;
+  wisp_word_t values;
+  wisp_word_t terms;
+  wisp_word_t scopes;
+  wisp_word_t next;
+} wisp_apply_plan_t;
+
+typedef struct __attribute__ ((__packed__)) {
+  wisp_word_t params;
+  wisp_word_t body;
+  wisp_word_t scopes;
+  wisp_word_t macro;
+} wisp_closure_t;
+
+#define WISP_DEBUG(...) (fprintf (stderr, "; " __VA_ARGS__))
+
 typedef enum {
   WISP_BUILTIN_LAMBDA = 1,
   WISP_BUILTIN_MACRO,
@@ -47,6 +71,14 @@ typedef enum wisp_widetag {
   WISP_WIDETAG_BUILTIN = 0xA2,
 } wisp_widetag_t;
 
+#define wisp_align(x) \
+  (((x) + WISP_LOWTAG_MASK + 1) & ~WISP_LOWTAG_MASK)
+
+#define WISP_WORD_SIZE 4
+#define WISP_HEADER_WORD_SIZE (2 * WISP_WORD_SIZE)
+#define WISP_CONS_SIZE (2 * WISP_WORD_SIZE)
+#define WISP_SYMBOL_SIZE (wisp_align (6 * WISP_WORD_SIZE))
+
 #define WISP_IS_FIXNUM(x) (((x) & 3) == 0)
 #define WISP_IS_OTHER_IMMEDIATE(x) (((x) & 3) == 2)
 #define WISP_IS_PTR(x) ((x) & 1)
@@ -60,6 +92,13 @@ typedef enum wisp_widetag {
 
 #define WISP_ALIGNED_PROPERLY(x) \
   (((x) & WISP_LOWTAG_MASK) == 0)
+
+
+#define WISP_INSTANCE_HEADER(n) \
+  (wisp_header_word ((n) + 1, WISP_WIDETAG_INSTANCE))
+
+#define WISP_SYMBOL_HEADER \
+  (wisp_header_word (WISP_SYMBOL_SIZE, WISP_WIDETAG_SYMBOL))
 
 extern void *heap;
 
@@ -101,7 +140,57 @@ __attribute__ ((noreturn))
 void
 wisp_not_implemented ();
 
+__attribute__ ((noreturn))
+void
+wisp_crash (const char *error);
+
 wisp_word_t
 wisp_fixnum (int32_t x);
+
+wisp_word_t *
+wisp_is_symbol (wisp_word_t value);
+
+wisp_word_t
+wisp_struct_header_type (wisp_word_t *header);
+
+wisp_word_t
+wisp_make_instance_with_slots (wisp_word_t type,
+                               int n_slots,
+                               wisp_word_t *slots);
+
+wisp_word_t
+wisp_make_instance (wisp_word_t type,
+                    int n_slots,
+                    ...);
+
+wisp_word_t
+wisp_header_word (uint32_t data,
+                  uint8_t widetag);
+
+wisp_word_t
+wisp_header_word_data (uint32_t header);
+
+bool
+wisp_step (wisp_machine_t *machine);
+
+wisp_word_t *
+wisp_is_instance (wisp_word_t word,
+                  wisp_word_t type);
+
+int
+wisp_length (wisp_word_t list);
+
+wisp_word_t
+wisp_lambda_list_to_params (wisp_word_t lambda_list);
+
+void
+wisp_set_symbol_function (wisp_word_t symbol,
+                          wisp_word_t value);
+
+wisp_word_t
+wisp_car (wisp_word_t list);
+
+wisp_word_t
+wisp_cdr (wisp_word_t list);
 
 #endif

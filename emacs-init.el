@@ -9,7 +9,7 @@
 
 (require 'cl-lib)
 
-(set-frame-font "Iosevka-13" nil t)
+(set-frame-font "DM Mono-14" nil t)
 
 (setq display-time-24hr-format t
       display-time-day-and-date nil

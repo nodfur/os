@@ -67,6 +67,14 @@
 
     A call like `(f x y)` ...
 
+* Diary
+
+** [2022-01-27 Thu]
+
+   I've got a REPL working in the command line!
+
+
+
 * Local Variables :noexport:
   Local Variables:
   fill-column: 60
