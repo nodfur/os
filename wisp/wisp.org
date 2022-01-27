@@ -3,6 +3,20 @@
   fill-column: 60
   End:
 
+* Wisp
+** Image-based Lisp for WebAssembly
+** Wisp REPL
+** Wisp Continuations
+** Wisp Images
+** Wisp Library
+** Wisp Inspector
+** Wisp Remote
+** Wisp Emacs
+** Wisp DOM
+** Wisp React
+** Wisp Threads
+** Wisp Cluster
+
 * Wisp Internals
 
 ** Memory Layout
@@ -58,5 +72,3 @@
     | [CALL vs e k]     |                     |
 
     A call like `(f x y)` ...
-
-* A Wispy Dream
