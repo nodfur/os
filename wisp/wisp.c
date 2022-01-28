@@ -572,57 +572,83 @@ wisp_make_list (int count,
   return list;
 }
 
+wisp_word_t
+wisp_simple_params (int count, ...)
+{
+  wisp_word_t elements[count];
+
+  va_list args;
+  va_start (args, count);
+
+  for (int i = 0; i < count; i++)
+    elements[i] =
+      wisp_intern_lisp (va_arg (args, const char *));
+
+  va_end (args);
+
+  wisp_word_t list = NIL;
+
+  for (int i = 0; i < count; i++)
+    list = wisp_cons (elements[count - i - 1], list);
+
+  return wisp_lambda_list_to_params (list);
+
+}
+
+void
+wisp_builtin_function (wisp_word_t builtin_name,
+                       wisp_word_t builtin_id,
+                       wisp_word_t params)
+{
+  wisp_word_t closure =
+    wisp_make_instance
+    (CLOSURE, 4,
+     params,
+     (builtin_id << 8) | WISP_WIDETAG_BUILTIN,
+     NIL,
+     NIL);
+
+  wisp_set_symbol_function (builtin_name, closure);
+}
+
+void
+wisp_builtin_macro (wisp_word_t builtin_name,
+                    wisp_word_t builtin_id,
+                    wisp_word_t params)
+{
+  wisp_word_t closure =
+    wisp_make_instance
+    (CLOSURE, 4,
+     params,
+     (builtin_id << 8) | WISP_WIDETAG_BUILTIN,
+     NIL,
+     MACRO);
+
+  wisp_set_symbol_function (builtin_name, closure);
+}
+
 void
 wisp_setup (void)
 {
-  wisp_set_symbol_function
+  wisp_builtin_macro
     (LAMBDA,
-     wisp_make_instance
-     (CLOSURE, 4,
-      wisp_lambda_list_to_params
-      (wisp_make_list (2,
-                       wisp_intern_lisp ("LAMBDA-LIST"),
-                       wisp_intern_lisp ("LAMBDA-BODY"))),
-      (WISP_BUILTIN_LAMBDA << 8) | WISP_WIDETAG_BUILTIN,
-      NIL,
-      MACRO));
+     WISP_BUILTIN_LAMBDA,
+     wisp_simple_params (2, "PARAMS", "BODY"));
 
-  wisp_set_symbol_function
+  wisp_builtin_macro
     (MACRO,
-     wisp_make_instance
-     (CLOSURE, 4,
-      wisp_lambda_list_to_params
-      (wisp_make_list (2,
-                       wisp_intern_lisp ("MACRO-LIST"),
-                       wisp_intern_lisp ("MACRO-BODY"))),
-      (WISP_BUILTIN_MACRO << 8) | WISP_WIDETAG_BUILTIN,
-      NIL,
-      MACRO));
+     WISP_BUILTIN_MACRO,
+     wisp_simple_params (2, "PARAMS", "BODY"));
 
-  wisp_set_symbol_function
+  wisp_builtin_function
     (SET_SYMBOL_FUNCTION,
-     wisp_make_instance
-     (CLOSURE, 4,
-      wisp_lambda_list_to_params
-      (wisp_make_list (2,
-                       wisp_intern_lisp ("SYMBOL"),
-                       wisp_intern_lisp ("CLOSURE"))),
-      (WISP_BUILTIN_SET_SYMBOL_FUNCTION << 8) | WISP_WIDETAG_BUILTIN,
-      NIL,
-      NIL));
+     WISP_BUILTIN_SET_SYMBOL_FUNCTION,
+     wisp_simple_params (2, "SYMBOL", "CLOSURE"));
 
-  wisp_set_symbol_function
+  wisp_builtin_function
     (wisp_intern_lisp ("CONS"),
-     wisp_make_instance
-     (CLOSURE, 4,
-      wisp_lambda_list_to_params
-      (wisp_make_list (2,
-                       wisp_intern_lisp ("CAR"),
-                       wisp_intern_lisp ("CDR"))),
-      (WISP_BUILTIN_CONS << 8) | WISP_WIDETAG_BUILTIN,
-      NIL,
-      NIL));
-
+     WISP_BUILTIN_CONS,
+     wisp_simple_params (2, "CAR", "CDR"));
 }
 
 wisp_word_t
