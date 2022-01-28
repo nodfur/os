@@ -71,9 +71,16 @@
 
 ** [2022-01-27 Thu]
 
-   I've got a REPL working in the command line!
+   I've got a REPL working in the command line.
 
+   Compiling to WebAssembly works, but I don't have a way to
+   run the REPL in the browser.  That would be awesome.
 
+   The next thing to do I think is heap saving and loading.
+   That should be easy.
+
+*** TODO Output a heap image
+*** TODO Load a heap image
 
 * Local Variables :noexport:
   Local Variables:

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #define WISP_DEBUG_ALLOC 0
 
 #include "wisp.h"
@@ -318,6 +319,14 @@ wisp_intern_lisp (const char *name)
 }
 
 void
+wisp_init ()
+{
+  fprintf (stderr, "; allocating %lu MB heap\n", heap_size / MEGABYTES);
+
+  heap = malloc (heap_size);
+}
+
+void
 wisp_start ()
 {
   fprintf (stderr, "; allocating %lu MB heap\n", heap_size / MEGABYTES);
@@ -341,6 +350,8 @@ wisp_start ()
 
   COMMON_LISP =
     wisp_make_package (wisp_string ("COMMON-LISP"));
+
+  WISP_DEBUG ("COMMON-LISP 0x%X\n", COMMON_LISP);
 
   wisp_word_t *common_lisp_header =
     wisp_deref (COMMON_LISP);
@@ -623,6 +634,51 @@ wisp_eval_code (const char *code)
   return machine.term;
 }
 
+void
+wisp_save_image (const char *path)
+{
+  FILE *f = fopen (path, "w+");
+  if (fwrite (heap, 1, heap_used, f) != heap_used)
+    wisp_crash ("heap save write failed");
+  WISP_DEBUG ("saved heap to %s\n", path);
+  fclose (f);
+}
+
+void
+wisp_load_image (const char *path)
+{
+  WISP_DEBUG ("loading heap from %s\n", path);
+  FILE *f = fopen (path, "r");
+
+  fseek (f, 0, SEEK_END);
+  long size = ftell(f);
+  fseek (f, 0, SEEK_SET);
+
+  memset (heap, 0, heap_size);
+
+  if (fread (heap, 1, size, f) != size)
+    wisp_crash ("heap load read failed");
+
+  heap_used = size;
+
+  COMMON_LISP = 0x6D;
+
+#define RESTORE(x) x = wisp_intern_lisp (#x)
+
+  WISP_DEBUG ("caching basic symbols\n");
+  RESTORE (QUOTE);
+  RESTORE (APPLY);
+  RESTORE (EVAL);
+  RESTORE (SCOPE);
+  RESTORE (CLOSURE);
+  RESTORE (LAMBDA);
+  RESTORE (MACRO);
+  RESTORE (PARAMS);
+  RESTORE (SET_SYMBOL_FUNCTION);
+
+#undef RESTORE
+}
+
 int
 main (int argc, char **argv)
 {
@@ -657,6 +713,8 @@ main (int argc, char **argv)
      "                          (cons params"
      "                                (cons body nil))) nil)))))"
      );
+
+  wisp_save_image ("wisp.heap");
 
   if (argc == 1)
     {
