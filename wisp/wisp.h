@@ -117,28 +117,6 @@ extern wisp_word_t QUOTE;
 extern wisp_word_t SCOPE;
 extern wisp_word_t SET_SYMBOL_FUNCTION;
 
-wisp_word_t
-wisp_read (const char **s);
-
-void
-wisp_dump (wisp_word_t x);
-
-wisp_word_t
-wisp_cons (wisp_word_t car, wisp_word_t cdr);
-
-wisp_word_t
-wisp_string_n (const char *source, int length);
-
-char *
-wisp_string_buffer (wisp_word_t *header);
-
-wisp_word_t *
-wisp_deref (wisp_word_t ptr);
-
-wisp_word_t
-wisp_intern_symbol (wisp_word_t name,
-                    wisp_word_t package);
-
 __attribute__ ((noreturn))
 void
 wisp_not_implemented ();
@@ -147,11 +125,50 @@ __attribute__ ((noreturn))
 void
 wisp_crash (const char *error);
 
+
+wisp_word_t *
+wisp_deref (wisp_word_t ptr);
+
+void
+wisp_dump (wisp_word_t x);
+
+wisp_word_t
+wisp_cons (wisp_word_t car, wisp_word_t cdr);
+
+wisp_word_t
+wisp_car (wisp_word_t list);
+
+wisp_word_t
+wisp_cdr (wisp_word_t list);
+
+int
+wisp_length (wisp_word_t list);
+
+wisp_word_t
+wisp_intern_symbol (wisp_word_t name,
+                    wisp_word_t package);
+
+wisp_word_t
+wisp_read (const char **s);
+
+wisp_word_t
+wisp_string_n (const char *source, int length);
+
+char *
+wisp_string_buffer (wisp_word_t *header);
+
 wisp_word_t
 wisp_fixnum (int32_t x);
 
 wisp_word_t *
 wisp_is_symbol (wisp_word_t value);
+
+wisp_word_t
+wisp_header_word (uint32_t data,
+                  uint8_t widetag);
+
+wisp_word_t
+wisp_header_word_data (uint32_t header);
 
 wisp_word_t
 wisp_struct_header_type (wisp_word_t *header);
@@ -166,22 +183,9 @@ wisp_make_instance (wisp_word_t type,
                     int n_slots,
                     ...);
 
-wisp_word_t
-wisp_header_word (uint32_t data,
-                  uint8_t widetag);
-
-wisp_word_t
-wisp_header_word_data (uint32_t header);
-
-bool
-wisp_step (wisp_machine_t *machine);
-
 wisp_word_t *
 wisp_is_instance (wisp_word_t word,
                   wisp_word_t type);
-
-int
-wisp_length (wisp_word_t list);
 
 wisp_word_t
 wisp_lambda_list_to_params (wisp_word_t lambda_list);
@@ -190,10 +194,8 @@ void
 wisp_set_symbol_function (wisp_word_t symbol,
                           wisp_word_t value);
 
-wisp_word_t
-wisp_car (wisp_word_t list);
+bool
+wisp_step (wisp_machine_t *machine);
 
-wisp_word_t
-wisp_cdr (wisp_word_t list);
 
 #endif
