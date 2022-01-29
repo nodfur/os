@@ -12,21 +12,15 @@ let
 
 in {
   imports = [
+    ./mbrock.nix
+
     ./btrfs.nix
-    ./desktop.nix
-    ./dvorak.nix
     ./efi.nix
     ./gmail.nix
-#    ./i3.nix
-    ./paperwm.nix
     ./intel.nix
     ./kernel.nix
     ./node.town.nix
-    ./password.nix
     ./pi-x.nix
-    ./users/mbrock
-    ./vnc.nix
-    ./wisp.nix
   ];
 
   os.gl = true;
