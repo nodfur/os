@@ -62,29 +62,6 @@ let
     };
 
 in {
-  options.os.gmail = {
-    enable =
-      lib.mkEnableOption "Gmail";
-    
-    name =
-      lib.mkOption { type = lib.types.str; };
-    
-    address =
-      lib.mkOption { type = lib.types.str; };
-    
-    passwordCommand =
-      lib.mkOption { 
-        type = lib.types.str;
-        default = "pass smtp.googlemail.com";
-      };
-    
-    patterns =
-      lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-      };
-  };
-
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [
       pkgs.gnutls

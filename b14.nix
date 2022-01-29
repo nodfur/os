@@ -21,26 +21,14 @@ in {
     ./kernel.nix
     ./node.town.nix
     ./pi-x.nix
+    ./vnc.nix
   ];
 
   os.gl = true;
-
-  os.gmail = {
-    enable = true;
-    address = "mikael@brockman.se";
-    name = "Mikael Brockman";
-    patterns = [
-      "INBOX" "[Gmail]/Sent Mail" "[Gmail]/All Mail"
-    ];
-  };
+  os.gmail.enable = true;
 
   boot.kernelPackages =
     pkgs.linuxKernel.packages.linux_5_16;
-
-  fonts.fonts = with pkgs; [
-    google-fonts
-    iosevka
-  ];
 
   system.activationScripts = {
     fixAppleKeyboard = ''

@@ -32,66 +32,42 @@ let
     };
 
 in {
-  options = {
-    os.monospace.family = lib.mkOption {
-      type = lib.types.str;
-      default = "DM Mono";
-    };
+  services.xserver.autoRepeatDelay = 200;
+  services.xbanish.enable = true;
 
-    os.monospace.size = lib.mkOption {
-      type = lib.types.int;
-      default = 16;
-    };
+  services.xserver.displayManager.autoLogin.user = config.os.username;
 
-    os.vm = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-    };
+   services.xserver.resolutions = [{ x = 3840; y = 2160; }];
 
-    os.wayland = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-    };
-  };
+  services.xserver.layout = "us";
+  services.xserver.xkbOptions = "ctrl:nocaps";
 
-  config = {
-    services.xserver.autoRepeatDelay = 200;
-    services.xbanish.enable = true;
+  environment.systemPackages = with pkgs; [
+    (writeShellScriptBin "os-terminal" ''
+     ${xterm}/bin/xterm -r -s -b 18 -w 0 -fs ${toString config.os.monospace.size} -fa '${config.os.monospace.family}' "$@"
+    '')
 
-    services.xserver.displayManager.autoLogin.user = config.os.username;
+    hsetroot
+    xlibs.xbacklight
+  ];
 
-#    services.xserver.resolutions = [{ x = 3840; y = 2160; }];
+  fonts.fonts = with pkgs; [
+    dejavu_fonts
+    fantasque-sans-mono
+    emacs-all-the-icons-fonts
+    # iosevka
+    # google-fonts
+    fira-code fira-code-symbols
+    jmk-x11-fonts
+    cm_unicode
+    # roboto roboto-mono roboto-slab
+    _3270font
+  ];
 
-    services.xserver.layout = "us";
-    services.xserver.xkbOptions = "ctrl:nocaps";
+  fonts.fontconfig.hinting.enable = false;
 
-    environment.systemPackages = with pkgs; [
-      (writeShellScriptBin "os-terminal" ''
-       ${xterm}/bin/xterm -r -s -b 18 -w 0 -fs ${toString config.os.monospace.size} -fa '${config.os.monospace.family}' "$@"
-      '')
+  services.redshift.enable = !config.os.vm && !config.os.wayland;
 
-      hsetroot
-      xlibs.xbacklight
-    ];
-
-    fonts.fonts = with pkgs; [
-      dejavu_fonts
-      fantasque-sans-mono
-      emacs-all-the-icons-fonts
-      # iosevka
-      # google-fonts
-      fira-code fira-code-symbols
-      jmk-x11-fonts
-      cm_unicode
-      # roboto roboto-mono roboto-slab
-      _3270font
-    ];
-
-    fonts.fontconfig.hinting.enable = false;
-
-    services.redshift.enable = !config.os.vm && !config.os.wayland;
-
-    programs.ssh.setXAuthLocation = !config.os.wayland;
-    services.openssh.forwardX11 = !config.os.wayland;
-  };
+  programs.ssh.setXAuthLocation = !config.os.wayland;
+  services.openssh.forwardX11 = !config.os.wayland;
 }

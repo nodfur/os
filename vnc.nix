@@ -1,16 +1,6 @@
 { pkgs, config, lib, ... }:
 
 {
-  options = {
-    os.vnc.size.height = lib.mkOption {
-      type = lib.types.int;
-    };
-
-    os.vnc.size.width = lib.mkOption {
-      type = lib.types.int;
-    };
-  };
-
   imports = [
     ./x.nix
   ];

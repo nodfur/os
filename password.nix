@@ -1,8 +1,4 @@
-{ pkgs, lib, ... }: {
-  options.os.username = lib.mkOption {
-    type = lib.types.str;
-  };
-
+{ pkgs, ... }: {
   config = {
     system.activationScripts.makePassword = ''
       if [ ! -f /password ]; then
