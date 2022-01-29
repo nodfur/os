@@ -1,62 +1,51 @@
 * Wisp
 
-I want to have some kind of funny interactive computing
-platform that's very social and "portable" in the sense that
-you should be able to migrate between your browser, your
-laptop, the cloud, whatever.  I had this vision of a
-Twitter-like social network but with a type of tweet that's
-actually a program that you can run.
+Wisp is a Lisp system for WebAssembly with grand intentions.
 
-I've been playing around with Firecracker for virtualizing
-GNU/Linux systems, with this NixOS system I call Node.Town.
-It's pretty cool, but it's also kind of a weird hassle.
+I want to have some kind of funny interactive computing platform
+that's very social and "portable" in the sense that you should be
+able to migrate between your browser, your laptop, the cloud,
+whatever.
 
-OK, well, I started seeing people talk about WebAssembly as
-a new crucial platform.  It's in the major web browsers and
-strongly supported by everyone.  It runs in Node, Deno, a
-couple of different native runtimes like Wasmtime, embedded
-as a library, on cloud edge computing platforms, in
-Kubernetes, and so on.  Probably it will run inside the
-Linux kernel soon enough, like the eBPF thing.
+OK, well, I started seeing people talk about WebAssembly as a new
+crucial platform.  It's in the major web browsers and strongly
+supported by everyone.  It runs in Node, Deno, a couple of different
+native runtimes like Wasmtime, embedded as a library, on cloud edge
+computing platforms, in Kubernetes, and so on.  Probably it will run
+inside the Linux kernel soon enough, like the eBPF thing.
 
 #+BEGIN_QUOTE
 WasmEdge is a lightweight, high-performance, and extensible
-WebAssembly runtime for cloud native, edge, and
-decentralized applications. It powers serverless apps,
-embedded functions, microservices, smart contracts, and
-IoT devices.
+WebAssembly runtime for cloud native, edge, and decentralized
+applications. It powers serverless apps, embedded functions,
+microservices, smart contracts, and IoT devices.
 #+END_QUOTE
 
-So it's not just a thing for making 3D games that run in
-Chrome, or whatever.  It's like a new platform for sandboxed
-compiled low-level code.  So it's not Java, it's much
-simpler than that, it's not a whole platform bundle.
+So it's not just a thing for making 3D games that run in Chrome, or
+whatever.  It's like a new platform for sandboxed compiled low-level
+code.  So it's not Java, it's much simpler than that, it's not a
+whole platform bundle.  And I had a little hunch that it would be
+cool to have a persistent Lisp environment in WebAssembly.
+Especially because Lisp is so dynamic and remote controllable.
 
-And I had a little hunch that it would be cool to have a
-persistent Lisp environment in WebAssembly.
-Especially because Lisp is so dynamic and
-remote controllable.
+I always wanted my computer to be something more like a "Lisp
+Machine."  Emacs gives me some of that, but it's not optimal even as
+just a Lisp interpreter.  It definitely doesn't support delimited
+continuations; it only got lexical scoping recently.  Although it's
+relatively advanced in terms of bytecode and JIT compilation.
+Concurrency is kind of a joke.  So there's Common Lisp and McCLIM
+and stuff, which is beautiful and amazing.
 
-I always wanted my computer to be something more like a
-"Lisp Machine."  Emacs gives me some of that, but it's not
-optimal even as just a Lisp interpreter.  It definitely
-doesn't support delimited continuations; it only got lexical
-scoping recently.  Although it's relatively advanced in
-terms of bytecode and JIT compilation.  Concurrency is kind
-of a joke.  So there's Common Lisp and McCLIM and stuff,
-which is beautiful and amazing.
-
-It's kind of underrated still how Common Lisp is stable
-since its ANSI standardization in 1994 but still has deep
-qualities that are lacking in contemporary systems.
-It's really quite a competent design; well, it's a merger of
-several live Lisp traditions going back to the 1950s.
-The object system itself is a minor miracle.  The full
-compiler is always available at runtime for dynamic
-compilation.  The conditional restart system makes almost
-all errors recoverable either automatically or by manual
-intervention.  The whole state of the system can be saved as
-core snapshots that reload instantly.
+It's kind of underrated still how Common Lisp is stable since its
+ANSI standardization in 1994 but still has deep qualities that are
+lacking in contemporary systems.  It's really quite a competent
+design; well, it's a merger of several live Lisp traditions going
+back to the 1950s.  The object system itself is a minor miracle.
+The full compiler is always available at runtime for dynamic
+compilation.  The conditional restart system makes almost all errors
+recoverable either automatically or by manual intervention.
+The whole state of the system can be saved as core snapshots that
+reload instantly.
 
 ** Current state of Wisp
 
@@ -187,5 +176,5 @@ Wisp for some seemingly minor reason.
 
 * Local Variables :noexport:
   Local Variables:
-  fill-column: 60
+  fill-column: 68
   End:
