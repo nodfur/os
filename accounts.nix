@@ -23,4 +23,10 @@ in [
     username = "rainbreak";
     sshKeys = keys.rainbreak;
   }
+
+  {
+    number = 5;
+    username = "drmaciver";
+    sshKeys = keys.drmaciver;
+  }
 ]

@@ -391,16 +391,8 @@
               users.users =
                 let
                   welcome = pkgs.writeShellScript "welcome" ''
-                    catlet() {
-                      ${pkgs.figlet}/bin/figlet -f ${pkgs.figlet-fonts}/$1.flf "$2" \
-                        | ${pkgs.lolcat}/bin/lolcat
-                    }
-
                     echo
-                    catlet Bloody node.town
-                    echo
-
-                    echo "Welcome, $(tput bold)$(whoami)$(tput sgr0), to the $(tput dim)node.town$(tput sgr0) cluster."
+                    echo "Welcome, $(tput bold)$(whoami)$(tput sgr0), to $(tput dim)node.town$(tput sgr0)."
                     echo
 
                     tmp=$(mktemp -d)
@@ -427,6 +419,7 @@
                   lucy = mkUser keys.mbrock;
                   dbrock = mkUser keys.dbrock;
                   rainbreak = mkUser keys.rainbreak;
+                  drmaciver = mkUser keys.drmaciver;
                 };
             })
 
