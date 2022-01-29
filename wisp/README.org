@@ -96,6 +96,19 @@ code base could probably be translated to Zig in a few days.
 Actually Zig can even translate C to Zig, but it didn't work on
 Wisp for some seemingly minor reason.
 
+* Wisp vaporware
+** Wisp REPL
+** Wisp Continuations
+** Wisp Images
+** Wisp Library
+** Wisp Inspector
+** Wisp Remote
+** Wisp Emacs
+** Wisp DOM
+** Wisp React
+** Wisp Threads
+** Wisp Cluster
+
 * Wisp Internals
 
 ** Memory Layout
