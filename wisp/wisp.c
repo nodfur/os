@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #define WISP_DEBUG_ALLOC 0
 
 #include "wisp.h"
@@ -12,7 +13,7 @@ size_t heap_used = 0;
 
 wisp_word_t APPLY;
 wisp_word_t CLOSURE;
-wisp_word_t COMMON_LISP;
+wisp_word_t WISP;
 wisp_word_t EVAL;
 wisp_word_t LAMBDA;
 wisp_word_t MACRO;
@@ -118,8 +119,6 @@ wisp_make_instance_with_slots (wisp_word_t type,
 
   return pointer;
 }
-
-void wisp_dump (wisp_word_t x);
 
 wisp_word_t
 wisp_make_instance (wisp_word_t type,
@@ -315,7 +314,7 @@ wisp_string (const char *source)
 wisp_word_t
 wisp_intern_lisp (const char *name)
 {
-  return wisp_intern_symbol (wisp_string (name), COMMON_LISP);
+  return wisp_intern_symbol (wisp_string (name), WISP);
 }
 
 void
@@ -327,12 +326,16 @@ wisp_init ()
 }
 
 void
-wisp_start ()
+wisp_allocate_heap ()
 {
   fprintf (stderr, "; allocating %lu MB heap\n", heap_size / MEGABYTES);
 
-  heap = malloc (heap_size);
+  heap = calloc (heap_size, 1);
+}
 
+void
+wisp_start ()
+{
   wisp_word_t *words = heap;
 
   words[0] = 6 << 8;
@@ -348,25 +351,36 @@ wisp_start ()
   PACKAGE =
     wisp_create_symbol (wisp_string ("PACKAGE"));
 
-  COMMON_LISP =
-    wisp_make_package (wisp_string ("COMMON-LISP"));
+  WISP =
+    wisp_make_package (wisp_string ("WISP"));
 
-  WISP_DEBUG ("COMMON-LISP 0x%X\n", COMMON_LISP);
+  WISP_DEBUG ("WISP 0x%X\n", WISP);
 
   wisp_word_t *common_lisp_header =
-    wisp_deref (COMMON_LISP);
+    wisp_deref (WISP);
 
   common_lisp_header[3] =
     wisp_cons (NIL, NIL);
 
   common_lisp_header[3] =
     wisp_cons (PACKAGE, common_lisp_header[3]);
+}
 
-  QUOTE   = wisp_intern_lisp ("QUOTE");
-  APPLY   = wisp_intern_lisp ("APPLY");
-  EVAL    = wisp_intern_lisp ("EVAL");
-  SCOPE   = wisp_intern_lisp ("SCOPE");
+void
+wisp_intern_basic_symbols ()
+{
+  APPLY = wisp_intern_lisp ("APPLY");
   CLOSURE = wisp_intern_lisp ("CLOSURE");
+  EVAL = wisp_intern_lisp ("EVAL");
+  LAMBDA = wisp_intern_lisp ("LAMBDA");
+  MACRO = wisp_intern_lisp ("MACRO");
+  PACKAGE = wisp_intern_lisp ("PACKAGE");
+  PARAMS = wisp_intern_lisp ("PARAMS");
+  QUOTE = wisp_intern_lisp ("QUOTE");
+  SCOPE = wisp_intern_lisp ("SCOPE");
+  WISP = wisp_intern_lisp ("WISP");
+
+  SET_SYMBOL_FUNCTION = wisp_intern_lisp ("SET-SYMBOL-FUNCTION");
 }
 
 bool
@@ -561,15 +575,6 @@ wisp_make_list (int count,
 void
 wisp_setup (void)
 {
-  LAMBDA =
-    wisp_intern_lisp ("LAMBDA");
-  MACRO =
-    wisp_intern_lisp ("MACRO");
-  PARAMS =
-    wisp_intern_lisp ("PARAMS");
-  SET_SYMBOL_FUNCTION =
-    wisp_intern_lisp ("SET-SYMBOL-FUNCTION");
-
   wisp_set_symbol_function
     (LAMBDA,
      wisp_make_instance
@@ -661,7 +666,7 @@ wisp_load_image (const char *path)
 
   heap_used = size;
 
-  COMMON_LISP = 0x6D;
+  WISP = 0x6D;
 
 #define RESTORE(x) x = wisp_intern_lisp (#x)
 
@@ -682,8 +687,25 @@ wisp_load_image (const char *path)
 int
 main (int argc, char **argv)
 {
-  wisp_start ();
-  wisp_setup ();
+  bool loading_heap = false;
+
+  if (argc > 1 && strcmp (argv[1], "--load-heap") == 0)
+    loading_heap = true;
+
+  wisp_allocate_heap ();
+
+  if (!loading_heap)
+    {
+      WISP_DEBUG ("starting system sans heap image\n");
+      wisp_start ();
+      wisp_intern_basic_symbols ();
+      wisp_setup ();
+    }
+  else
+    {
+      WISP_DEBUG ("starting system from heap image\n");
+      wisp_intern_basic_symbols ();
+    }
 
   wisp_eval_code
     ("(set-symbol-function 'identity (lambda (x) x))");
@@ -716,7 +738,7 @@ main (int argc, char **argv)
 
   wisp_save_image ("wisp.heap");
 
-  if (argc == 1)
+  if (argc > 1)
     {
       while (true)
         {

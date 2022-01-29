@@ -107,7 +107,7 @@ static const wisp_word_t NIL =
 
 extern wisp_word_t APPLY;
 extern wisp_word_t CLOSURE;
-extern wisp_word_t COMMON_LISP;
+extern wisp_word_t WISP;
 extern wisp_word_t EVAL;
 extern wisp_word_t LAMBDA;
 extern wisp_word_t MACRO;
@@ -119,6 +119,9 @@ extern wisp_word_t SET_SYMBOL_FUNCTION;
 
 wisp_word_t
 wisp_read (const char **s);
+
+void
+wisp_dump (wisp_word_t x);
 
 wisp_word_t
 wisp_cons (wisp_word_t car, wisp_word_t cdr);

@@ -38,7 +38,7 @@ wisp_read_symbol (const char **stream)
 
   *stream = after - 1;
 
-  return wisp_intern_symbol (name, COMMON_LISP);
+  return wisp_intern_symbol (name, WISP);
 }
 
 wisp_word_t

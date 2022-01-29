@@ -430,3 +430,6 @@
  '((emacs-lisp-mode "Elisp" :major)
    (paredit-mode)
    (company-mode)))
+
+(server-start)
+(require 'org-protocol)
