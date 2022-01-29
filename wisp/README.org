@@ -1,24 +1,5 @@
 * Wisp
 
-I always wanted my computer to be something more like a "Lisp
-Machine."  Emacs gives me some of that, but it's not optimal even as
-just a Lisp interpreter.  It definitely doesn't support delimited
-continuations; it only got lexical scoping recently.  Although it's
-relatively advanced in terms of bytecode and JIT compilation.
-Concurrency is kind of a joke.  So there's Common Lisp and McCLIM and
-stuff, which is beautiful and amazing.
-
-It's kind of underrated still how Common Lisp is stable since its
-ANSI standardization in 1994 but still has deep qualities that are
-lacking in contemporary systems.  It's really quite a competent
-design; well, it's a merger of several live Lisp traditions going
-back to the 1950s.  The object system itself is a minor miracle.
-The full compiler is always available at runtime for dynamic
-compilation.  The conditional restart system makes almost all
-errors recoverable either automatically or by manual intervention.
-The whole state of the system can be saved as core snapshots that
-reload instantly.
-
 OK, well, I started seeing people talk about WebAssembly as a new
 crucial platform.  It's in the major web browsers and strongly
 supported by everyone.  It runs in Node, Deno, a couple of
@@ -52,6 +33,25 @@ that's very social and "portable" in the sense that you should be
 able to migrate between your browser, your laptop, the cloud,
 whatever.  I had this vision of a Twitter-like social network but
 with a type of tweet that's actually a program that you can run.
+
+I always wanted my computer to be something more like a "Lisp
+Machine."  Emacs gives me some of that, but it's not optimal even as
+just a Lisp interpreter.  It definitely doesn't support delimited
+continuations; it only got lexical scoping recently.  Although it's
+relatively advanced in terms of bytecode and JIT compilation.
+Concurrency is kind of a joke.  So there's Common Lisp and McCLIM and
+stuff, which is beautiful and amazing.
+
+It's kind of underrated still how Common Lisp is stable since its
+ANSI standardization in 1994 but still has deep qualities that are
+lacking in contemporary systems.  It's really quite a competent
+design; well, it's a merger of several live Lisp traditions going
+back to the 1950s.  The object system itself is a minor miracle.
+The full compiler is always available at runtime for dynamic
+compilation.  The conditional restart system makes almost all
+errors recoverable either automatically or by manual intervention.
+The whole state of the system can be saved as core snapshots that
+reload instantly.
 
 ** Current state of Wisp
 
