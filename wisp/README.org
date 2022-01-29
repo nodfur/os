@@ -63,6 +63,8 @@ That's without any concern for stability of the format.
 
 There's no garbage collection yet.
 
+** Lisp Traditions
+
 I've become a bit confused about Lisp language traditions and what
 I want Wisp to be like.
 
@@ -91,17 +93,18 @@ Actually Zig can even translate C to Zig, but it didn't work on
 Wisp for some seemingly minor reason.
 
 * Wisp vaporware
-** Wisp REPL
-** Wisp Continuations
-** Wisp Images
-** Wisp Library
-** Wisp Inspector
-** Wisp Remote
-** Wisp Emacs
-** Wisp DOM
-** Wisp React
-** Wisp Threads
-** Wisp Cluster
+
+ - Wisp REPL
+ - Wisp Continuations
+ - Wisp Images
+ - Wisp Library
+ - Wisp Inspector
+ - Wisp Remote
+ - Wisp Emacs
+ - Wisp DOM
+ - Wisp React
+ - Wisp Threads
+ - Wisp Cluster
 
 * Wisp Internals
 
