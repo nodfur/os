@@ -25,7 +25,7 @@ WebAssembly platform.
 The browsers let you have several parallel WebAssembly
 threads, aka web workers, with shared memory buffers and
 atomic operations, so we can implement real threads.
-Emscripten already supports the `pthread` API.
+Emscripten already supports the pthread API.
 
 ** Lisp Traditions, Common Lisp, continuations, etc
 
