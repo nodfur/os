@@ -1,5 +1,5 @@
 {
-  nixpkgs, figlet-fonts,
+  nixpkgs,
   domain,
   number,
   username,
