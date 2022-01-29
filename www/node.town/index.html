@@ -1,16 +1,16 @@
 <!doctype html>
 <title>Node.Town</title>
 <style>
-  /* @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap'); */
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
 
   html, input { font: 22px/1.5 "DM Mono", monospace; }
-  html { height: 100vh; background: #fa23; }
+  html { background: white; }
   body {
-    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    padding: 3rem;
   }
 
   * { margin: 0; padding: 0; }
@@ -21,12 +21,16 @@
 
   header { padding-bottom: .5rem; }
 
-  article {
+  article:not(.white) {
     background: #fc2;
-    padding: 1.5rem;
-    padding-bottom: 1rem;
     box-shadow: 6px 6px 0px 0px #fa2a;
     border-radius: 6px;
+  }
+
+  article {
+    padding: 1.5rem;
+    padding-bottom: 1rem;
+    margin-bottom: 3rem;
   }
 
   p {
@@ -43,18 +47,18 @@
   }
 </style>
 
-<article>
-  <header>
-    <h1>Node.Town</h1>
-    <h2>Restless Hypermedia, Inc.</h2>
-  </header>
-  <p>We&rsquo;re building portable computers.
-  <p>Not just, like, laptops or tablets.
-  <p>Portable&mdash; um, in a spiritual sense.
-  <h2 style="text-align: right">
-    <a href="https://twitter.com/nodetown">@nodetown</a>
-  </h2>
-</article>
+<!-- <article> -->
+<!--   <header> -->
+<!--     <h1>Node.Town</h1> -->
+<!--     <h2>Restless Hypermedia, Inc.</h2> -->
+<!--   </header> -->
+<!--   <p>We&rsquo;re building portable computers. -->
+<!--   <p>Not just, like, laptops or tablets. -->
+<!--   <p>Portable&mdash; um, in a spiritual sense. -->
+<!--   <h2 style="text-align: right"> -->
+<!--     <a href="https://twitter.com/nodetown">@nodetown</a> -->
+<!--   </h2> -->
+<!-- </article> -->
 
 <!-- <article> -->
 <!--   <header> -->
@@ -66,7 +70,28 @@
 <!--   </h2> -->
 <!-- </article> -->
 
+<!-- <article> -->
+<!--   <header> -->
+<!--     <h1>Node.Town</h1> -->
+<!--     <h2>Restless Hypermedia, Inc.</h2> -->
+<!--   </header> -->
+<!-- </article> -->
 
-<script>
-  setTimeout(() => location.reload(), 1000)
-</script>
+<article class=white>
+  <header style="display: flex; flex-direction: column; align-items: center">
+    <h1 style="font-size: 206%; line-height: 2rem;">Node.Town</h1>
+    <h2 style="opacity: 0.8">Restless Hypermedia</h2>
+  </header>
+</article>
+
+
+<article class=white>
+  <header>
+    <h1 style="font-size: 206%">Node.Town</h1>
+  </header>
+</article>
+
+
+<!-- <script> -->
+<!--   setTimeout(() => location.reload(), 1000) -->
+<!-- </script> -->
