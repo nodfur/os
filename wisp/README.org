@@ -22,6 +22,11 @@ it's not a whole platform bundle.  I had a hunch that it would
 be cool to have a persistent Lisp environment made for this
 WebAssembly platform.
 
+The browsers let you have several parallel WebAssembly
+threads, aka web workers, with shared memory buffers and
+atomic operations, so we can implement real threads.
+Emscripten already supports the `pthread` API.
+
 ** Lisp Traditions, Common Lisp, continuations, etc
 
 I always wanted my computer to be something more like a "Lisp
@@ -92,15 +97,12 @@ to Zig in a few days.  Actually Zig can even translate C to
 Zig, but it didn't work on Wisp for some seemingly
 minor reason.
 
-** Concurrency, Erlang, BEAM, etc
+** Ideas
 
+It would be very cool to have some form of data replication
+built into the system.  Like persistent variables that can be
+synchronized across nodes.  Especially CRDTs.
 
-
-* Wisp vaporware
-
- - Wisp REPL
- - Wisp Continuations
- - Wisp Images
  - Wisp Library
  - Wisp Inspector
  - Wisp Remote
