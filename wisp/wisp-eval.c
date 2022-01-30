@@ -286,90 +286,180 @@ wisp_step_into_function (wisp_machine_t *machine,
 }
 
 bool
+wisp_follow_plan (wisp_machine_t *machine)
+{
+  wisp_word_t term = machine->term;
+  wisp_word_t scopes = machine->scopes;
+  wisp_word_t plan = machine->plan;
+
+  if (!WISP_IS_STRUCT_PTR (plan))
+    wisp_crash ("bad plan");
+
+  wisp_word_t *header = wisp_deref (plan);
+  wisp_word_t type = wisp_struct_header_type (header);
+
+  if (type == APPLY)
+    {
+      wisp_apply_plan_t *apply_plan =
+        wisp_get_apply_plan (header);
+
+      wisp_word_t terms = apply_plan->terms;
+      if (terms == NIL)
+        {
+          wisp_word_t new_apply_plan =
+            wisp_make_apply_plan
+            (apply_plan->callee,
+             wisp_cons (term, apply_plan->values),
+             NIL,
+             apply_plan->scopes,
+             apply_plan->next);
+
+          *machine = wisp_step_into_function
+            (machine,
+             true,
+             wisp_get_apply_plan
+             (wisp_deref (new_apply_plan)));
+
+          return true;
+        }
+      else
+        {
+          wisp_word_t *cons =
+            wisp_deref (terms);
+
+          wisp_word_t car = cons[0];
+          wisp_word_t cdr = cons[1];
+
+          wisp_word_t next_apply_plan =
+            wisp_make_apply_plan
+            (apply_plan->callee,
+             wisp_cons (term, apply_plan->values),
+             cdr,
+             apply_plan->scopes,
+             apply_plan->next);
+
+          machine->term = car;
+          machine->value = false;
+          machine->plan = next_apply_plan;
+
+          return true;
+        }
+    }
+
+  else if (type == EVAL)
+    {
+      /* fprintf (stderr, "; eval\n"); */
+      machine->value = false;
+      machine->scopes = header[2];
+      machine->plan = header[3];
+      return true;
+    }
+
+  wisp_crash ("bad plan");
+}
+
+bool
+wisp_step_into_nullary_call (wisp_machine_t *machine,
+                             wisp_word_t callee)
+{
+  wisp_word_t scopes = machine->scopes;
+  wisp_word_t plan = machine->plan;
+
+  // XXX: It's not necessary to allocate a plan on the heap here.
+
+  wisp_word_t apply_plan =
+    wisp_make_apply_plan
+    (callee, NIL, NIL, scopes, plan);
+
+  *machine = wisp_step_into_function
+    (machine,
+     false,
+     wisp_get_apply_plan
+     (wisp_deref (apply_plan)));
+
+  return true;
+}
+
+bool
+wisp_start_evaluating_arguments (wisp_machine_t *machine,
+                                 wisp_word_t callee,
+                                 wisp_word_t args)
+{
+  wisp_word_t *term_list = wisp_deref (args);
+  wisp_word_t first_term = term_list[0];
+  wisp_word_t remaining_terms = term_list[1];
+
+  wisp_word_t apply_plan = wisp_make_apply_plan
+    (callee, NIL, remaining_terms,
+     machine->scopes, machine->plan);
+
+  machine->term = first_term;
+  machine->value = false;
+  machine->plan = apply_plan;
+
+  return true;
+}
+
+bool
+wisp_step_into_macro_call (wisp_machine_t *machine,
+                           wisp_word_t callee,
+                           wisp_word_t args)
+{
+  wisp_word_t apply_plan = wisp_make_apply_plan
+    (callee, args, NIL, machine->scopes, machine->plan);
+
+  *machine = wisp_step_into_function
+    (machine,
+     false,
+     wisp_get_apply_plan
+     (wisp_deref (apply_plan)));
+
+  return true;
+}
+
+bool
+wisp_step_into_call (wisp_machine_t *machine,
+                     wisp_word_t callee,
+                     wisp_word_t args)
+{
+  wisp_word_t term = machine->term;
+  wisp_word_t scopes = machine->scopes;
+  wisp_word_t plan = machine->plan;
+
+  if (wisp_is_symbol (callee))
+    {
+      wisp_closure_t *closure =
+        wisp_get_closure (callee);
+
+      if (args == NIL)
+        return wisp_step_into_nullary_call
+          (machine, callee);
+
+      else if (closure->macro == NIL)
+        return wisp_start_evaluating_arguments
+          (machine, callee, args);
+
+      else
+        return wisp_step_into_macro_call
+          (machine, callee, args);
+    }
+
+  wisp_crash ("bad call");
+}
+
+bool
 wisp_step (wisp_machine_t *machine)
 {
   wisp_word_t term = machine->term;
   wisp_word_t scopes = machine->scopes;
   wisp_word_t plan = machine->plan;
 
-  /* if (machine->value) */
-  /*   fprintf (stderr, "; value: "); */
-  /* else */
-  /*   fprintf (stderr, "; term: "); */
-  /* wisp_dump (term); */
-  /* printf ("\n"); */
-
-  /* fprintf (stderr, "; plan: "); */
-  /* wisp_dump (plan); */
-  /* printf ("\n"); */
-
   if (machine->value || wisp_term_irreducible (term))
     {
       if (plan == NIL)
         return false;
-
-      else if (WISP_IS_STRUCT_PTR (plan))
-        {
-          wisp_word_t *header = wisp_deref (plan);
-          wisp_word_t type = wisp_struct_header_type (header);
-
-          if (type == APPLY)
-            {
-              wisp_apply_plan_t *apply_plan =
-                wisp_get_apply_plan (header);
-
-              wisp_word_t terms = apply_plan->terms;
-              if (terms == NIL)
-                {
-                  wisp_word_t new_apply_plan =
-                    wisp_make_apply_plan
-                    (apply_plan->callee,
-                     wisp_cons (term, apply_plan->values),
-                     NIL,
-                     apply_plan->scopes,
-                     apply_plan->next);
-
-                  *machine = wisp_step_into_function
-                    (machine,
-                     true,
-                     wisp_get_apply_plan
-                     (wisp_deref (new_apply_plan)));
-
-                  return true;
-                }
-              else
-                {
-                  wisp_word_t *cons =
-                    wisp_deref (terms);
-
-                  wisp_word_t car = cons[0];
-                  wisp_word_t cdr = cons[1];
-
-                  wisp_word_t next_apply_plan =
-                    wisp_make_apply_plan
-                    (apply_plan->callee,
-                     wisp_cons (term, apply_plan->values),
-                     cdr,
-                     apply_plan->scopes,
-                     apply_plan->next);
-
-                  machine->term = car;
-                  machine->value = false;
-                  machine->plan = next_apply_plan;
-
-                  return true;
-                }
-            }
-
-          else if (type == EVAL)
-            {
-              /* fprintf (stderr, "; eval\n"); */
-              machine->value = false;
-              machine->scopes = header[2];
-              machine->plan = header[3];
-              return true;
-            }
-        }
+      else
+        return wisp_follow_plan (machine);
     }
 
   else if (WISP_IS_LIST_PTR (term))
@@ -386,77 +476,12 @@ wisp_step (wisp_machine_t *machine)
         }
 
       else
-        {
-          // Evaluate a function call (f x y z).
-          if (WISP_IS_OTHER_PTR (car))
-            {
-              wisp_word_t *header = wisp_deref (car);
-              if (header[0] == WISP_SYMBOL_HEADER)
-                {
-                  if (cdr == NIL)
-                    {
-                      // XXX: It's not necessary to allocate a plan on
-                      // the heap here.
-
-                      wisp_word_t apply_plan =
-                        wisp_make_apply_plan
-                        (car, NIL, NIL, scopes, plan);
-
-                      *machine =
-                        wisp_step_into_function
-                        (machine,
-                         false,
-                         wisp_get_apply_plan
-                         (wisp_deref (apply_plan)));
-
-                      return true;
-                    }
-                  else
-                    {
-                      wisp_closure_t *closure =
-                        wisp_get_closure (car);
-
-                      if (closure->macro == NIL)
-                        {
-                          wisp_word_t *term_list = wisp_deref (cdr);
-                          wisp_word_t first_term = term_list[0];
-                          wisp_word_t remaining_terms = term_list[1];
-
-                          wisp_word_t apply_plan = wisp_make_apply_plan
-                            (car, NIL, remaining_terms, scopes, plan);
-
-                          machine->term = first_term;
-                          machine->value = false;
-                          machine->plan = apply_plan;
-
-                          return true;
-                        }
-                      else
-                        {
-                          wisp_word_t apply_plan = wisp_make_apply_plan
-                            (car, cdr, NIL, scopes, plan);
-
-                          *machine =
-                            wisp_step_into_function
-                            (machine,
-                             false,
-                             wisp_get_apply_plan
-                             (wisp_deref (apply_plan)));
-
-                          return true;
-                        }
-                    }
-                }
-
-            }
-        }
+        return wisp_step_into_call (machine, car, cdr);
     }
 
   else if (wisp_is_symbol (term))
     {
       wisp_word_t binding;
-
-      /* wisp_dump (machine->scopes); */
 
       if (wisp_find_binding (machine->scopes, term, &binding))
         {
