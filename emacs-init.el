@@ -441,7 +441,11 @@
    (company-mode nil t)
    (which-key-mode nil t)
    (whitespace-cleanup-mode nil t)
-   (projectile-mode nil t)))
+   (projectile-mode nil t)
+   (flycheck-mode nil t)
+   (lsp-mode nil t)
+   (abbrev-mode nil t)
+   ))
 
 (server-start)
 (require 'org-protocol)

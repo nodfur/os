@@ -2,7 +2,7 @@ default: clean wisp wisp.wasm test
 
 CFLAGS += -g
 
-SOURCES = wisp.c wisp-read.c wisp-eval.c
+SOURCES = wisp.c wisp-eval.c wisp-read.c wisp-dump.c
 
 wisp.wasm: $(SOURCES)
 	emcc $(CFLAGS) $^ -o $@

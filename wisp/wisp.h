@@ -1,6 +1,13 @@
 #ifndef WISP_H
 #define WISP_H
 
+#ifdef EMSCRIPTEN
+# include <emscripten/emscripten.h>
+# define WISP_EXPORT EMSCRIPTEN_KEEPALIVE
+#else
+# define WISP_EXPORT
+#endif
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -162,6 +169,9 @@ wisp_fixnum (int32_t x);
 
 wisp_word_t *
 wisp_is_symbol (wisp_word_t value);
+
+bool
+wisp_is_quote (wisp_word_t word);
 
 wisp_word_t
 wisp_header_word (uint32_t data,
