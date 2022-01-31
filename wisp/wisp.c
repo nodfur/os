@@ -317,22 +317,14 @@ wisp_string (const char *source)
 wisp_word_t
 wisp_intern_lisp (const char *name)
 {
-  WISP_DEBUG ("interning WISP:%s\n", name);
+  /* WISP_DEBUG ("interning WISP:%s\n", name); */
   return wisp_intern_symbol (wisp_string (name), WISP);
-}
-
-void
-wisp_init ()
-{
-  fprintf (stderr, "; allocating %lu MB heap\n", heap_size / MEGABYTES);
-
-  heap = malloc (heap_size);
 }
 
 void
 wisp_allocate_heap ()
 {
-  fprintf (stderr, "; allocating %lu MB heap\n", heap_size / MEGABYTES);
+  WISP_DEBUG ("allocating %lu MB heap\n", heap_size / MEGABYTES);
 
   heap = calloc (heap_size, 1);
 }
@@ -627,7 +619,7 @@ wisp_save_heap (const char *path)
 }
 
 void
-wisp_load_image (const char *path)
+wisp_load_heap (const char *path)
 {
   FILE *f = fopen (path, "r");
 
@@ -646,9 +638,9 @@ wisp_load_image (const char *path)
       long size = ftell (f) - start;
       fseek (f, start, SEEK_SET);
 
-      WISP_DEBUG ("loading %lu B heap from %s\n",
-                  size,
-                  path);
+      WISP_DEBUG ("loading heap from %s (%lu bytes)\n",
+                  path,
+                  size);
 
       if (fread (heap, 1, size, f) != size)
         wisp_crash ("heap load read failed");
@@ -722,7 +714,7 @@ wisp_main ()
 {
   char *heap_path = getenv ("WISP_HEAP");
 
-  WISP_DEBUG ("heap path %s\n", heap_path);
+  fprintf (stderr, ";;; wisp 0.5 booting\n");
 
   if (!heap_path || access (heap_path, R_OK) != 0)
     {
@@ -730,7 +722,7 @@ wisp_main ()
       wisp_start_without_heap ();
     }
   else
-    wisp_load_image (heap_path);
+    wisp_load_heap (heap_path);
 }
 
 int
