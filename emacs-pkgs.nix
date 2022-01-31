@@ -7,12 +7,13 @@ with epkgs; [
   avy
   company
   company-nixos-options
+  consult
   default-text-scale
   delight
-  # diminish
   direnv
-  doom-modeline
+  # doom-modeline
   elixir-mode
+  embark
   flycheck
   geiser
   geiser-guile
@@ -21,6 +22,9 @@ with epkgs; [
   lsp-treemacs
   lsp-ui
   magit
+  marginalia
+  nano-modeline
+  nano-theme
   nix-mode
   paredit
   pdf-tools
@@ -38,5 +42,5 @@ with epkgs; [
   zig-mode
 
   pkgs.urbit-emacs
-  pkgs.nano-emacs
+  # pkgs.nano-emacs
 ]

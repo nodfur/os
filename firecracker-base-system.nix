@@ -1,8 +1,10 @@
 { nixpkgs, isContainer } :
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, modulesPath, ... }:
 
 let
   kernel = pkgs.linux_latest;
+
+  makeDiskImage = import "${modulesPath}/../lib/make-disk-image.nix";
 
 in {
   boot.kernelPackages = pkgs.linuxPackages_custom {
@@ -38,7 +40,7 @@ in {
     '';
   };
 
-  system.build.rootfs-qemu = nixpkgs.lib.makeDiskImage {
+  system.build.rootfs-qemu = makeDiskImage {
     inherit pkgs config lib;
     name = "firecracker-rootfs";
     partitionTableType = "none";

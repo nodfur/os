@@ -23,6 +23,9 @@ let
 
     (cmd "Telegram"
       ''${pkgs.tdesktop}/bin/telegram-desktop'')
+
+    (cmd "Discord"
+      ''${pkgs.discord}/bin/discord'')
   ];
 
   menu-names =

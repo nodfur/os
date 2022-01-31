@@ -6,14 +6,15 @@
   nixpkgs.config.allowUnfree = true;
   
   environment.systemPackages = with pkgs; [
+    nix-tree
     nodejs-16_x
+    python3
+    rlwrap
+    ruby
+    scrot
     tdesktop
     unzip
     wget
-    python3
-    ruby
-    scrot
-    rlwrap
   ];
 
   nix.extraOptions = ''

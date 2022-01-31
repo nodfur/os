@@ -2,7 +2,7 @@
 
 Wisp is a Lisp system for WebAssembly with grand intentions.
 
-** WebAssembly as a Platform
+** WebAssembly as a platform
 
 I want to have some kind of funny interactive computing
 platform that's very social and "portable" in the sense that
@@ -27,7 +27,7 @@ threads, aka web workers, with shared memory buffers and
 atomic operations, so we can implement real threads.
 [[https://emscripten.org/docs/porting/pthreads.html][Emscripten supports pthreads.]]
 
-** Lisp Traditions, Common Lisp, continuations, etc
+** Lisp traditions, continuations, etc
 
 I always wanted my computer to be something more like a "Lisp
 Machine."  Emacs gives me some of that, but it's not optimal
@@ -86,7 +86,7 @@ That's without any concern for stability of the format.
 
 There's no garbage collection yet.
 
-** C, Rust, Zig: low-level implementation languages
+** C, Rust, Zig
 
 I think Wisp probably ought to be written in Rust, or Zig,
 rather than C, but C is just easier for me right now.  In a

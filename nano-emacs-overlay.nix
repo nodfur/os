@@ -40,4 +40,11 @@ inputs: self: super:
         export EMACSLOADPATH=${self.mu}/share/emacs/site-lisp/mu4e:$EMACSLOADPATH
       '';
     };
+
+  nano-theme =
+    self.emacsPackages.trivialBuild {
+      pname = "nano-theme";
+      version = "0.0.0.";
+      src = inputs.nano-theme;
+    };
 }

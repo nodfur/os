@@ -41,6 +41,11 @@
     #   url = github:rougier/nano-emacs;
     # };
 
+    # nano-theme = {
+    #   flake = false;
+    #   url = github:rougier/nano-theme;
+    # };
+
     urbit-emacs = {
       flake = false;
       url = github:clonex10100/urbit-api.el;
@@ -88,6 +93,7 @@
     figlet-fonts,
     urbit-src,
     mailserver,
+    # nano-theme,
     # nano-emacs,
     # mu4e-dashboard,
     # mu4e-thread-folding,
