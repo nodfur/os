@@ -1,5 +1,5 @@
 wisp
-wisp.wasm
-wisp.heap
+*.wasm
+*.heap
 .direnv
 *.js
