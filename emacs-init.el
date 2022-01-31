@@ -433,3 +433,21 @@
 
 (server-start)
 (require 'org-protocol)
+
+(defun narrow-to-paragraph ()
+  (interactive)
+  (setq cursor-type nil)
+  (mark-paragraph)
+  (next-line)
+  (narrow-to-region (point) (mark))
+  (deactivate-mark))
+
+(defun narrow-to-next-paragraph ()
+  (interactive)
+  (widen)
+  (forward-paragraph)
+  (narrow-to-paragraph)
+  (deactivate-mark))
+
+(global-set-key (kbd "C-c P") 'narrow-to-paragraph)
+(global-set-key (kbd "C-c N") 'narrow-to-next-paragraph)
