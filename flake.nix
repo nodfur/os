@@ -2,7 +2,7 @@
   inputs = {
 
     nixpkgs.url =
-      github:nodfur/nixpkgs;
+      github:nixos/nixpkgs/nixos-unstable;
 
     flake-utils.url =
       github:numtide/flake-utils;
@@ -26,20 +26,20 @@
       url = github:xero/figlet-fonts;
     };
 
-    mu4e-dashboard = {
-      flake = false;
-      url = github:rougier/mu4e-dashboard;
-    };
+    # mu4e-dashboard = {
+    #   flake = false;
+    #   url = github:rougier/mu4e-dashboard;
+    # };
 
-    mu4e-thread-folding = {
-      flake = false;
-      url = github:rougier/mu4e-thread-folding;
-    };
+    # mu4e-thread-folding = {
+    #   flake = false;
+    #   url = github:rougier/mu4e-thread-folding;
+    # };
 
-    nano-emacs = {
-      flake = false;
-      url = github:rougier/nano-emacs;
-    };
+    # nano-emacs = {
+    #   flake = false;
+    #   url = github:rougier/nano-emacs;
+    # };
 
     urbit-emacs = {
       flake = false;
@@ -51,32 +51,32 @@
       url = github:ibhagwan/picom;
    };
 
-    bcm2835-src = {
-      flake = false;
-      url = http://www.airspayce.com/mikem/bcm2835/bcm2835-1.70.tar.gz;
-    };
+    # bcm2835-src = {
+    #   flake = false;
+    #   url = http://www.airspayce.com/mikem/bcm2835/bcm2835-1.70.tar.gz;
+    # };
 
-    waveshare-epaper-demo-src = {
-      flake = false;
-      url = github:waveshare/IT8951-ePaper;
-    };
+    # waveshare-epaper-demo-src = {
+    #   flake = false;
+    #   url = github:waveshare/IT8951-ePaper;
+    # };
 
-    papertty-src = {
-      flake = false;
-      url = github:joukos/PaperTTY;
-    };
+    # papertty-src = {
+    #   flake = false;
+    #   url = github:joukos/PaperTTY;
+    # };
 
-    nodfur-it8951-src = {
-      flake = false;
-      url = github:nodfur/nodfur-it8951;
-    };
+    # nodfur-it8951-src = {
+    #   flake = false;
+    #   url = github:nodfur/nodfur-it8951;
+    # };
 
     zig.url = github:arqv/zig-overlay;
 
-    paperwm-src = {
-      flake = false;
-      url = github:PaperWM-community/PaperWM/next-release;
-    };
+    # paperwm-src = {
+    #   flake = false;
+    #   url = github:PaperWM-community/PaperWM/next-release;
+    # };
   };
 
   outputs = {
@@ -88,17 +88,17 @@
     figlet-fonts,
     urbit-src,
     mailserver,
-    nano-emacs,
-    mu4e-dashboard,
-    mu4e-thread-folding,
+    # nano-emacs,
+    # mu4e-dashboard,
+    # mu4e-thread-folding,
     urbit-emacs,
     picom-src,
-    bcm2835-src,
-    waveshare-epaper-demo-src,
-    papertty-src,
-    nodfur-it8951-src,
-    zig,
-    paperwm-src
+    # bcm2835-src,
+    # waveshare-epaper-demo-src,
+    # papertty-src,
+    # nodfur-it8951-src,
+    zig
+    # paperwm-src
   }@inputs:
 
     let
@@ -151,25 +151,25 @@
       all-overlays = [
         emacs-overlay.overlay
         figlet-fonts-overlay
-        nano-emacs-overlay
+        # nano-emacs-overlay
         openai-overlay
         picom-overlay
         telegram-overlay
         urbit-emacs-overlay
         urbit-overlay
         restless-overlay
-        paperwm-overlay
+        # paperwm-overlay
       ];
 
-      paperwm-overlay =
-        self: super: {
-          gnomeExtensions = super.gnomeExtensions // {
-            paperwm = super.gnomeExtensions.paperwm.overrideDerivation (old: {
-              version = "pre-41.0";
-              src = paperwm-src;
-            });
-          };
-        };
+      # paperwm-overlay =
+      #   self: super: {
+      #     gnomeExtensions = super.gnomeExtensions // {
+      #       paperwm = super.gnomeExtensions.paperwm.overrideDerivation (old: {
+      #         version = "pre-41.0";
+      #         src = paperwm-src;
+      #       });
+      #     };
+      #   };
 
       figlet-fonts-overlay =
         _self: _super: {
@@ -184,8 +184,8 @@
       telegram-overlay =
         import ./telegram-overlay.nix;
 
-      nano-emacs-overlay =
-        import ./nano-emacs-overlay.nix inputs;
+      # nano-emacs-overlay =
+      #   import ./nano-emacs-overlay.nix inputs;
 
       picom-overlay =
         self: super: {
@@ -214,29 +214,29 @@
             };
         };
 
-      bcm2835-overlay =
-        self: super: {
-          bcm2835 = super.stdenv.mkDerivation {
-            name = "bcm2835";
-            src = bcm2835-src;
-          };
+      # bcm2835-overlay =
+      #   self: super: {
+      #     bcm2835 = super.stdenv.mkDerivation {
+      #       name = "bcm2835";
+      #       src = bcm2835-src;
+      #     };
 
-          waveshare-epaper-demo = super.stdenv.mkDerivation {
-            name = "waveshare-epaper-demo";
-            src = "${waveshare-epaper-demo-src}/Raspberry";
-            buildInputs = [self.bcm2835];
+      #     waveshare-epaper-demo = super.stdenv.mkDerivation {
+      #       name = "waveshare-epaper-demo";
+      #       src = "${waveshare-epaper-demo-src}/Raspberry";
+      #       buildInputs = [self.bcm2835];
 
-            installPhase = ''
-              mkdir -p $out/bin
-              cp epd $out/bin/waveshare-epd
-            '';
-          };
+      #       installPhase = ''
+      #         mkdir -p $out/bin
+      #         cp epd $out/bin/waveshare-epd
+      #       '';
+      #     };
 
-          nodfur-it8951 = super.mkYarnPackage {
-            name = "nodfur-it8951";
-            src = nodfur-it8951-src;
-          };
-        };
+      #     nodfur-it8951 = super.mkYarnPackage {
+      #       name = "nodfur-it8951";
+      #       src = nodfur-it8951-src;
+      #     };
+      #   };
 
       urbit-module =
         { config, lib, ... }: {
@@ -336,13 +336,13 @@
 
             (import ./b14.nix)
 
-            ({ pkgs, ... }: {
-              nixpkgs.overlays = [bcm2835-overlay];
-              environment.systemPackages = with pkgs; [
-                bcm2835
-                waveshare-epaper-demo
-              ];
-            })
+            # ({ pkgs, ... }: {
+            #   nixpkgs.overlays = [bcm2835-overlay];
+            #   environment.systemPackages = with pkgs; [
+            #     bcm2835
+            #     waveshare-epaper-demo
+            #   ];
+            # })
 
             (import ./firecracker-guests.nix { inherit self; })
 
@@ -452,14 +452,14 @@
               nixpkgs.config.allowUnfree = true;
             }
 
-            ({ pkgs, ... }: {
-              nixpkgs.overlays = [bcm2835-overlay];
-              environment.systemPackages = with pkgs; [
-                bcm2835
-                waveshare-epaper-demo
-                nodfur-it8951
-              ];
-            })
+            # ({ pkgs, ... }: {
+            #   nixpkgs.overlays = [bcm2835-overlay];
+            #   environment.systemPackages = with pkgs; [
+            #     bcm2835
+            #     waveshare-epaper-demo
+            #     nodfur-it8951
+            #   ];
+            # })
 
             ({ modulesPath, ... }: {
               imports = ["${modulesPath}/installer/sd-card/sd-image-aarch64.nix"];
@@ -525,7 +525,7 @@
           packages = rec {
             inherit (pkgs)
               restless-git
-              waveshare-epaper-demo
+              # waveshare-epaper-demo
             ;
 
             nodfur-emacs =
