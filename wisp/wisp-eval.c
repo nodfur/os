@@ -255,6 +255,19 @@ wisp_step_into_function (wisp_machine_t *machine,
             };
           }
 
+        case WISP_BUILTIN_SAVE_HEAP:
+          {
+            char *heap_path = getenv ("WISP_HEAP");
+            wisp_save_heap (heap_path);
+
+            return (wisp_machine_t) {
+              .term = T,
+              .value = true,
+              .scopes = machine->scopes,
+              .plan = apply_plan->next,
+            };
+          }
+
         default:
           wisp_crash ("unknown builtin");
         }

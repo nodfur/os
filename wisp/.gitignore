@@ -2,3 +2,4 @@ wisp
 wisp.wasm
 wisp.heap
 .direnv
+*.js

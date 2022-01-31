@@ -49,6 +49,7 @@ typedef enum {
   WISP_BUILTIN_CONS,
   WISP_BUILTIN_SET_SYMBOL_FUNCTION,
   WISP_BUILTIN_PLUS,
+  WISP_BUILTIN_SAVE_HEAP,
 } wisp_builtin_t;
 
 #define WISP_LOWTAG_BITS 3
@@ -112,6 +113,7 @@ extern void *heap;
 static const wisp_word_t NIL =
   WISP_LOWTAG_LIST_PTR;
 
+extern wisp_word_t T;
 extern wisp_word_t APPLY;
 extern wisp_word_t CLOSURE;
 extern wisp_word_t WISP;
@@ -137,7 +139,7 @@ wisp_word_t *
 wisp_deref (wisp_word_t ptr);
 
 void
-wisp_dump (wisp_word_t x);
+wisp_dump (FILE *stream, wisp_word_t x);
 
 wisp_word_t
 wisp_cons (wisp_word_t car, wisp_word_t cdr);
@@ -207,5 +209,8 @@ wisp_set_symbol_function (wisp_word_t symbol,
 bool
 wisp_step (wisp_machine_t *machine);
 
+
+void
+wisp_save_heap (const char *path);
 
 #endif

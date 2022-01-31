@@ -42,6 +42,14 @@
         };
       };
 
+      "wisp.node.town" = {
+        forceSSL = true;
+        useACMEHost = "node.town";
+        locations."/" = {
+          root = "/os/wisp/";
+        };
+      };
+
       "urbit.node.town" = {
         forceSSL = true;
         useACMEHost = "node.town";

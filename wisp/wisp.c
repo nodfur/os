@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #define WISP_DEBUG_ALLOC 0
 
@@ -12,6 +13,7 @@ void *heap;
 size_t heap_size = 4 * MEGABYTES;
 size_t heap_used = 0;
 
+wisp_word_t T;
 wisp_word_t APPLY;
 wisp_word_t CLOSURE;
 wisp_word_t WISP;
@@ -315,6 +317,7 @@ wisp_string (const char *source)
 wisp_word_t
 wisp_intern_lisp (const char *name)
 {
+  WISP_DEBUG ("interning WISP:%s\n", name);
   return wisp_intern_symbol (wisp_string (name), WISP);
 }
 
@@ -334,10 +337,13 @@ wisp_allocate_heap ()
   heap = calloc (heap_size, 1);
 }
 
+
 void
 wisp_start ()
 {
   wisp_word_t *words = heap;
+
+  heap_used = wisp_align (7 * sizeof *words);
 
   words[0] = 6 << 8;
   words[1] = WISP_WIDETAG_SYMBOL;
@@ -346,8 +352,6 @@ wisp_start ()
   words[4] = wisp_string ("NIL");
   words[5] = 0xdead0000;
   words[6] = 0xdead0002;
-
-  heap_used = 6 * sizeof *words;
 
   PACKAGE =
     wisp_create_symbol (wisp_string ("PACKAGE"));
@@ -370,6 +374,7 @@ wisp_start ()
 void
 wisp_intern_basic_symbols ()
 {
+  T = wisp_intern_lisp ("T");
   APPLY = wisp_intern_lisp ("APPLY");
   CLOSURE = wisp_intern_lisp ("CLOSURE");
   EVAL = wisp_intern_lisp ("EVAL");
@@ -458,9 +463,9 @@ wisp_set_symbol_function (wisp_word_t symbol,
   header[6] = value;
 
   fprintf (stderr, "; FUNCTION ");
-  wisp_dump (symbol);
+  wisp_dump (stderr, symbol);
   fprintf (stderr, " ← ");
-  wisp_dump (value);
+  wisp_dump (stderr, value);
   fprintf (stderr, "\n");
 }
 
@@ -573,6 +578,11 @@ wisp_setup (void)
     (wisp_intern_lisp ("CONS"),
      WISP_BUILTIN_CONS,
      wisp_simple_params (2, "CAR", "CDR"));
+
+  wisp_builtin_function
+    (wisp_intern_lisp ("SAVE-HEAP"),
+     WISP_BUILTIN_SAVE_HEAP,
+     wisp_simple_params (0));
 }
 
 WISP_EXPORT
@@ -591,48 +601,64 @@ wisp_eval_code (const char *code)
 }
 
 void
-wisp_save_image (const char *path)
+wisp_save_heap (const char *path)
 {
   FILE *f = fopen (path, "w+");
+
+  fprintf (f, "WISP 0 %d\n", WISP);
+
   if (fwrite (heap, 1, heap_used, f) != heap_used)
     wisp_crash ("heap save write failed");
   WISP_DEBUG ("saved heap to %s\n", path);
   fclose (f);
+
+#ifdef EMSCRIPTEN
+  EM_ASM({
+    FS.syncfs(err => {
+      if (err) {
+        Module.printErr('syncfs error');
+        console.error(err);
+      } else {
+        console.error('syncfs done');
+      }
+    });
+  });
+#endif
 }
 
 void
 wisp_load_image (const char *path)
 {
-  WISP_DEBUG ("loading heap from %s\n", path);
   FILE *f = fopen (path, "r");
 
-  fseek (f, 0, SEEK_END);
-  long size = ftell(f);
-  fseek (f, 0, SEEK_SET);
-
+  heap = calloc (heap_size, 1);
   memset (heap, 0, heap_size);
 
-  if (fread (heap, 1, size, f) != size)
-    wisp_crash ("heap load read failed");
+  if (fscanf (f, "WISP 0 %d\n", &WISP) == 0)
+    {
+      wisp_crash ("heap load failed");
+    }
+  else
+    {
+      long start = ftell (f);
 
-  heap_used = size;
+      fseek (f, 0, SEEK_END);
+      long size = ftell (f) - start;
+      fseek (f, start, SEEK_SET);
 
-  WISP = 0x6D;
+      WISP_DEBUG ("loading %lu B heap from %s\n",
+                  size,
+                  path);
 
-#define RESTORE(x) x = wisp_intern_lisp (#x)
+      if (fread (heap, 1, size, f) != size)
+        wisp_crash ("heap load read failed");
 
-  WISP_DEBUG ("caching basic symbols\n");
-  RESTORE (QUOTE);
-  RESTORE (APPLY);
-  RESTORE (EVAL);
-  RESTORE (SCOPE);
-  RESTORE (CLOSURE);
-  RESTORE (LAMBDA);
-  RESTORE (MACRO);
-  RESTORE (PARAMS);
-  RESTORE (SET_SYMBOL_FUNCTION);
+      heap_used = wisp_align (size);
 
-#undef RESTORE
+      PACKAGE = wisp_deref (WISP)[1];
+
+      wisp_intern_basic_symbols ();
+    }
 }
 
 WISP_EXPORT
@@ -645,29 +671,9 @@ wisp_boot ()
   wisp_setup ();
 }
 
-int
-main (int argc, char **argv)
+void
+wisp_stdlib ()
 {
-  bool loading_heap = false;
-
-  if (argc > 1 && strcmp (argv[1], "--load-heap") == 0)
-    loading_heap = true;
-
-  wisp_allocate_heap ();
-
-  if (!loading_heap)
-    {
-      WISP_DEBUG ("starting system sans heap image\n");
-      wisp_start ();
-      wisp_intern_basic_symbols ();
-      wisp_setup ();
-    }
-  else
-    {
-      WISP_DEBUG ("starting system from heap image\n");
-      wisp_intern_basic_symbols ();
-    }
-
   wisp_eval_code
     ("(set-symbol-function 'identity (lambda (x) x))");
 
@@ -696,8 +702,44 @@ main (int argc, char **argv)
      "                          (cons params"
      "                                (cons body nil))) nil)))))"
      );
+}
 
-  wisp_save_image ("wisp.heap");
+WISP_EXPORT
+void
+wisp_start_without_heap ()
+{
+  WISP_DEBUG ("starting system sans heap image\n");
+  wisp_start ();
+  wisp_intern_basic_symbols ();
+  wisp_setup ();
+  wisp_stdlib ();
+}
+
+
+WISP_EXPORT
+void
+wisp_main ()
+{
+  char *heap_path = getenv ("WISP_HEAP");
+
+  WISP_DEBUG ("heap path %s\n", heap_path);
+
+  if (!heap_path || access (heap_path, R_OK) != 0)
+    {
+      wisp_allocate_heap ();
+      wisp_start_without_heap ();
+    }
+  else
+    wisp_load_image (heap_path);
+}
+
+int
+main (int argc, char **argv)
+{
+#ifdef EMSCRIPTEN
+  emscripten_exit_with_live_runtime ();
+#else
+  wisp_main ();
 
   if (argc > 1 && strcmp (argv[1], "repl") == 0)
     {
@@ -710,7 +752,7 @@ main (int argc, char **argv)
           if (getline (&buffer, &n, stdin) != -1)
             {
               wisp_word_t result = wisp_eval_code (buffer);
-              wisp_dump (result);
+              wisp_dump (stdout, result);
               printf ("\n");
               free (buffer);
             }
@@ -721,6 +763,14 @@ main (int argc, char **argv)
             }
         }
     }
+
+  else if (argc > 2 && strcmp (argv[1], "-e") == 0)
+    {
+      wisp_word_t result = wisp_eval_code (argv[2]);
+      wisp_dump (stdout, result);
+      printf ("\n");
+    }
+#endif
 
   return 0;
 }

@@ -1,24 +1,32 @@
 #include "wisp.h"
 
+WISP_EXPORT
 void
-wisp_dump (wisp_word_t word)
+wisp_dump_stdout (wisp_word_t word)
+{
+  wisp_dump (stdout, word);
+  printf ("\n");
+}
+
+void
+wisp_dump (FILE *f, wisp_word_t word)
 {
   if (WISP_IS_FIXNUM (word))
-    fprintf (stderr, "%d", word >> 2);
+    fprintf (f, "%d", word >> 2);
 
   else if (word == NIL)
-    fprintf (stderr, "NIL");
+    fprintf (f, "NIL");
 
   else if (wisp_is_quote (word))
     {
       wisp_word_t quoted = wisp_car (wisp_cdr (word));
-      fprintf (stderr, "'");
-      wisp_dump (quoted);
+      fprintf (f, "'");
+      wisp_dump (f, quoted);
     }
 
   else if (WISP_IS_LIST_PTR (word))
     {
-      fprintf (stderr, "(");
+      fprintf (f, "(");
 
       while (word != NIL)
         {
@@ -26,7 +34,7 @@ wisp_dump (wisp_word_t word)
           wisp_word_t  car = cons[0];
           wisp_word_t  cdr = cons[1];
 
-          wisp_dump (car);
+          wisp_dump (f, car);
 
           if (cdr == NIL)
             {
@@ -34,28 +42,28 @@ wisp_dump (wisp_word_t word)
             }
           else if (WISP_IS_LIST_PTR (cdr))
             {
-              fprintf (stderr, " ");
+              fprintf (f, " ");
               word = cdr;
             }
           else
             {
-              fprintf (stderr, " . ");
-              wisp_dump (word);
+              fprintf (f, " . ");
+              wisp_dump (f, cdr);
               break;
             }
         }
 
-      fprintf (stderr, ")");
+      fprintf (f, ")");
     }
 
   else if (WISP_IS_STRUCT_PTR (word))
     {
-      fprintf (stderr, "«");
+      fprintf (f, "«");
 
       wisp_word_t *struct_header = wisp_deref (word);
 
-      wisp_dump (struct_header[1]);
-      fprintf (stderr, " 0x%X»", word & ~WISP_LOWTAG_MASK);
+      wisp_dump (f, struct_header[1]);
+      fprintf (f, " 0x%X»", word & ~WISP_LOWTAG_MASK);
     }
 
   else if (WISP_IS_OTHER_PTR (word))
@@ -64,7 +72,7 @@ wisp_dump (wisp_word_t word)
       if (header[0] == WISP_SYMBOL_HEADER)
         {
           wisp_word_t *string_header = wisp_deref (header[4]);
-          fprintf (stderr, "%s", wisp_string_buffer (string_header));
+          fprintf (f, "%s", wisp_string_buffer (string_header));
         }
       else
         wisp_not_implemented ();
@@ -72,6 +80,6 @@ wisp_dump (wisp_word_t word)
 
   else
     {
-      fprintf (stderr, "{%d}\n", word);
+      fprintf (f, "{%d}\n", word);
     }
 }

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang=en-us>
+<meta charset=utf-8>
+<title>Wisp</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html {
+    font-family: "DM Mono";
+    font-size: 14px;
+    line-height: calc(14px * 1.5);
+  }
+
+  html {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+  }
+
+  button, input, select, textarea {
+    font-family: inherit;
+    font-size: 100%;
+  }
+  
+  body, #app {
+    height: 100%;
+    width: 100%;
+  }
+
+  #app {
+    padding: 1.5rem;
+    background: #fafafa;
+  }
+  
+  #repl {
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    border: 2px solid #ccc;
+    background: white;
+  }
+
+  #output {
+    flex-grow: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+
+  .stderr {
+    opacity: 0.6;
+  }
+
+  .stdin {
+    opacity: 0.8;
+    font-weight: bold;
+  }
+
+  form {
+    display: flex;
+    border-top: 2px solid #ccc;
+    align-items: center;
+    background: #eee;
+  }
+
+  form > span {
+    padding-left: .5rem;
+  }
+
+  input {
+    flex-grow: 1;
+    border: 0;
+    padding: 0.5rem;
+    background: inherit;
+  }
+
+  input::before {
+    display: block;
+    content: "> ";
+  }
+
+  input:focus {
+    outline: 0;
+  }
+</style>
+
+<div id=app>
+  <div id=repl>
+    <div id=output>
+    </div>
+    <form id=form>
+      <span>&gt;</span>
+      <input id=input autofocus autocomplete=off />
+    </form>
+  </div>
+</div>
+
+<script src=repl.js></script>
+<script src=index.js></script>
