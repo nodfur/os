@@ -174,6 +174,7 @@
 
 (defun magit-save ()
   (interactive)
+  (save-some-buffers)
   (magit-git-command "git save"))
 
 (progn
@@ -439,7 +440,8 @@
    (paredit-mode nil t)
    (company-mode nil t)
    (which-key-mode nil t)
-   (whitespace-cleanup-mode nil t)))
+   (whitespace-cleanup-mode nil t)
+   (projectile-mode nil t)))
 
 (server-start)
 (require 'org-protocol)
