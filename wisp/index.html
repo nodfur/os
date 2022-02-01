@@ -23,13 +23,14 @@
   }
   
   body, #app {
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
   }
 
   #app {
-    padding: 1.5rem;
-    max-width: 72ch;
+    padding: .75rem;
+    height: 100%;
+    /* max-width: 72ch; */
   }
 
   html.dark {
@@ -43,7 +44,7 @@
   #repl {
     display: flex;
     flex-direction: column;
-    max-height: 100%;
+    height: 100%;
     border: 2px solid #ccc;
     background: white;
   }
@@ -152,6 +153,15 @@
     border: 2px solid #ccc;
     padding: .25rem .5rem;
     background: #7771;
+  }
+
+  .fade-in {
+    opacity: 0;
+    transition: 0.25s ease-in opacity;
+  }
+
+  .fade-in.now {
+    opacity: 1;
   }
 
 </style>

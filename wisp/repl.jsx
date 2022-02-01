@@ -24,7 +24,7 @@ let WispModule
 
 function Wisp() {
   let [, setLines] = useRecoilState(Atoms.lines)
-  let [, setBooted] = useRecoilState(Atoms.booted)
+  let [booted, setBooted] = useRecoilState(Atoms.booted)
 
   function print(text, tag) {
     setLines(lines => [...lines, [{ text, tag }]])
@@ -63,9 +63,12 @@ function Wisp() {
 
   
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        display: "flex", flexDirection: "column", height: "100%"
+      }}
+      className={ booted ? "fade-in now" : "fade-in later" }>
       <REPL />
-      <Browser />
     </div>
   )
 }
@@ -379,12 +382,6 @@ function REPL() {
   return (
     <div id="repl">
       <div id="output" ref={outputRef}>
-        <header className="stderr">
-          {";;; code: "}
-          <a href="https://github.com/nodfur/os/tree/main/wisp">
-            https://github.com/nodfur/os/tree/main/wisp
-          </a>
-        </header>
         {
           lines.map((xs, i) =>
             <div key={i} className="chunk">

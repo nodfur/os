@@ -640,7 +640,7 @@ wisp_load_heap (const char *path)
       long size = ftell (f) - start;
       fseek (f, start, SEEK_SET);
 
-      WISP_DEBUG ("loading heap from %s (%lu bytes)\n",
+      WISP_DEBUG ("Loading heap from %s (%lu bytes)\n",
                   path,
                   size);
 
@@ -716,7 +716,7 @@ wisp_main ()
 {
   char *heap_path = getenv ("WISP_HEAP");
 
-  fprintf (stderr, ";;; wisp 0.5 booting\n");
+  fprintf (stderr, "; Wisp 0.5 starting\n");
 
   if (!heap_path || access (heap_path, R_OK) != 0)
     {
@@ -725,6 +725,9 @@ wisp_main ()
     }
   else
     wisp_load_heap (heap_path);
+
+  fprintf (stderr, "; Wisp system ready\n");
+
 }
 
 WISP_EXPORT

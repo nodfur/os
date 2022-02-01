@@ -41,7 +41,7 @@ typedef struct __attribute__ ((__packed__)) {
   wisp_word_t macro;
 } wisp_closure_t;
 
-#define WISP_DEBUG(...) (fprintf (stderr, ";; " __VA_ARGS__))
+#define WISP_DEBUG(...) (fprintf (stderr, "; " __VA_ARGS__))
 
 typedef enum {
   WISP_BUILTIN_LAMBDA = 1,
