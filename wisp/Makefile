@@ -19,3 +19,6 @@ wisp: $(SOURCES)
 	./wisp test
 
 clean:; rm -rf wisp dist/*
+
+deploy:
+	cp dist/* /restless/www/wisp/
