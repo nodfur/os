@@ -6,10 +6,12 @@
     clang-tools
     ddd
     emscripten
+    esbuild
     gdb
     wasmtime
     zig
     zls
+    jq
   ];
 
   system.activationScripts = {
