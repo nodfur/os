@@ -3,5 +3,4 @@ wisp
 *.heap
 .direnv
 *.js
-dist
 node_modules
