@@ -42,6 +42,14 @@
       default = false;
     };
 
+    os.urbit = {
+      enable =
+        lib.mkEnableOption "Urbit";
+
+      id =
+        lib.mkOption { type = lib.types.str; };
+    };
+
     os.gmail = {
       enable =
         lib.mkEnableOption "Gmail";

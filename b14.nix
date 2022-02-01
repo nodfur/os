@@ -17,11 +17,13 @@ in {
     ./btrfs.nix
     ./efi.nix
     ./gmail.nix
+    ./guix.nix
     ./intel.nix
     ./kernel.nix
     ./node.town.nix
     ./pi-x.nix
-    ./vnc.nix
+    ./urbit.nix
+    ./1password.nix
   ];
 
   os.gl = true;
@@ -30,6 +32,10 @@ in {
   boot.kernelPackages =
     pkgs.linuxKernel.packages.linux_5_16;
 
+  boot.initrd.availableKernelModules = [
+    "xhci_pci" "ahci" "nvme" "usbhid" "uas" "sd_mod"
+  ];
+
   system.activationScripts = {
     fixAppleKeyboard = ''
       ${os-fix-apple-keyboard}/bin/os-fix-apple-keyboard
@@ -37,23 +43,6 @@ in {
   };
 
   services.xserver.enable = true;
-#  services.xserver.resolutions = [
-#    { x = 3840; y = 2160; }
-#    { x = 2560; y = 1440; }
-#  ];
-
-#  services.xserver.xrandrHeads = [
-#    {
-#      output = "DisplayPort-3";
-#      monitorConfig = ''
-#        Option "Rotate" "right"
-#      '';
-#    }
-#    {
-#      primary = true;
-#      output = "DisplayPort-5";
-#    }
-#  ];
 
   services.mongodb.enable = true;
 
@@ -77,43 +66,6 @@ in {
     zls
     zoom-us
   ];
-
-  users.extraUsers =
-    let buildUser = (i: {
-      "guixbuilder${i}" = {                   # guixbuilder$i
-        group = "guixbuild";                  # -g guixbuild
-        extraGroups = ["guixbuild"];          # -G guixbuild
-        home = "/var/empty";                  # -d /var/empty
-        shell = pkgs.nologin;                 # -s `which nologin`
-        description = "Guix build user ${i}"; # -c "Guix buid user $i"
-        isSystemUser = true;                  # --system
-      };
-    });
-
-    in
-      pkgs.lib.fold
-        (str: acc: acc // buildUser str)
-        {}
-        (map (pkgs.lib.fixedWidthNumber 2)
-          (builtins.genList (n: n+1) 10));
-
-  users.extraGroups.guixbuild = {
-    name = "guixbuild";
-  };
-
-  systemd.services.guix-daemon = {
-    enable = true;
-    description = "Build daemon for GNU Guix";
-    serviceConfig = {
-      ExecStart = "/var/guix/profiles/per-user/root/current-guix/bin/guix-daemon --build-users-group=guixbuild";
-      Environment="GUIX_LOCPATH=/root/.guix-profile/lib/locale LC_ALL=en_US.utf8";
-      RemainAfterExit="yes";
-      StandardOutput="syslog";
-      StandardError="syslog";
-      TaskMax= "8192";
-    };
-    wantedBy = [ "multi-user.target" ];
-  };
 
   home-manager.sharedModules = [{
     programs.vscode.enable = true;

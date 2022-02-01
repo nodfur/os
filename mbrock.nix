@@ -5,15 +5,17 @@
     ./i3.nix
     ./users/mbrock
     ./wisp.nix
-  ] ++ (
-    if true then [
-      ./i3.nix
-      ./google-fonts.nix
-      ./other-fonts.nix
-    ] else []
-  );
+    ./i3.nix
+    ./google-fonts.nix
+    ./other-fonts.nix
+  ];
 
   os.graphical = true;
+
+  os.urbit = {
+    enable = true;
+    id = "figbur-falreg";
+  };
 
   os.gmail = {
     address = "mikael@brockman.se";

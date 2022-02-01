@@ -467,3 +467,5 @@
 
 (global-set-key (kbd "C-c P") 'narrow-to-paragraph)
 (global-set-key (kbd "C-c N") 'narrow-to-next-paragraph)
+
+(setq compilation-scroll-output t)
