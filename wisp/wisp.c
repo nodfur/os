@@ -324,7 +324,7 @@ wisp_intern_lisp (const char *name)
 void
 wisp_allocate_heap ()
 {
-  WISP_DEBUG ("allocating %lu MB heap\n", heap_size / MEGABYTES);
+  WISP_DEBUG ("Allocating %lu MB heap\n", heap_size / MEGABYTES);
 
   heap = calloc (heap_size, 1);
 }
@@ -351,7 +351,9 @@ wisp_start ()
   WISP =
     wisp_make_package (wisp_string ("WISP"));
 
-  WISP_DEBUG ("WISP 0x%X\n", WISP);
+  WISP_DEBUG ("Defining package WISP ← ");
+  wisp_dump (stderr, WISP);
+  fprintf (stderr, "\n");
 
   wisp_word_t *common_lisp_header =
     wisp_deref (WISP);
@@ -454,7 +456,7 @@ wisp_set_symbol_function (wisp_word_t symbol,
   wisp_word_t *header = wisp_deref (symbol);
   header[6] = value;
 
-  fprintf (stderr, "; FUNCTION ");
+  fprintf (stderr, "; Defining function ");
   wisp_dump (stderr, symbol);
   fprintf (stderr, " ← ");
   wisp_dump (stderr, value);
@@ -574,7 +576,7 @@ wisp_setup (void)
   wisp_builtin_function
     (wisp_intern_lisp ("SAVE-HEAP"),
      WISP_BUILTIN_SAVE_HEAP,
-     wisp_simple_params (0));
+     wisp_simple_params (1, "PATH"));
 }
 
 WISP_EXPORT
@@ -702,7 +704,7 @@ WISP_EXPORT
 void
 wisp_start_without_heap ()
 {
-  WISP_DEBUG ("starting system sans heap image\n");
+  WISP_DEBUG ("Starting system without heap image\n");
   wisp_start ();
   wisp_intern_basic_symbols ();
   wisp_setup ();
@@ -725,9 +727,6 @@ wisp_main ()
     }
   else
     wisp_load_heap (heap_path);
-
-  fprintf (stderr, "; Wisp system ready\n");
-
 }
 
 WISP_EXPORT

@@ -264,7 +264,9 @@ wisp_step_into_function (wisp_machine_t *machine,
 
         case WISP_BUILTIN_SAVE_HEAP:
           {
-            char *heap_path = getenv ("WISP_HEAP");
+            char *heap_path =
+              wisp_string_buffer (wisp_deref (scope_slots[1]));
+
             wisp_save_heap (heap_path);
 
             return (wisp_machine_t) {
