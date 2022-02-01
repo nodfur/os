@@ -74,6 +74,10 @@ wisp_dump (FILE *f, wisp_word_t word)
           wisp_word_t *string_header = wisp_deref (header[4]);
           fprintf (f, "%s", wisp_string_buffer (string_header));
         }
+      else if (WISP_WIDETAG (header[0]) == WISP_WIDETAG_STRING)
+        {
+          fprintf (f, "\"%s\"", wisp_string_buffer (header));
+        }
       else
         wisp_not_implemented ();
     }
