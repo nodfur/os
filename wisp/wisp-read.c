@@ -79,9 +79,13 @@ wisp_read_string (const char **stream)
   wisp_word_t string =
     wisp_string_n (*stream, length);
 
-  *stream = x;
-
-  return string;
+  if (*x == '"')
+    {
+      *stream = x + 1;
+      return string;
+    }
+  else
+    wisp_crash ("string never ended");
 }
 
 wisp_word_t
