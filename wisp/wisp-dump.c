@@ -63,7 +63,7 @@ wisp_dump (FILE *f, wisp_word_t word)
       wisp_word_t *struct_header = wisp_deref (word);
 
       wisp_dump (f, struct_header[1]);
-      fprintf (f, " 0x%X»", word & ~WISP_LOWTAG_MASK);
+      fprintf (f, " 0x%X»", word);
     }
 
   else if (WISP_IS_OTHER_PTR (word))

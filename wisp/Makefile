@@ -1,4 +1,4 @@
-default: clean wisp dist/wisp.js esbuild test
+default: wisp wasm/wisp.js dist/index.html
 
 CFLAGS += -g
 
@@ -8,16 +8,14 @@ EMCCFLAGS += -s MODULARIZE=1 -s 'EXPORT_NAME="loadWisp"'
 
 SOURCES = wisp.c wisp-eval.c wisp-read.c wisp-dump.c
 
-dist/wisp.js: $(SOURCES)
+wasm/wisp.js: $(SOURCES)
 	emcc $(CFLAGS) $^ -o $@ $(EMCCFLAGS)
 
-esbuild:
+dist/index.html: repl.jsx index.html wasm/wisp.js wasm/wisp.wasm build
 	./build
 
 wisp: $(SOURCES)
 	$(CC) $(CFLAGS) $^ -o wisp
+	./wisp test
 
 clean:; rm -rf wisp dist/*
-
-test: wisp
-	./wisp test

@@ -152,7 +152,7 @@ wisp_make_package (wisp_word_t name)
 char *
 wisp_string_buffer (wisp_word_t *header)
 {
-  return (char *) &(header[2]);
+  return (char *) &(header[1]);
 }
 
 __inline__
@@ -337,13 +337,13 @@ wisp_start ()
 
   heap_used = wisp_align (7 * sizeof *words);
 
-  words[0] = 6 << 8;
-  words[1] = WISP_WIDETAG_SYMBOL;
-  words[2] = NIL;
+  words[0] = WISP_SYMBOL_HEADER;
+  words[1] = NIL;
+  words[2] = 0xdead0003;
   words[3] = NIL;
   words[4] = wisp_string ("NIL");
-  words[5] = 0xdead0000;
-  words[6] = 0xdead0002;
+  words[5] = NIL;
+  words[6] = NIL;
 
   PACKAGE =
     wisp_create_symbol (wisp_string ("PACKAGE"));
@@ -595,6 +595,8 @@ wisp_eval_code (const char *code)
 void
 wisp_save_heap (const char *path)
 {
+  WISP_DEBUG ("saving heap to %s\n", path);
+
   FILE *f = fopen (path, "w+");
 
   fprintf (f, "WISP 0 %d\n", WISP);
@@ -723,6 +725,13 @@ wisp_main ()
     }
   else
     wisp_load_heap (heap_path);
+}
+
+WISP_EXPORT
+void *
+wisp_get_heap_pointer ()
+{
+  return heap;
 }
 
 int

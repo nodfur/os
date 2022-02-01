@@ -46,7 +46,15 @@
         forceSSL = true;
         useACMEHost = "node.town";
         locations."/" = {
-          root = "/os/wisp/dist/";
+          root = "/restless/www/wisp";
+        };
+      };
+
+      "wisp-dev.node.town" = {
+        forceSSL = true;
+        useACMEHost = "node.town";
+        locations."/" = {
+          root = "/os/wisp/dist";
         };
       };
 
