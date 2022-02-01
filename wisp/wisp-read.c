@@ -66,6 +66,25 @@ wisp_read_fixnum (const char **stream)
 }
 
 wisp_word_t
+wisp_read_string (const char **stream)
+{
+  int length = 0;
+
+  const char *x = *stream;
+  while (*x && *x != '"')
+    ++x;
+
+  length = x - *stream;
+
+  wisp_word_t string =
+    wisp_string_n (*stream, length);
+
+  *stream = x;
+
+  return string;
+}
+
+wisp_word_t
 wisp_read (const char **stream)
 {
   while (isspace (**stream))
@@ -93,6 +112,12 @@ wisp_read (const char **stream)
       ++*stream;
       return wisp_cons (QUOTE,
                         wisp_cons (wisp_read (stream), NIL));
+    }
+
+  if (c == '"')
+    {
+      ++*stream;
+      return wisp_read_string (stream);
     }
 
   wisp_not_implemented ();

@@ -79,6 +79,13 @@ wisp_term_irreducible (wisp_word_t term)
       if (wisp_is_symbol (term))
         return false;
 
+      if (WISP_LOWTAG (term) == WISP_LOWTAG_OTHER_PTR)
+        {
+          wisp_word_t *header = wisp_deref (term);
+          if (WISP_WIDETAG (header[0]) == WISP_WIDETAG_STRING)
+            return true;
+        }
+
       wisp_crash ("strange term");
     }
 }
