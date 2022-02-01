@@ -12,16 +12,12 @@ const Atoms = {
   lines: atom({
     key: "lines",
     default: [],
-  }),
-
-  wisp: atom({
-    key: "wisp",
-    default: null,
-  }),
+  })
 }
 
+let WispModule
+
 function Wisp() {
-  let [wisp, setWisp] = useRecoilState(Atoms.wisp)
   let [lines, setLines] = useRecoilState(Atoms.lines)
 
   function print(text, tag) {
@@ -44,23 +40,21 @@ function Wisp() {
     console.log("loaded Wisp")
     Module.FS.mkdir("/wisp")
     Module.FS.mount(Module.IDBFS, {}, "/wisp")
-    Module.ccall("wisp_main", null, null, [])
-    // Module.FS.syncfs(true, err => {
-    //   if (err) {
-    //     throw err
-    //   } else {
-    //     console.log("syncfs loaded")
-    //     Module.ccall("wisp_main", null, null, [])
-    //   }
-    // })
+    Module.FS.syncfs(true, err => {
+      if (err) {
+        throw err
+      } else {
+        console.log("syncfs loaded")
+        Module.ccall("wisp_main", null, null, [])
+      }
+    })
 
-    window.WispModule = Module
-    setWisp(Module)
+    window.WispModule = WispModule = Module
   }, [])
 
   
   return (
-    wisp ? <REPL /> : "Loading..." 
+    <REPL />
   )
 }
 
@@ -76,24 +70,33 @@ function REPL() {
   let [lines, setLines] = useRecoilState(Atoms.lines)
   let [input, setInput] = useState("")
   let outputRef = React.useRef(null)
-  let wisp = useRecoilValue(Atoms.wisp)
+
+  let handleChange = useCallback(e => {
+    setInput(e.target.value)
+  })
 
   let handleSubmit = useCallback(e => {
     e.preventDefault()
+
+    console.log(input)
+
+    setLines(lines => [...lines, { text: input, tag: "stdin" }])
     
-    let result = wisp.ccall(
+    let result = WispModule.ccall(
       "wisp_eval_code",
       "number",
       ["string"],
       [input]
     )
 
-    // wisp.ccall(
-    //   "wisp_dump_stdout",
-    //   null,
-    //   ["number"],
-    //   [result]
-    // )
+    console.log(result)
+
+    WispModule.ccall(
+      "wisp_dump_stdout",
+      null,
+      ["number"],
+      [result]
+    )
 
     setInput("")
   })
@@ -115,15 +118,22 @@ function REPL() {
       </div>
       <form id="form" onSubmit={handleSubmit}>
         <span>{">"}</span>
-        <input id="input" autoFocus autoComplete="off" />
+        <input
+          id="input" autoFocus autoComplete="off"
+          onChange={handleChange}
+          value={input}
+        />
       </form>
     </div>
   )
 }
 
-ReactDOM.render(
-  <RecoilRoot>
-    <Wisp />
-  </RecoilRoot>,
-  document.querySelector("#app")
-)
+onload = () => {
+  ReactDOM.render(
+    <RecoilRoot>
+      <Wisp />
+    </RecoilRoot>,
+    document.querySelector("#app")
+  )
+}
+
