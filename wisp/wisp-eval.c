@@ -47,7 +47,7 @@ wisp_make_apply_plan (wisp_word_t callee,
                       wisp_word_t scopes,
                       wisp_word_t next)
 {
-  return wisp_make_instance
+  return wisp_make_instance_va
     (APPLY, 5, callee, values, terms, scopes, next);
 }
 
@@ -201,7 +201,7 @@ wisp_step_into_function (wisp_machine_t *machine,
             wisp_word_t lambda_params =
               wisp_lambda_list_to_params (lambda_list);
 
-            wisp_word_t closure = wisp_make_instance
+            wisp_word_t closure = wisp_make_instance_va
               (CLOSURE, 4,
                lambda_params,
                lambda_body,
@@ -224,7 +224,7 @@ wisp_step_into_function (wisp_machine_t *machine,
             wisp_word_t macro_params =
               wisp_lambda_list_to_params (macro_list);
 
-            wisp_word_t closure = wisp_make_instance
+            wisp_word_t closure = wisp_make_instance_va
               (CLOSURE, 4,
                macro_params,
                macro_body,
@@ -239,6 +239,8 @@ wisp_step_into_function (wisp_machine_t *machine,
             };
           }
 
+          // XXX: use wisp_builtins
+
         case WISP_BUILTIN_SET_SYMBOL_FUNCTION:
           {
             wisp_set_symbol_function
@@ -246,7 +248,7 @@ wisp_step_into_function (wisp_machine_t *machine,
 
             return (wisp_machine_t) {
               .term = scope_slots[3],
-              .value = false,
+              .value = true,
               .scopes = machine->scopes,
               .plan = apply_plan->next
             };
@@ -264,13 +266,8 @@ wisp_step_into_function (wisp_machine_t *machine,
 
         case WISP_BUILTIN_SAVE_HEAP:
           {
-            char *heap_path =
-              wisp_string_buffer (wisp_deref (scope_slots[1]));
-
-            wisp_save_heap (heap_path);
-
             return (wisp_machine_t) {
-              .term = T,
+              .term = wisp_save_heap (scope_slots[1]),
               .value = true,
               .scopes = machine->scopes,
               .plan = apply_plan->next,
@@ -345,7 +342,7 @@ wisp_step_into_function (wisp_machine_t *machine,
   else
     {
       wisp_word_t eval_plan =
-        wisp_make_instance (EVAL, 2,
+        wisp_make_instance_va (EVAL, 2,
                             machine->scopes,
                             apply_plan->next);
 

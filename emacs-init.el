@@ -488,3 +488,14 @@
 ;; (setq-default mode-line-format
 ;;               '(" %* " mode-line-buffer-identification " " mode-line-modes
 ;;                 "" "(%l:%c)"))
+
+(defun sha256-region ()
+  (interactive)
+  (save-excursion
+    (shell-command-on-region
+     (mark) (point)
+     "echo -n 0x; sha256sum | head -c6" t t)))
+
+(sha256 "foo")
+
+lol 0xa6e9c4 hey

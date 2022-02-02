@@ -549,9 +549,6 @@ function REPL() {
           <b>Notebook</b>
         </span>
         <span>
-          Lisp Mode
-        </span>
-        <span>
           Package: <em>WISP</em>
         </span>
       </header>

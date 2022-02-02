@@ -41,10 +41,39 @@ typedef struct __attribute__ ((__packed__)) {
   wisp_word_t macro;
 } wisp_closure_t;
 
+typedef struct wisp_defun {
+  const char *name;
+  int n_args;
+  uint32_t id;
+  union {
+    wisp_word_t (*a0) (void);
+    wisp_word_t (*a1) (wisp_word_t);
+    wisp_word_t (*a2) (wisp_word_t, wisp_word_t);
+  } function;
+
+  struct wisp_defun *next;
+} wisp_defun_t;
+
+extern wisp_defun_t *wisp_builtins[];
+
+#define WISP_DEFUN(lisp_name, c_name, n_args)                        \
+  wisp_word_t c_name FUNARGS_ ## n_args;                             \
+  static wisp_defun_t c_name ## _spec =                              \
+    { lisp_name, n_args, c_name##_tag, { .a ## n_args = 0 }, NULL }; \
+  wisp_word_t c_name
+
+#define FUNARGS_1 (wisp_word_t)
+#define FUNARGS_2 (wisp_word_t, wisp_word_t)
+
+#define WISP_REGISTER(c_name, ...)                              \
+  wisp_register_builtin_defun                                   \
+  (&c_name##_spec,                                              \
+   wisp_simple_params ((c_name##_spec).n_args, __VA_ARGS__))
+
 #define WISP_DEBUG(...) (fprintf (stderr, __VA_ARGS__))
 
 typedef enum {
-  WISP_BUILTIN_LAMBDA = 1,
+  WISP_BUILTIN_LAMBDA,
   WISP_BUILTIN_MACRO,
   WISP_BUILTIN_CONS,
   WISP_BUILTIN_SET_SYMBOL_FUNCTION,
@@ -54,7 +83,21 @@ typedef enum {
   WISP_BUILTIN_CDR,
   WISP_BUILTIN_EVAL,
   WISP_BUILTIN_MAKE_INSTANCE,
+  WISP_N_BUILTINS
 } wisp_builtin_t;
+
+typedef enum {
+  wisp_lambda_tag,
+  wisp_macro_tag,
+  wisp_cons_tag,
+  wisp_set_symbol_function_tag,
+  wisp_plus_tag,
+  wisp_save_heap_tag,
+  wisp_car_tag,
+  wisp_cdr_tag,
+  wisp_eval_tag,
+  wisp_make_instance_tag,
+} wisp_builtin_tag_t;
 
 #define WISP_LOWTAG_BITS 3
 #define WISP_WIDETAG_BITS 8
@@ -195,9 +238,9 @@ wisp_make_instance_with_slots (wisp_word_t type,
                                wisp_word_t *slots);
 
 wisp_word_t
-wisp_make_instance (wisp_word_t type,
-                    int n_slots,
-                    ...);
+wisp_make_instance_va (wisp_word_t type,
+                       int n_slots,
+                       ...);
 
 wisp_word_t *
 wisp_is_instance (wisp_word_t word,
@@ -206,7 +249,7 @@ wisp_is_instance (wisp_word_t word,
 wisp_word_t
 wisp_lambda_list_to_params (wisp_word_t lambda_list);
 
-void
+wisp_word_t
 wisp_set_symbol_function (wisp_word_t symbol,
                           wisp_word_t value);
 
@@ -214,7 +257,17 @@ bool
 wisp_step (wisp_machine_t *machine);
 
 
+wisp_word_t
+wisp_save_heap (wisp_word_t pathname);
+
+wisp_word_t
+wisp_simple_params (int count, ...);
+
+wisp_word_t
+wisp_intern_lisp (const char *name);
+
 void
-wisp_save_heap (const char *path);
+wisp_builtin_function (wisp_word_t builtin_name, wisp_word_t builtin_id,
+                       wisp_word_t params);
 
 #endif
