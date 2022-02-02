@@ -20,7 +20,7 @@
 
 (set-fringe-mode 24)
 
-;(load-theme 'zenburn t)
+(load-theme 'zenburn t)
 
 ;;; Line 25
 
