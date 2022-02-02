@@ -19,14 +19,14 @@ cp ../wasm/* .
 mvhash wisp.wasm
 
 result=$(ls wisp*.wasm)
-sed -i "s|wisp.wasm|$result|" wisp.js
+gsed -i "s|wisp.wasm|$result|" wisp.js
 
 mvhash wisp.js
 
 result=$(ls repl*.js)
-sed -i "s|repl.js|$result|" index.html
+gsed -i "s|repl.js|$result|" index.html
 
 result=$(ls wisp*.js)
-sed -i "s|wisp.js|$result|" index.html
+gsed -i "s|wisp.js|$result|" index.html
 
 cp -r ../img .

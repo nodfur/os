@@ -4,3 +4,4 @@ wisp
 .direnv
 *.js
 node_modules
+*.dSYM

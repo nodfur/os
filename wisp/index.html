@@ -25,31 +25,41 @@
     --fg: #000;
     --fg-tint: #fff1;
     --fg-inverse: #ffff;
+    --sans:
+      apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
+      helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;
   }
 
   @media (prefers-color-scheme: dark) {
     html {
-      --bg: #0007;
-      --bg-tint: #0005;
+      --bg: #123;
+      --bg-tint: #234;
       --fg: #fffa;
+      --border: #345;
+      --gradual-tint: #fff1;
+    }
+
+    body {
+      background: black;
     }
   }
-  
+
   html, tt {
     font-family:
-      "DM Mono", "Source Code Pro", "Inconsolata", monospace;
+      DM Mono, Source Code Pro, Inconsolata,
+      Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
   }
 
   em {
     font-style: normal;
     font-weight: 600;
   }
-  
+
   button, input, select, textarea {
     font-family: inherit;
     font-size: 100%;
   }
-  
+
   #app {
     height: 100vh;
     width: 100vw;
@@ -76,7 +86,7 @@
   }
 
   #repl, .browser {
-    border: 2px solid #0004;
+    border: 2px solid var(--border);
   }
 
   #output {
@@ -96,7 +106,7 @@
 
   .stdin::before {
     content: "evaluating ";
-    font-family: "Source Sans Pro";
+    font-family: var(--sans);
     opacity: 0.7;
     margin-right: 0.5rem;
   }
@@ -156,7 +166,7 @@
     white-space: nowrap;
     padding-right: 0.5rem;
     vertical-align: top;
-    font-family: "Source Sans Pro";
+    font-family: var(--sans);
   }
 
   .symbol {
@@ -166,9 +176,9 @@
   }
 
   .list {
-    border: 1px solid #0004;
+    border: 1px solid var(--border);
     padding: 2px 8px;
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--gradual-tint);
     margin: 2px;
     align-items: center;
   }
@@ -185,9 +195,9 @@
   }
 
   .instance {
-    border: 1px solid #0004;
+    border: 1px solid var(--border);
     padding: .25rem .5rem;
-    background: rgb(0, 0, 0, 0.04);
+    background: var(--gradual-tint);
     font-size: 90%;
     line-height: 120%;
   }
@@ -225,13 +235,6 @@
     justify-content: space-between;
   }
 
-  @media (prefers-color-scheme: dark) {
-    .titlebar {
-      background: #0000;
-      box-shadow: inset 0px 0px 2rem 0 #0005;
-    }
-  }
-
   ul {
     list-style-type: none;
   }
@@ -242,9 +245,9 @@
   }
 
   header {
-    font-family: "Source Sans Pro";
+    font-family: var(--sans);
   }
-  
+
 </style>
 
 <div id=app>
