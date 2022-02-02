@@ -22,4 +22,4 @@ wisp: $(SOURCES)
 clean:; rm -rf wisp dist/* wasm/*
 
 deploy:
-	cp dist/* /restless/www/wisp/
+	cp -r dist/* /restless/www/wisp/
