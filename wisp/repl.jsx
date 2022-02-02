@@ -39,7 +39,7 @@ function Wisp() {
     console.log(parts)
 
     let things = []
-    
+
     for (let i = 0; i < parts.length; i++) {
       if (i % 2 == 0) {
         if (parts[i] !== "")
@@ -69,7 +69,7 @@ function Wisp() {
         Module.ENV.WISP_HEAP = "/wisp/heap"
       }
     })
-    
+
     console.log("loaded Wisp")
     Module.FS.mkdir("/wisp")
     Module.FS.mount(Module.IDBFS, {}, "/wisp")
@@ -86,7 +86,7 @@ function Wisp() {
     window.WispModule = WispModule = Module
   }, [])
 
-  
+
   return (
     <div
       style={{
@@ -157,30 +157,30 @@ const widetags = {
 
 function grokImmediate(heap, x) {
   let value = heapCache[x] = {}
-  
+
   let widetagNumber = x & ((1 << 8) - 1)
   let widetag = widetags[widetagNumber]
-  
+
   switch (widetag) {
   case "BUILTIN":
     value.builtin = headerData(x)
     break
-    
+
   default:
     throw new Error(`${widetagNumber}`)
   }
 
   return value
 }
-  
+
 function grokPointer(heap, x) {
   if (heapCache[x])
     return heapCache[x]
-  
+
   let header = heap.getUint32(x, true)
   let widetagNumber = header & ((1 << 8) - 1)
   let widetag = widetags[widetagNumber]
-  
+
   switch (widetag) {
   case "INSTANCE":
     return grokInstance(heap, x, headerData(header) - 1, x + 4)
@@ -210,7 +210,7 @@ function grokInstance(heap, address, slotCount, x) {
   }
 
   heapCache[x] = value
-  
+
   value.klass = grok(heap, heap.getUint32(x, true))
 
   let slots = []
@@ -230,7 +230,7 @@ function grokSymbol(heap, x) {
     name: undefined,
     "function": undefined,
   }
-  
+
   value.name = grok(heap, heap.getUint32(x + 4 * 4, true))
   value.value = grok(heap, heap.getUint32(x + 1 * 4, true))
   value["function"] = grok(heap, heap.getUint32(x + 4 * 6, true))
@@ -264,7 +264,7 @@ function grokList(heap, x) {
 function grokValue(x) {
   let heapBase = WispModule.ccall(
     "wisp_get_heap_pointer", null, ["u8*"])
-    
+
   let heap = new DataView(
     WispModule.HEAPU8.buffer,
     heapBase,
@@ -279,7 +279,7 @@ function listElements(cons) {
     items.push(cons.car)
     cons = cons.cdr
   }
-  
+
   return items
 }
 
@@ -323,7 +323,7 @@ function Package({ instance }) {
   let macros = []
   let variables = []
   let symbols = []
-  
+
   for (let symbol of allSymbols) {
     let f = symbol["function"]
     let v = symbol.value
@@ -359,9 +359,9 @@ function Browser() {
 
   React.useEffect(() => {
     if (!booted) return
-    
+
     setValue(grokValue(0x7D))
-    
+
   }, [booted])
 
   return (
@@ -424,10 +424,10 @@ function Object({ value }) {
       return (
         <div className="instance" onClick={toggle}>
           <Object value={value.klass} />
-          {` 0x${value.address.toString(16)}`}
+          {` @${value.address.toString(10)}`}
         </div>
       )
-    
+
   } else if (value.type === Symbol.for("SYMBOL")) {
     return (
       <span className="symbol">{value.name}</span>
@@ -437,7 +437,7 @@ function Object({ value }) {
     let items = []
     let list = value
     let last
-    
+
     while (true) {
       items.push(list.car)
       list = list.cdr
@@ -447,7 +447,7 @@ function Object({ value }) {
       } else if (list.type != Symbol.for("CONS")) {
         last = list
         break
-      } 
+      }
     }
 
     return (
@@ -460,17 +460,17 @@ function Object({ value }) {
 
   } else if (value === NIL) {
     return <span className="symbol">NIL</span>
-    
+
   } else if (typeof value === "number") {
     return <span className="number">{value}</span>
-    
+
   } else if (typeof value.builtin === "number") {
     return (
       <span className="builtin">
         {`«BUILTIN ${value.builtin}»`}
       </span>
     )
-    
+
   } else {
     return <span className="string">{`"${value}"`}</span>
   }
@@ -478,9 +478,9 @@ function Object({ value }) {
 
 function REPL() {
   let [lines, setLines] = useRecoilState(Atoms.lines)
-  
+
   let [input, setInput] = useState("")
-  
+
   let outputRef = React.useRef(null)
 
   let handleChange = useCallback(e => {
@@ -496,7 +496,7 @@ function REPL() {
       ["string"],
       [code]
     )
-    
+
     let sexp = grokValue(
       WispModule.ccall(
         "wisp_read_from_string",
@@ -541,7 +541,7 @@ function REPL() {
   useEffect(() => {
     evalCode("(defun foo (x y) (cons y x))")
   }, [])
-  
+
   return (
     <div id="repl">
       <header className="titlebar">
