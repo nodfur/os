@@ -9,7 +9,7 @@
 
 (require 'cl-lib)
 
-(set-frame-font "DM Mono-12" nil t)
+(set-frame-font "DM Mono-14" nil t)
 
 (setq display-time-24hr-format t
       display-time-day-and-date nil
@@ -20,31 +20,31 @@
 
 (set-fringe-mode 24)
 
-(load-theme 'zenburn t)
+;(load-theme 'zenburn t)
 
 ;;; Line 25
 
 (setq window-divider-default-right-width 8)
 (window-divider-mode 1)
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:background "#000" :height 130))))
- '(fringe ((t (:background "#000"))))
- '(line-number ((t (:background "#000"))))
+;; (custom-set-faces
+;;  ;; custom-set-faces was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  '(default ((t (:background "#000" :height 130))))
+;;  '(fringe ((t (:background "#000"))))
+;;  '(line-number ((t (:background "#000"))))
 
- '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
- '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
- '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
- '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
- '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
+;;  '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
+;;  '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
+;;  '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
+;;  '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
+;;  '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
 
- '(window-divider ((t (:foreground "#222"))))
- '(window-divider-first-pixel ((t (:foreground "#222"))))
- '(window-divider-last-pixel ((t (:foreground "#222")))))
+;;  '(window-divider ((t (:foreground "#222"))))
+;;  '(window-divider-first-pixel ((t (:foreground "#222"))))
+;;  '(window-divider-last-pixel ((t (:foreground "#222")))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -478,3 +478,13 @@
 (defun make-transparent ()
   (interactive)
   (set-frame-parameter nil 'alpha 85))
+
+(defun simple-mode-line-render (left right)
+  "Return a string of `window-width' length containing LEFT, and RIGHT
+ aligned respectively."
+  (let* ((available-width (- (window-width) (length left) 2)))
+    (format (format " %%s %%%ds " available-width) left right)))
+
+;; (setq-default mode-line-format
+;;               '(" %* " mode-line-buffer-identification " " mode-line-modes
+;;                 "" "(%l:%c)"))

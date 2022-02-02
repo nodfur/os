@@ -65,6 +65,7 @@ in {
     screen
     zls
     zoom-us
+    evince
   ];
 
   home-manager.sharedModules = [{

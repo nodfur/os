@@ -718,7 +718,8 @@ wisp_main ()
 {
   char *heap_path = getenv ("WISP_HEAP");
 
-  fprintf (stderr, "; Wisp 0.5 starting\n");
+  WISP_DEBUG ("WebAssembly Lisp, February 2022\n");
+  WISP_DEBUG ("Made by Restless Hypermedia, Inc.\n");
 
   if (!heap_path || access (heap_path, R_OK) != 0)
     {

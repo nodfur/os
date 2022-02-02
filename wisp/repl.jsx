@@ -65,9 +65,12 @@ function Wisp() {
   return (
     <div
       style={{
-        display: "flex", flexDirection: "column", height: "100%"
+        display: "flex",
+        flexDirection: "row",
+        gap: ".75rem",
       }}
       className={ booted ? "fade-in now" : "fade-in later" }>
+      <Browser />
       <REPL />
     </div>
   )
@@ -257,7 +260,17 @@ function Browser() {
 
   return (
     <div className="browser">
-      {value ? <Object value={value} /> : "..."}
+      <header>
+        <span>
+          <b>WISP</b>
+        </span>
+        <span>
+          Package
+        </span>
+      </header>
+      <div className="bg p-1">
+        {value ? <Object value={value} /> : "..."}
+      </div>
     </div>
   )
 }
@@ -359,6 +372,9 @@ function REPL() {
           tag: "stdin"
         },
         {
+          text: "→",
+        },
+        {
           text: <Object value={value} />,
           tag: "stdout"
         }
@@ -381,6 +397,17 @@ function REPL() {
 
   return (
     <div id="repl">
+      <header>
+        <span>
+          Lisp Mode
+        </span>
+        <span>
+          <b>Notebook</b>
+        </span>
+        <span>
+          Package: <em>WISP</em>
+        </span>
+      </header>
       <div id="output" ref={outputRef}>
         {
           lines.map((xs, i) =>
@@ -395,7 +422,6 @@ function REPL() {
         }
       </div>
       <form id="form" onSubmit={handleSubmit}>
-        <span>{">"}</span>
         <input
           id="input" autoFocus autoComplete="off"
           onChange={handleChange}
