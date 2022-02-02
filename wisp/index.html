@@ -8,6 +8,7 @@
   body {
     background: url(./img/thomas-ensley-ayW50CS1cgc-unsplash.jpg);
     background-size: cover;
+    background: #eee;
     font-size: 16px;
     line-height: calc(16px * 1.5);
     position: absolute;
@@ -19,12 +20,11 @@
   }
 
   html {
-    --bg: #fffa;
-    --bg-tint: #fff5;
+    --bg: #ffff;
+    --bg-tint: #fffa;
     --fg: #000;
     --fg-tint: #fff1;
     --fg-inverse: #ffff;
-    --border: green;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -62,17 +62,21 @@
   #repl {
     display: flex;
     flex-direction: column;
-    height: 30em;
+    /* height: 30em; */
+    height: 100%;
     width: 70ch;
-    border: 0px solid var(--border);
-    box-shadow: 5px 5px 15px 0px #0005;
-    border-radius: 8px;
+    /* box-shadow: 5px 5px 15px 0px #0005; */
+    /* border-radius: 8px; */
     /* transform: rotate3d(1, 1, 1, -2deg); */
   }
 
   #repl #output {
     background: var(--bg);
     color: var(--fg);
+  }
+
+  #repl, .browser {
+    border: 2px solid #0004;
   }
 
   #output {
@@ -87,7 +91,14 @@
 
   .stdin {
     opacity: 0.8;
-    font-style: italic;
+    /* font-style: italic; */
+  }
+
+  .stdin::before {
+    content: "evaluating ";
+    font-family: "Source Sans Pro";
+    opacity: 0.7;
+    margin-right: 0.5rem;
   }
 
   /* .stdout::before { */
@@ -103,7 +114,15 @@
   }
 
   .browser {
+    background: var(--bg);
     max-width: 32ch;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .scroll-y {
+    overflow-y: auto;
   }
 
   .bg { background: var(--bg); }
@@ -137,6 +156,7 @@
     white-space: nowrap;
     padding-right: 0.5rem;
     vertical-align: top;
+    font-family: "Source Sans Pro";
   }
 
   .symbol {
@@ -146,9 +166,11 @@
   }
 
   .list {
-    /* border: 1px solid #222; */
-    /* padding: .5rem; */
-    /* background: #fff1; */
+    border: 1px solid #0004;
+    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.04);
+    margin: 2px;
+    align-items: center;
   }
 
   .chunk {
@@ -165,12 +187,21 @@
   .instance {
     border: 1px solid #0004;
     padding: .25rem .5rem;
-    background: var(--bg-tint);
+    background: rgb(0, 0, 0, 0.04);
     font-size: 90%;
     line-height: 120%;
   }
 
-  .p-1 { padding: .25rem; }
+  .instance {
+    cursor: pointer;
+  }
+
+  .instance:hover, .list:hover {
+    background: rgb(0, 200, 200, 0.2);
+    border-color: rgb(0, 200, 230, 0.8);
+  }
+
+  .p-1 { padding: .5rem .75rem; }
 
   .fade-in {
     opacity: 0;
@@ -181,29 +212,38 @@
     opacity: 1;
   }
 
-  header {
+  .titlebar {
     /* border-bottom: 2px solid #aaaa; */
     padding: .25rem 1rem;
-    /* font-family: "Source Sans Pro"; */
-    font-size: 70%;
-    line-height: 110%;
-    /* font-weight: 600; */
-    color: var(--fg-inverse);
-    letter-spacing: -0.01em;
-    border-radius: 8px 8px 0 0;
-    box-shadow: inset 0px 0px 2rem 0 #fff5;
-    background: #0001;
+    /* font-size: 70%; */
+    /* line-height: 120%; */
+    /* letter-spacing: -0.01em; */
+    /* border-radius: 8px 8px 0 0; */
+    /* box-shadow: inset 0px 0px 1.5rem 0 #0002; */
+    background: var(--bg);
     display: flex;
     justify-content: space-between;
   }
 
   @media (prefers-color-scheme: dark) {
-    header {
+    .titlebar {
       background: #0000;
       box-shadow: inset 0px 0px 2rem 0 #0005;
     }
   }
 
+  ul {
+    list-style-type: none;
+  }
+
+  li {
+    margin-left: .5rem;
+    line-height: 130%;
+  }
+
+  header {
+    font-family: "Source Sans Pro";
+  }
   
 </style>
 

@@ -351,7 +351,7 @@ wisp_start ()
   WISP =
     wisp_make_package (wisp_string ("WISP"));
 
-  WISP_DEBUG ("Defining package WISP ← ");
+  WISP_DEBUG ("Package WISP ← ");
   wisp_dump (stderr, WISP);
   fprintf (stderr, "\n");
 
@@ -456,7 +456,21 @@ wisp_set_symbol_function (wisp_word_t symbol,
   wisp_word_t *header = wisp_deref (symbol);
   header[6] = value;
 
-  fprintf (stderr, "; Defining function ");
+  WISP_DEBUG ("Function ");
+  wisp_dump (stderr, symbol);
+  fprintf (stderr, " ← ");
+  wisp_dump (stderr, value);
+  fprintf (stderr, "\n");
+}
+
+void
+wisp_set_symbol_variable (wisp_word_t symbol,
+                          wisp_word_t value)
+{
+  wisp_word_t *header = wisp_deref (symbol);
+  header[1] = value;
+
+  WISP_DEBUG ("Variable ");
   wisp_dump (stderr, symbol);
   fprintf (stderr, " ← ");
   wisp_dump (stderr, value);
@@ -553,6 +567,8 @@ wisp_builtin_macro (wisp_word_t builtin_name,
 void
 wisp_setup (void)
 {
+  wisp_set_symbol_variable (NIL, NIL);
+
   wisp_builtin_macro
     (LAMBDA,
      WISP_BUILTIN_LAMBDA,
@@ -577,6 +593,26 @@ wisp_setup (void)
     (wisp_intern_lisp ("SAVE-HEAP"),
      WISP_BUILTIN_SAVE_HEAP,
      wisp_simple_params (1, "PATH"));
+
+  wisp_builtin_function
+    (wisp_intern_lisp ("CAR"),
+     WISP_BUILTIN_CAR,
+     wisp_simple_params (1, "PAIR"));
+
+  wisp_builtin_function
+    (wisp_intern_lisp ("CDR"),
+     WISP_BUILTIN_CDR,
+     wisp_simple_params (1, "PAIR"));
+
+  wisp_builtin_function
+    (wisp_intern_lisp ("EVAL"),
+     WISP_BUILTIN_EVAL,
+     wisp_simple_params (1, "FORM"));
+
+  wisp_builtin_function
+    (wisp_intern_lisp ("MAKE-INSTANCE"),
+     WISP_BUILTIN_MAKE_INSTANCE,
+     wisp_simple_params (2, "CLASS", "INITARGS"));
 }
 
 WISP_EXPORT
@@ -697,6 +733,13 @@ wisp_stdlib ()
      "              (cons (cons 'macro"
      "                          (cons params"
      "                                (cons body nil))) nil)))))"
+     );
+
+  wisp_eval_code
+    (
+     "(defun tag (tag attrs body)"
+     "  (make-instance 'dom-element"
+     "    (cons tag (cons attrs (cons body nil)))))"
      );
 }
 

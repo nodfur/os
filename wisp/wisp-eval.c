@@ -277,6 +277,58 @@ wisp_step_into_function (wisp_machine_t *machine,
             };
           }
 
+        case WISP_BUILTIN_CAR:
+          {
+            return (wisp_machine_t) {
+              .term = wisp_car (scope_slots[1]),
+              .value = true,
+              .scopes = machine->scopes,
+              .plan = apply_plan->next,
+            };
+          }
+
+        case WISP_BUILTIN_CDR:
+          {
+            return (wisp_machine_t) {
+              .term = wisp_cdr (scope_slots[1]),
+              .value = true,
+              .scopes = machine->scopes,
+              .plan = apply_plan->next,
+            };
+          }
+
+        case WISP_BUILTIN_EVAL:
+          {
+            return (wisp_machine_t) {
+              .term = scope_slots[1],
+              .value = false,
+              .scopes = machine->scopes,
+              .plan = apply_plan->next,
+            };
+          }
+
+        case WISP_BUILTIN_MAKE_INSTANCE:
+          {
+            int length = wisp_length (scope_slots[3]);
+            wisp_word_t slots[length];
+
+            wisp_word_t cons = scope_slots[3];
+            for (int i = 0; i < length; i++) {
+              slots[i] = wisp_car (cons);
+              cons = wisp_cdr (cons);
+            }
+
+            wisp_word_t instance = wisp_make_instance_with_slots
+              (scope_slots[1], length, slots);
+
+            return (wisp_machine_t) {
+              .term = instance,
+              .value = true,
+              .scopes = machine->scopes,
+              .plan = apply_plan->next,
+            };
+          }
+
         default:
           wisp_crash ("unknown builtin");
         }

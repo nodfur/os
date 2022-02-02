@@ -126,3 +126,10 @@ wisp_read (const char **stream)
 
   wisp_not_implemented ();
 }
+
+WISP_EXPORT
+wisp_word_t
+wisp_read_from_string (const char *string)
+{
+  return wisp_read (&string);
+}

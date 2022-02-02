@@ -8,6 +8,14 @@ import {
   RecoilRoot, atom, useRecoilState, useRecoilValue
 } from "recoil"
 
+const NIL = {
+  type: Symbol.for("SYMBOL"),
+  name: "NIL",
+  "function": null
+}
+
+NIL["function"] = NIL
+
 const Atoms = {
   lines: atom({
     key: "lines",
@@ -27,7 +35,24 @@ function Wisp() {
   let [booted, setBooted] = useRecoilState(Atoms.booted)
 
   function print(text, tag) {
-    setLines(lines => [...lines, [{ text, tag }]])
+    let parts = text.split(/[«»]/)
+    console.log(parts)
+
+    let things = []
+    
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 == 0) {
+        if (parts[i] !== "")
+          things.push({ text: parts[i], tag })
+      } else {
+        if (parts[i].match(/^.*? 0x(.*)$/)) {
+          let value = grokValue(parseInt(RegExp.$1, 16))
+          things.push({ text: <Object value={value} />, tag })
+        }
+      }
+    }
+
+    setLines(lines => [...lines, things])
   }
 
   useEffect(async () => {
@@ -68,10 +93,10 @@ function Wisp() {
         display: "flex",
         flexDirection: "row",
         gap: ".75rem",
+        height: "100%"
       }}
       className={ booted ? "fade-in now" : "fade-in later" }>
-      <Browser />
-      <REPL />
+      { booted ? <><Browser /><REPL /></> : null }
     </div>
   )
 }
@@ -83,7 +108,7 @@ function Line({ data }) {
         {data.text}
       </div>
     )
-  }
+  } else debugger
 }
 
 function lowtag(x) {
@@ -158,7 +183,7 @@ function grokPointer(heap, x) {
   
   switch (widetag) {
   case "INSTANCE":
-    return grokInstance(heap, headerData(header) - 1, x + 4)
+    return grokInstance(heap, x, headerData(header) - 1, x + 4)
 
   case "SYMBOL":
     return grokSymbol(heap, x)
@@ -176,9 +201,10 @@ function headerData(x) {
   return x >> 8
 }
 
-function grokInstance(heap, slotCount, x) {
+function grokInstance(heap, address, slotCount, x) {
   let value = {
     type: Symbol.for("INSTANCE"),
+    address,
     klass: undefined,
     slots: undefined,
   }
@@ -206,6 +232,7 @@ function grokSymbol(heap, x) {
   }
   
   value.name = grok(heap, heap.getUint32(x + 4 * 4, true))
+  value.value = grok(heap, heap.getUint32(x + 1 * 4, true))
   value["function"] = grok(heap, heap.getUint32(x + 4 * 6, true))
 
   return value
@@ -223,7 +250,7 @@ function grokString(heap, length, x) {
 
 function grokList(heap, x) {
   if (x === 3) {
-    return Symbol.for("NIL")
+    return NIL
   }
 
   let y = deref(x)
@@ -246,6 +273,85 @@ function grokValue(x) {
   return grok(heap, x)
 }
 
+function listElements(cons) {
+  let items = []
+  while (cons != NIL) {
+    items.push(cons.car)
+    cons = cons.cdr
+  }
+  
+  return items
+}
+
+function sortBy (list, key) {
+  return list.concat().sort(
+    (a, b) => (a[key] > b[key])
+      ? 1
+      : ((b[key] > a[key])
+         ? -1
+         : 0)
+  )
+};
+
+function SymbolList({ title, symbols }) {
+  if (symbols.length === 0)
+    return null
+  else
+    return (
+      <section>
+        <header>{title}</header>
+        <ul>
+          {
+            symbols.map((x, i) =>
+              <li key={i}>
+                {x.name}
+              </li>)
+          }
+        </ul>
+      </section>
+    )
+}
+
+function Package({ instance }) {
+  let allSymbols = sortBy(
+    listElements(instance.slots[1]),
+    "name"
+  )
+
+  let builtins = []
+  let functions = []
+  let macros = []
+  let variables = []
+  let symbols = []
+  
+  for (let symbol of allSymbols) {
+    let f = symbol["function"]
+    let v = symbol.value
+    if (v !== NIL) {
+      variables.push(symbol)
+    } else if (f !== NIL) {
+      if (f.slots[3] !== NIL) {
+        macros.push(symbol)
+      } else {
+        functions.push(symbol)
+      }
+    } else {
+      symbols.push(symbol)
+    }
+  }
+
+  return (
+    <div>
+      <section>
+        <SymbolList title="Macros" symbols={macros} />
+        <SymbolList title="Functions" symbols={functions} />
+        <SymbolList title="Builtins" symbols={builtins} />
+        <SymbolList title="Variables" symbols={variables} />
+      </section>
+    </div>
+  )
+}
+
 function Browser() {
   let booted = useRecoilValue(Atoms.booted)
 
@@ -260,7 +366,7 @@ function Browser() {
 
   return (
     <div className="browser">
-      <header>
+      <header className="titlebar">
         <span>
           <b>WISP</b>
         </span>
@@ -268,35 +374,60 @@ function Browser() {
           Package
         </span>
       </header>
-      <div className="bg p-1">
-        {value ? <Object value={value} /> : "..."}
+      <div className="bg p-1 scroll-y">
+        {value ? <Package instance={value} /> : "..."}
       </div>
     </div>
   )
 }
 
+const slotNames = {
+  CLOSURE: ["Params", "Code", "Scopes", "Macro"],
+  "DOM-ELEMENT": ["Tag", "Attributes", "Body"],
+}
+
+function slotName(value, i) {
+  let names = slotNames[value.klass.name]
+  return names ? names[i] : `Slot ${i}`
+}
+
+
 function Object({ value }) {
   let [expanded, setExpanded] = React.useState(false)
 
+  let toggle = React.useCallback((e) => {
+    e.stopPropagation()
+    setExpanded(x => !x)
+  })
+
   if (value.type === Symbol.for("INSTANCE")) {
-    return (
-      <table className="instance">
-        <tbody>
-          <tr>
-            <td>Class</td>
-            <td><Object value={value.klass} /></td>
-          </tr>
-          {
-            value.slots.map((slot, i) => (
-              <tr key={i}>
-                <td>Slot {`${i}`}</td>
-                <td><Object value={slot} /></td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-    )
+    if (expanded)
+      return (
+        <table className="instance" onClick={toggle}>
+          <tbody>
+            <tr>
+              <td>Class</td>
+              <td><Object value={value.klass} /></td>
+            </tr>
+            {
+              value.slots.map((slot, i) => (
+                <tr key={i}>
+                  <td>{slotName(value, i)}</td>
+                  <td><Object value={slot} /></td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      )
+    else
+      return (
+        <div className="instance" onClick={toggle}>
+          <Object value={value.klass} />
+          {` 0x${value.address.toString(16)}`}
+        </div>
+      )
+    
   } else if (value.type === Symbol.for("SYMBOL")) {
     return (
       <span className="symbol">{value.name}</span>
@@ -311,7 +442,7 @@ function Object({ value }) {
       items.push(list.car)
       list = list.cdr
 
-      if (list === Symbol.for("NIL")) {
+      if (list === NIL) {
         break
       } else if (list.type != Symbol.for("CONS")) {
         last = list
@@ -321,17 +452,25 @@ function Object({ value }) {
 
     return (
       <div className="list">
-        ({items.map((x, i) => <Object value={x} key={i} />)}{
+        {items.map((x, i) => <Object value={x} key={i} />)}{
           last ? <span>. <Object value={last} /></span> : null
-        })
+        }
       </div>
     )
 
-  } else if (value === Symbol.for("NIL")) {
+  } else if (value === NIL) {
     return <span className="symbol">NIL</span>
     
   } else if (typeof value === "number") {
     return <span className="number">{value}</span>
+    
+  } else if (typeof value.builtin === "number") {
+    return (
+      <span className="builtin">
+        {`«BUILTIN ${value.builtin}»`}
+      </span>
+    )
+    
   } else {
     return <span className="string">{`"${value}"`}</span>
   }
@@ -348,16 +487,23 @@ function REPL() {
     setInput(e.target.value)
   })
 
-  let handleSubmit = useCallback(e => {
-    e.preventDefault()
-
-    console.log(input)
+  function evalCode(code) {
+    console.log(code)
 
     let result = WispModule.ccall(
       "wisp_eval_code",
       "number",
       ["string"],
-      [input]
+      [code]
+    )
+    
+    let sexp = grokValue(
+      WispModule.ccall(
+        "wisp_read_from_string",
+        "number",
+        ["string"],
+        [code]
+      )
     )
 
     console.log(result)
@@ -368,7 +514,7 @@ function REPL() {
     setLines(lines => [
       ...lines, [
         {
-          text: input,
+          text: <Object value={sexp} />,
           tag: "stdin"
         },
         {
@@ -380,14 +526,11 @@ function REPL() {
         }
       ]
     ])
+  }
 
-    // WispModule.ccall(
-    //   "wisp_dump_stdout",
-    //   null,
-    //   ["number"],
-    //   [result]
-    // )
-
+  let handleSubmit = useCallback(e => {
+    e.preventDefault()
+    evalCode(input)
     setInput("")
   })
 
@@ -395,14 +538,18 @@ function REPL() {
     outputRef.current.scrollTop = outputRef.current.scrollHeight
   }, [lines])
 
+  useEffect(() => {
+    evalCode("(defun foo (x y) (cons y x))")
+  }, [])
+  
   return (
     <div id="repl">
-      <header>
-        <span>
-          Lisp Mode
-        </span>
+      <header className="titlebar">
         <span>
           <b>Notebook</b>
+        </span>
+        <span>
+          Lisp Mode
         </span>
         <span>
           Package: <em>WISP</em>

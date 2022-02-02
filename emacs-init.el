@@ -27,45 +27,45 @@
 (setq window-divider-default-right-width 8)
 (window-divider-mode 1)
 
-;; (custom-set-faces
-;;  ;; custom-set-faces was added by Custom.
-;;  ;; If you edit it by hand, you could mess it up, so be careful.
-;;  ;; Your init file should contain only one such instance.
-;;  ;; If there is more than one, they won't work right.
-;;  '(default ((t (:background "#000" :height 130))))
-;;  '(fringe ((t (:background "#000"))))
-;;  '(line-number ((t (:background "#000"))))
-
-;;  '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
-;;  '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
-;;  '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
-;;  '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
-;;  '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
-
-;;  '(window-divider ((t (:foreground "#222"))))
-;;  '(window-divider-first-pixel ((t (:foreground "#222"))))
-;;  '(window-divider-last-pixel ((t (:foreground "#222")))))
-
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:background "#fff"))))
- '(fringe ((t (:background "#fff"))))
- '(line-number ((t (:background "#fff"))))
+ '(default ((t (:background "#000" :height 130))))
+ '(fringe ((t (:background "#000"))))
+ '(line-number ((t (:background "#000"))))
 
- '(treemacs-directory-face ((t (:foreground "#666" :height 0.9 :family "Source Sans Pro"))))
- '(treemacs-file-face ((t (:foreground "#000" :height 0.9 :family "Source Sans Pro"))))
- '(treemacs-git-modified-face ((t (:foreground "#383" :height 0.9 :family "Source Sans Pro"))))
- '(treemacs-git-untracked-face ((t (:foreground "#383" :slant italic :height 0.9 :family "Source Sans Pro"))))
- '(treemacs-git-ignored-face ((t (:foreground "#bbb" :height 0.9 :family "Source Sans Pro"))))
- '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2 :family "Source Sans Pro"))))
- '(treemacs-tags-face ((t (:foreground "#558" :height 0.9 :family "Source Sans Pro"))))
+ '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
+ '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
+ '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
+ '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
+ '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
 
- '(window-divider ((t (:foreground "#ddd"))))
- '(window-divider-first-pixel ((t (:foreground "#ddd"))))
- '(window-divider-last-pixel ((t (:foreground "#ddd")))))
+ '(window-divider ((t (:foreground "#222"))))
+ '(window-divider-first-pixel ((t (:foreground "#222"))))
+ '(window-divider-last-pixel ((t (:foreground "#222")))))
+
+;; (custom-set-faces
+;;  ;; custom-set-faces was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  '(default ((t (:background "#fff"))))
+;;  '(fringe ((t (:background "#fff"))))
+;;  '(line-number ((t (:background "#fff"))))
+
+;;  '(treemacs-directory-face ((t (:foreground "#666" :height 0.9 :family "Source Sans Pro"))))
+;;  '(treemacs-file-face ((t (:foreground "#000" :height 0.9 :family "Source Sans Pro"))))
+;;  '(treemacs-git-modified-face ((t (:foreground "#383" :height 0.9 :family "Source Sans Pro"))))
+;;  '(treemacs-git-untracked-face ((t (:foreground "#383" :slant italic :height 0.9 :family "Source Sans Pro"))))
+;;  '(treemacs-git-ignored-face ((t (:foreground "#bbb" :height 0.9 :family "Source Sans Pro"))))
+;;  '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2 :family "Source Sans Pro"))))
+;;  '(treemacs-tags-face ((t (:foreground "#558" :height 0.9 :family "Source Sans Pro"))))
+
+;;  '(window-divider ((t (:foreground "#ddd"))))
+;;  '(window-divider-first-pixel ((t (:foreground "#ddd"))))
+;;  '(window-divider-last-pixel ((t (:foreground "#ddd")))))
 
 ;; (require 'gmail nil t)
 
@@ -477,7 +477,7 @@
 
 (defun make-transparent ()
   (interactive)
-  (set-frame-parameter nil 'alpha 85))
+  (set-frame-parameter nil 'alpha 90))
 
 (defun simple-mode-line-render (left right)
   "Return a string of `window-width' length containing LEFT, and RIGHT
