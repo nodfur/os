@@ -168,6 +168,20 @@ synchronized across nodes.  Especially CRDTs.
 
     A call like `(f x y)` ...
 
+
+*** Lisp forms based on what they evaluate
+
+    |-----------+-----------+--------|
+    | Form      | Arguments | Result |
+    |-----------+-----------+--------|
+    | QUOTE     | no        | no     |
+    | Macros    | no        | yes    |
+    | Functions | yes       | no     |
+    | EVAL      | yes       | yes    |
+    |-----------+-----------+--------|
+
+
+
 * Diary
 
 ** [2022-01-27 Thu]

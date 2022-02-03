@@ -55,29 +55,37 @@ typedef struct wisp_defun {
   const char *name;
   int n_args;
   bool evaluate_arguments;
+  bool evaluate_result;
   wisp_word_t params;
   wisp_fun_ptr_t function;
 } wisp_defun_t;
 
 extern wisp_defun_t wisp_builtins[];
 
-#define WISP_DEF(lisp_name, c_name, n_args_, evalargs) \
-  wisp_word_t c_name FUNARGS_##n_args_;                \
-  static wisp_defun_t c_name##_spec = {                \
-    .id = c_name##_tag,                                \
-    .name = lisp_name,                                 \
-    .evaluate_arguments = evalargs,                    \
-    .n_args = n_args_,                                 \
-    .params = NIL,                                     \
-    .function = { .a ## n_args_ = c_name }             \
-  };                                                   \
+#define WISP_DEF(lisp_name, c_name, n_args_, evalargs, evalresult) \
+  wisp_word_t c_name FUNARGS_##n_args_;                            \
+  static wisp_defun_t c_name##_spec = {                            \
+    .id = c_name##_tag,                                            \
+    .name = lisp_name,                                             \
+    .evaluate_arguments = evalargs,                                \
+    .evaluate_result = evalresult,                                 \
+    .n_args = n_args_,                                             \
+    .params = NIL,                                                 \
+    .function = { .a ## n_args_ = c_name }                         \
+  };                                                               \
   wisp_word_t c_name
 
 #define WISP_DEFUN(lisp_name, c_name, n_args) \
-  WISP_DEF (lisp_name, c_name, n_args, true)
+  WISP_DEF (lisp_name, c_name, n_args, true, false)
 
 #define WISP_DEFMACRO(lisp_name, c_name, n_args) \
-  WISP_DEF (lisp_name, c_name, n_args, false)
+  WISP_DEF (lisp_name, c_name, n_args, false, true)
+
+#define WISP_DEFEVAL(lisp_name, c_name, n_args) \
+  WISP_DEF (lisp_name, c_name, n_args, true, true)
+
+#define WISP_DEFQUOTE(lisp_name, c_name, n_args) \
+  WISP_DEF (lisp_name, c_name, n_args, false, false)
 
 #define FUNARGS_1 (wisp_word_t)
 #define FUNARGS_2 (wisp_word_t, wisp_word_t)
@@ -92,12 +100,13 @@ extern wisp_defun_t wisp_builtins[];
 #define WISP_DEBUG(...) (fprintf (stderr, __VA_ARGS__))
 
 typedef enum {
+  wisp_quote_tag,
+  wisp_eval_tag,
   wisp_lambda_tag,
   wisp_macro_tag,
   wisp_cons_tag,
   wisp_car_tag,
   wisp_cdr_tag,
-  wisp_eval_tag,
   wisp_make_instance_tag,
   wisp_set_symbol_function_tag,
   wisp_save_heap_tag,

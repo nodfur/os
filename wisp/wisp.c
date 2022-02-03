@@ -655,6 +655,18 @@ main (int argc, char **argv)
   return 0;
 }
 
+WISP_DEFQUOTE ("QUOTE", wisp_quote, 1)
+(wisp_word_t term)
+{
+  return term;
+}
+
+WISP_DEFEVAL ("EVAL", wisp_eval, 1)
+(wisp_word_t term)
+{
+  return term;
+}
+
 WISP_DEFMACRO ("LAMBDA", wisp_lambda, 2)
 (wisp_word_t lambda_list, wisp_word_t body)
 {
@@ -807,6 +819,8 @@ WISP_DEFUN ("*", wisp_multiply, 2)
 void
 wisp_defs (void)
 {
+  WISP_REGISTER (wisp_quote, "TERM");
+  WISP_REGISTER (wisp_eval, "TERM");
   WISP_REGISTER (wisp_lambda, "LAMBDA-LIST", "BODY");
   WISP_REGISTER (wisp_macro, "LAMBDA-LIST", "BODY");
   WISP_REGISTER (wisp_cons, "CAR", "CDR");

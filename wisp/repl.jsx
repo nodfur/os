@@ -330,7 +330,9 @@ function Package({ instance }) {
     if (v !== NIL) {
       variables.push(symbol)
     } else if (f !== NIL) {
-      if (f.slots[3] !== NIL) {
+      if (typeof f.builtin === "number") {
+        builtins.push(symbol)
+      } else if (f.slots[3] !== NIL) {
         macros.push(symbol)
       } else {
         functions.push(symbol)

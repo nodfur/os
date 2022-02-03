@@ -224,12 +224,24 @@ wisp_do_call (wisp_machine_t *machine,
         default: wisp_not_implemented ();
         }
 
-      *machine = (wisp_machine_t) {
-        .plan = plan->next,
-        .term = x,
-        .value = true,
-        .scopes = plan->scopes
-      };
+      if (builtin.evaluate_result)
+        {
+          *machine = (wisp_machine_t) {
+            .plan = plan->next,
+            .term = x,
+            .value = false,
+            .scopes = plan->scopes
+          };
+        }
+      else
+        {
+          *machine = (wisp_machine_t) {
+            .plan = plan->next,
+            .term = x,
+            .value = true,
+            .scopes = plan->scopes
+          };
+        }
     }
   else
     {
@@ -447,6 +459,9 @@ wisp_step (wisp_machine_t *machine)
   wisp_word_t scopes = machine->scopes;
   wisp_word_t plan = machine->plan;
 
+  /* wisp_dump (stderr, term); */
+  /* fprintf (stderr, "\n"); */
+
   if (machine->value || wisp_term_irreducible (term))
     {
       if (plan == NIL)
@@ -461,15 +476,7 @@ wisp_step (wisp_machine_t *machine)
       wisp_word_t car = cons[0];
       wisp_word_t cdr = cons[1];
 
-      if (car == QUOTE)
-        {
-          machine->term = wisp_car (cdr);
-          machine->value = true;
-          return true;
-        }
-
-      else
-        return wisp_step_into_call (machine, car, cdr);
+      return wisp_step_into_call (machine, car, cdr);
     }
 
   else if (wisp_is_symbol (term))
