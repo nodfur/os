@@ -13,5 +13,5 @@ in {
 
   home-manager.users.mbrock = import ./profile.nix;
 
-  nix.trustedUsers = ["mbrock"];
+  nix.settings.trusted-users = ["mbrock"];
 }

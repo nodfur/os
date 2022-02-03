@@ -13,7 +13,7 @@
   ];
 
   security.acme.acceptTerms = true;
-  security.acme.email = "mikael@brockman.se";
+  security.acme.defaults.email = "mikael@brockman.se";
   security.acme.certs."node.town" = {
     group = "nginx";
     credentialsFile = "/secrets/acme.env";

@@ -48,16 +48,16 @@
   nix = {
     package = pkgs.nixUnstable;
 
-    binaryCaches = [
+    settings.binary-caches = [
       "https://nodfur.cachix.org"
       "https://cache.nixos.org/"
     ];
 
-    binaryCachePublicKeys = [
+    settings.binary-cache-public-keys = [
       "nodfur.cachix.org-1:h7O80hQcd+kzNgE9i1h9yrLbnBVSQoWqSJiaM6ms5Cs="
     ];
 
-    autoOptimiseStore = true;
+    settings.auto-optimise-store = true;
     gc = {
       automatic = true;
       dates = "weekly";

@@ -13,5 +13,5 @@ in {
 
   home-manager.users.dbrock = import ./profile.nix;
 
-  nix.trustedUsers = ["dbrock"];
+  nix.settings.trusted-users = ["dbrock"];
 }

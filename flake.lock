@@ -82,11 +82,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1623705021,
-        "narHash": "sha256-/GZUHILpflqCINtlY1seepsiUbkx89b2PoGWIKV1+Io=",
+        "lastModified": 1643837728,
+        "narHash": "sha256-iW/5eMRQmzdctv2dAUlIaZnVWwcmaznNajS+ft1MXHg=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "1375fd4a030c27e6c6208b31b8189ca41da01fb0",
+        "rev": "9d369c75ce2fdeb296ad42bcdc8c1a523c494550",
         "type": "github"
       },
       "original": {
@@ -100,14 +100,15 @@
         "blobs": "blobs",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-21_05": "nixpkgs-21_05",
+        "nixpkgs-21_11": "nixpkgs-21_11",
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1628684416,
-        "narHash": "sha256-zm7JHe/K2NthgV57QhnmfT9i7azGa2tc5fJOzEiYlLo=",
+        "lastModified": 1638911354,
+        "narHash": "sha256-hNhzLOp+dApEY15vwLAQZu+sjEQbJcOXCaSfAT6lpsQ=",
         "owner": "simple-nixos-mailserver",
         "repo": "nixos-mailserver",
-        "rev": "fb85a3fe9e4f673f9c017a23ada00b05d61cdc6a",
+        "rev": "6e3a7b2ea6f0d68b82027b988aa25d3423787303",
         "type": "gitlab"
       },
       "original": {
@@ -119,11 +120,12 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1623324058,
-        "narHash": "sha256-Jm9GUTXdjXz56gWDKy++EpFfjrBaxqXlLvTLfgEi8lo=",
-        "path": "/nix/store/v13yb14bkddyc1rxlrna5j3441pyh0r8-source",
-        "rev": "432fc2d9a67f92e05438dff5fdc2b39d33f77997",
-        "type": "path"
+        "lastModified": 1643472818,
+        "narHash": "sha256-qzVPxKDUubYIxKRSuDl/JgzXWSmGvUVYny9SxFMfPJM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "7f65e4abd5ecaad12d2d26e4380d1a7d8edafea7",
+        "type": "github"
       },
       "original": {
         "id": "nixpkgs",
@@ -142,6 +144,21 @@
       "original": {
         "id": "nixpkgs",
         "ref": "nixos-21.05",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs-21_11": {
+      "locked": {
+        "lastModified": 1638371214,
+        "narHash": "sha256-0kE6KhgH7n0vyuX4aUoGsGIQOqjIx2fJavpCWtn73rc=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a640d8394f34714578f3e6335fc767d0755d78f9",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-21.11",
         "type": "indirect"
       }
     },

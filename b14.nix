@@ -118,5 +118,5 @@ in {
 
   powerManagement.cpuFreqGovernor = lib.mkDefault "ondemand";
 
-  nix.maxJobs = lib.mkDefault 16;
+  nix.settings.max-jobs = lib.mkDefault 16;
 }

@@ -93,7 +93,7 @@ in {
      };
    };
 
-   nix.trustedUsers = [config.os.username];
+   nix.settings.trusted-users = [config.os.username];
 
    networking.hostName = lib.mkOverride 10 config.os.username;
 
