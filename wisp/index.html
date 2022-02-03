@@ -22,7 +22,7 @@
   html {
     --bg: #ffff;
     --bg-tint: #fffa;
-    --fg: #000;
+    --fg: #333;
     --gradual-tint: rgba(0, 40, 80, 0.03);
     --border: #0004;
     --sans:
@@ -48,7 +48,7 @@
   }
 
   tt { font-family: var(--mono); }
-  html { font-family: var(--sans); }
+  html { font-family: var(--mono); }
 
   em {
     font-style: normal;
@@ -165,7 +165,7 @@
   td:first-child {
     white-space: nowrap;
     padding-right: 0.5rem;
-    vertical-align: top;
+    vertical-align: center;
     font-family: var(--sans);
   }
 
@@ -179,8 +179,11 @@
     border: 1px solid var(--border);
     padding: 1px 6px;
     background: var(--gradual-tint);
-    margin: 3px;
     align-items: center;
+  }
+
+  .list .list {
+    margin: 3px;
   }
 
   .chunk {
@@ -217,7 +220,7 @@
     opacity: 1;
   }
 
-  * { text-transform: lowercase; }
+  /* * { text-transform: lowercase; } */
 
   .titlebar {
     padding: 5px 10px;

@@ -591,8 +591,15 @@ wisp_main ()
 {
   char *heap_path = getenv ("WISP_HEAP");
 
-  WISP_DEBUG ("WebAssembly Lisp, February 2022\n");
-  WISP_DEBUG ("Made by Restless Hypermedia, Inc.\n");
+  const char *target = "(unknown)";
+
+#if defined(EMSCRIPTEN)
+  target = "WebAssembly";
+#elif defined(__x86_64__)
+  target = "64-bit x86";
+#endif
+
+  WISP_DEBUG ("Welcome to Wisp for %s\n", target);
 
   if (!heap_path || access (heap_path, R_OK) != 0)
     {
