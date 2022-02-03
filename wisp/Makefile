@@ -1,4 +1,4 @@
-default: wisp wasm/wisp.js dist/index.html
+default: wisp test wasm/wisp.js dist/index.html
 
 CFLAGS += -g
 
@@ -17,6 +17,8 @@ dist/index.html: repl.jsx index.html wasm/wisp.js wasm/wisp.wasm build
 
 wisp: $(SOURCES)
 	$(CC) $(CFLAGS) $^ -o wisp
+
+test:
 	./wisp test
 
 clean:; rm -rf wisp dist/* wasm/*

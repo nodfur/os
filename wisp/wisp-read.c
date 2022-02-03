@@ -17,12 +17,27 @@ wisp_read_list (const char **stream)
   return wisp_cons (car, cdr);
 }
 
+bool
+wisp_is_symbol_char (char c)
+{
+  return isalpha (c)
+    || c == '+'
+    || c == '-'
+    || c == '='
+    || c == '/'
+    || c == '^'
+    || c == '*'
+    || c == '%'
+    || c == '$'
+    || c == '@';
+}
+
 wisp_word_t
 wisp_read_symbol (const char **stream)
 {
   const char *after = *stream + 1;
 
-  while (isalpha (*after) || (*after == '-'))
+  while (wisp_is_symbol_char (*after))
     ++after;
 
   int length = ++after - *stream - 1;
@@ -105,7 +120,7 @@ wisp_read (const char **stream)
       return wisp_read_list (stream);
     }
 
-  if (isalpha (c))
+  if (wisp_is_symbol_char (c))
     return wisp_read_symbol (stream);
 
   if (isdigit (c))

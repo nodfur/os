@@ -54,31 +54,6 @@ wisp_deref (wisp_word_t ptr)
   return heap + (ptr & ~WISP_LOWTAG_MASK);
 }
 
-WISP_DEFUN ("CONS", wisp_cons, 2)
-(wisp_word_t car, wisp_word_t cdr)
-{
-  wisp_word_t cons
-      = wisp_alloc_raw (WISP_CONS_SIZE, WISP_LOWTAG_LIST_PTR);
-
-  wisp_word_t *data = wisp_deref (cons);
-  data[0] = car;
-  data[1] = cdr;
-
-  return cons;
-}
-
-WISP_DEFUN ("CAR", wisp_car, 1)
-(wisp_word_t list)
-{
-  return (wisp_deref (list))[0];
-}
-
-WISP_DEFUN ("CDR", wisp_cdr, 1)
-(wisp_word_t list)
-{
-  return (wisp_deref (list))[1];
-}
-
 wisp_word_t
 wisp_header_word (uint32_t data, uint8_t widetag)
 {
@@ -134,22 +109,6 @@ wisp_make_instance_va (wisp_word_t type, int n_slots, ...)
   return wisp_make_instance_with_slots (type, n_slots, slots);
 }
 
-WISP_DEFUN ("MAKE-INSTANCE", wisp_make_instance, 2)
-(wisp_word_t klass, wisp_word_t initargs)
-{
-  int length = wisp_length (initargs);
-  wisp_word_t slots[length];
-
-  wisp_word_t cons = initargs;
-  for (int i = 0; i < length; i++) {
-    slots[i] = wisp_car (cons);
-    cons = wisp_cdr (cons);
-  }
-
-  return wisp_make_instance_with_slots
-    (klass, length, slots);
-}
-
 wisp_word_t
 wisp_make_package (wisp_word_t name)
 {
@@ -165,10 +124,10 @@ wisp_string_buffer (wisp_word_t *header)
 __inline__ static void
 debugger (void)
 {
-#ifndef __EMSCRIPTEN__
-#if __X86_64__
+#if defined(__x86_64__)
   __asm__ volatile("int $0x03");
-#endif
+#elif defined(EMSCRIPTEN)
+  EM_ASM ({ debugger; });
 #endif
 }
 
@@ -440,21 +399,6 @@ wisp_length (wisp_word_t list)
   return i;
 }
 
-WISP_DEFUN ("SET-SYMBOL-FUNCTION", wisp_set_symbol_function, 2)
-(wisp_word_t symbol, wisp_word_t value)
-{
-  wisp_word_t *header = wisp_deref (symbol);
-  header[6] = value;
-
-  WISP_DEBUG ("Function ");
-  wisp_dump (stderr, symbol);
-  fprintf (stderr, " ← ");
-  wisp_dump (stderr, value);
-  fprintf (stderr, "\n");
-
-  return value;
-}
-
 void
 wisp_set_symbol_variable (wisp_word_t symbol, wisp_word_t value)
 {
@@ -516,78 +460,23 @@ wisp_simple_params (int count, ...)
   return wisp_lambda_list_to_params (list);
 }
 
-wisp_defun_t *wisp_builtins[WISP_N_BUILTINS];
+wisp_defun_t wisp_builtins[WISP_N_BUILTINS];
 
 void
 wisp_register_builtin_defun
-(wisp_defun_t *defun, wisp_word_t params)
+(wisp_defun_t defun)
 {
-  wisp_builtins[defun->id] = defun;
+  wisp_builtins[defun.id] = defun;
 
-  wisp_word_t closure = wisp_make_instance_va
-    (CLOSURE, 4, params,
-     (defun->id << 8) | WISP_WIDETAG_BUILTIN,
-     NIL, NIL);
-
-  wisp_set_symbol_function (wisp_intern_lisp (defun->name), closure);
-}
-
-void
-wisp_builtin_function (wisp_word_t builtin_name, wisp_word_t builtin_id,
-                       wisp_word_t params)
-{
-  wisp_word_t closure = wisp_make_instance_va (
-      CLOSURE, 4, params, (builtin_id << 8) | WISP_WIDETAG_BUILTIN, NIL,
-      NIL);
-
-  wisp_set_symbol_function (builtin_name, closure);
-}
-
-void
-wisp_builtin_macro (wisp_word_t builtin_name, wisp_word_t builtin_id,
-                    wisp_word_t params)
-{
-  wisp_word_t closure = wisp_make_instance_va (
-      CLOSURE, 4, params, (builtin_id << 8) | WISP_WIDETAG_BUILTIN, NIL,
-      MACRO);
-
-  wisp_set_symbol_function (builtin_name, closure);
+  wisp_set_symbol_function
+    (wisp_intern_lisp (defun.name),
+     (defun.id << 8) | WISP_WIDETAG_BUILTIN);
 }
 
 void
 wisp_setup (void)
 {
   wisp_set_symbol_variable (NIL, NIL);
-
-  wisp_builtin_macro (LAMBDA, WISP_BUILTIN_LAMBDA,
-                      wisp_simple_params (2, "PARAMS", "BODY"));
-
-  wisp_builtin_macro (MACRO, WISP_BUILTIN_MACRO,
-                      wisp_simple_params (2, "PARAMS", "BODY"));
-
-  wisp_builtin_function (SET_SYMBOL_FUNCTION,
-                         WISP_BUILTIN_SET_SYMBOL_FUNCTION,
-                         wisp_simple_params (2, "SYMBOL", "CLOSURE"));
-
-  wisp_builtin_function (wisp_intern_lisp ("CONS"), WISP_BUILTIN_CONS,
-                         wisp_simple_params (2, "CAR", "CDR"));
-
-  wisp_builtin_function (wisp_intern_lisp ("SAVE-HEAP"),
-                         WISP_BUILTIN_SAVE_HEAP,
-                         wisp_simple_params (1, "PATH"));
-
-  wisp_builtin_function (wisp_intern_lisp ("CAR"), WISP_BUILTIN_CAR,
-                         wisp_simple_params (1, "PAIR"));
-
-  wisp_builtin_function (wisp_intern_lisp ("CDR"), WISP_BUILTIN_CDR,
-                         wisp_simple_params (1, "PAIR"));
-
-  wisp_builtin_function (wisp_intern_lisp ("EVAL"), WISP_BUILTIN_EVAL,
-                         wisp_simple_params (1, "FORM"));
-
-  wisp_builtin_function (wisp_intern_lisp ("MAKE-INSTANCE"),
-                         WISP_BUILTIN_MAKE_INSTANCE,
-                         wisp_simple_params (2, "CLASS", "INITARGS"));
 }
 
 WISP_EXPORT
@@ -597,46 +486,14 @@ wisp_eval_code (const char *code)
   wisp_word_t term = wisp_read (&code);
 
   wisp_machine_t machine = wisp_initial_machine (term);
+  wisp_machine = &machine;
 
   while (wisp_step (&machine))
     ;
 
+  wisp_machine = NULL;
+
   return machine.term;
-}
-
-WISP_DEFUN ("SAVE-HEAP", wisp_save_heap, 1)
-(wisp_word_t pathname)
-{
-  char *path = wisp_string_buffer (wisp_deref (pathname));
-
-  WISP_DEBUG ("saving heap to %s\n", path);
-
-  FILE *f = fopen (path, "w+");
-
-  fprintf (f, "WISP 0 %d\n", WISP);
-
-  if (fwrite (heap, 1, heap_used, f) != heap_used)
-    wisp_crash ("heap save write failed");
-  WISP_DEBUG ("saved heap to %s\n", path);
-  fclose (f);
-
-#ifdef EMSCRIPTEN
-  EM_ASM ({
-    FS.syncfs (err = > {
-      if (err)
-        {
-          Module.printErr ('syncfs error');
-          console.error (err);
-        }
-      else
-        {
-          console.error ('syncfs done');
-        }
-    });
-  });
-#endif
-
-  return T;
 }
 
 void
@@ -714,6 +571,8 @@ wisp_stdlib ()
                   "    (cons tag (cons attrs (cons body nil)))))");
 }
 
+void wisp_defs (void);
+
 WISP_EXPORT
 void
 wisp_start_without_heap ()
@@ -722,6 +581,7 @@ wisp_start_without_heap ()
   wisp_start ();
   wisp_intern_basic_symbols ();
   wisp_setup ();
+  wisp_defs ();
   wisp_stdlib ();
 }
 
@@ -740,7 +600,10 @@ wisp_main ()
       wisp_start_without_heap ();
     }
   else
-    wisp_load_heap (heap_path);
+    {
+      wisp_load_heap (heap_path);
+      wisp_defs ();
+    }
 }
 
 WISP_EXPORT
@@ -792,13 +655,167 @@ main (int argc, char **argv)
   return 0;
 }
 
+WISP_DEFMACRO ("LAMBDA", wisp_lambda, 2)
+(wisp_word_t lambda_list, wisp_word_t body)
+{
+  wisp_word_t params = wisp_lambda_list_to_params (lambda_list);
+
+  wisp_word_t closure = wisp_make_instance_va
+    (CLOSURE, 4, params, body, wisp_machine->scopes, NIL);
+
+  return closure;
+}
+
+WISP_DEFMACRO ("MACRO", wisp_macro, 2)
+(wisp_word_t lambda_list, wisp_word_t body)
+{
+  wisp_word_t params = wisp_lambda_list_to_params (lambda_list);
+
+  wisp_word_t closure = wisp_make_instance_va
+    (CLOSURE, 4, params, body, wisp_machine->scopes, MACRO);
+
+  return closure;
+}
+
+WISP_DEFUN ("CONS", wisp_cons, 2)
+(wisp_word_t car, wisp_word_t cdr)
+{
+  wisp_word_t cons
+      = wisp_alloc_raw (WISP_CONS_SIZE, WISP_LOWTAG_LIST_PTR);
+
+  wisp_word_t *data = wisp_deref (cons);
+  data[0] = car;
+  data[1] = cdr;
+
+  return cons;
+}
+
+WISP_DEFUN ("CAR", wisp_car, 1)
+(wisp_word_t list)
+{
+  return (wisp_deref (list))[0];
+}
+
+WISP_DEFUN ("CDR", wisp_cdr, 1)
+(wisp_word_t list)
+{
+  return (wisp_deref (list))[1];
+}
+
+WISP_DEFUN ("MAKE-INSTANCE", wisp_make_instance, 2)
+(wisp_word_t klass, wisp_word_t initargs)
+{
+  int length = wisp_length (initargs);
+  wisp_word_t slots[length];
+
+  wisp_word_t cons = initargs;
+  for (int i = 0; i < length; i++) {
+    slots[i] = wisp_car (cons);
+    cons = wisp_cdr (cons);
+  }
+
+  return wisp_make_instance_with_slots
+    (klass, length, slots);
+}
+
+WISP_DEFUN ("SET-SYMBOL-FUNCTION", wisp_set_symbol_function, 2)
+(wisp_word_t symbol, wisp_word_t value)
+{
+  wisp_word_t *header = wisp_deref (symbol);
+  header[6] = value;
+
+  WISP_DEBUG ("Function ");
+  wisp_dump (stderr, symbol);
+  fprintf (stderr, " ← ");
+  wisp_dump (stderr, value);
+  fprintf (stderr, "\n");
+
+  return value;
+}
+
+WISP_DEFUN ("SAVE-HEAP", wisp_save_heap, 1)
+(wisp_word_t pathname)
+{
+  char *path = wisp_string_buffer (wisp_deref (pathname));
+
+  WISP_DEBUG ("saving heap to %s\n", path);
+
+  FILE *f = fopen (path, "w+");
+
+  fprintf (f, "WISP 0 %d\n", WISP);
+
+  if (fwrite (heap, 1, heap_used, f) != heap_used)
+    wisp_crash ("heap save write failed");
+  WISP_DEBUG ("saved heap to %s\n", path);
+  fclose (f);
+
+#ifdef EMSCRIPTEN
+  EM_ASM ({
+    FS.syncfs (err => {
+      if (err)
+        {
+          Module.printErr ('syncfs error');
+          console.error (err);
+        }
+      else
+        {
+          console.error ('syncfs done');
+        }
+    });
+  });
+#endif
+
+  return T;
+}
+
+WISP_DEFUN ("+", wisp_add, 2)
+(wisp_word_t x, wisp_word_t y)
+{
+  if (!WISP_IS_FIXNUM (x))
+    wisp_crash ("not a number");
+
+  if (!WISP_IS_FIXNUM (y))
+    wisp_crash ("not a number");
+
+  return x + y;
+}
+
+WISP_DEFUN ("-", wisp_subtract, 2)
+(wisp_word_t x, wisp_word_t y)
+{
+  if (!WISP_IS_FIXNUM (x))
+    wisp_crash ("not a number");
+
+  if (!WISP_IS_FIXNUM (y))
+    wisp_crash ("not a number");
+
+  return x - y;
+}
+
+WISP_DEFUN ("*", wisp_multiply, 2)
+(wisp_word_t x, wisp_word_t y)
+{
+  if (!WISP_IS_FIXNUM (x))
+    wisp_crash ("not a number");
+
+  if (!WISP_IS_FIXNUM (y))
+    wisp_crash ("not a number");
+
+  return ((x >> 2) * (y >> 2)) << 2;
+}
+
 void
 wisp_defs (void)
 {
+  WISP_REGISTER (wisp_lambda, "LAMBDA-LIST", "BODY");
+  WISP_REGISTER (wisp_macro, "LAMBDA-LIST", "BODY");
   WISP_REGISTER (wisp_cons, "CAR", "CDR");
   WISP_REGISTER (wisp_car, "CONS");
   WISP_REGISTER (wisp_cdr, "CONS");
   WISP_REGISTER (wisp_set_symbol_function, "SYMBOL", "FUNCTION");
   WISP_REGISTER (wisp_save_heap, "HEAP-PATH");
   WISP_REGISTER (wisp_make_instance, "CLASS", "SLOTS");
+  WISP_REGISTER (wisp_add, "X", "Y");
+  WISP_REGISTER (wisp_subtract, "X", "Y");
+  WISP_REGISTER (wisp_multiply, "X", "Y");
 }

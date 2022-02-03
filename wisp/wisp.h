@@ -26,8 +26,10 @@ typedef struct {
   wisp_word_t plan;
 } wisp_machine_t;
 
+extern wisp_machine_t *wisp_machine;
+
 typedef struct __attribute__ ((__packed__)) {
-  wisp_word_t callee;
+  wisp_word_t function;
   wisp_word_t values;
   wisp_word_t terms;
   wisp_word_t scopes;
@@ -41,62 +43,69 @@ typedef struct __attribute__ ((__packed__)) {
   wisp_word_t macro;
 } wisp_closure_t;
 
+typedef union wisp_fun_ptr {
+  wisp_word_t (*a0) (void);
+  wisp_word_t (*a1) (wisp_word_t);
+  wisp_word_t (*a2) (wisp_word_t, wisp_word_t);
+  wisp_word_t (*a3) (wisp_word_t, wisp_word_t, wisp_word_t);
+} wisp_fun_ptr_t;
+
 typedef struct wisp_defun {
+  uint32_t id;
   const char *name;
   int n_args;
-  uint32_t id;
-  union {
-    wisp_word_t (*a0) (void);
-    wisp_word_t (*a1) (wisp_word_t);
-    wisp_word_t (*a2) (wisp_word_t, wisp_word_t);
-  } function;
-
-  struct wisp_defun *next;
+  bool evaluate_arguments;
+  wisp_word_t params;
+  wisp_fun_ptr_t function;
 } wisp_defun_t;
 
-extern wisp_defun_t *wisp_builtins[];
+extern wisp_defun_t wisp_builtins[];
 
-#define WISP_DEFUN(lisp_name, c_name, n_args)                        \
-  wisp_word_t c_name FUNARGS_ ## n_args;                             \
-  static wisp_defun_t c_name ## _spec =                              \
-    { lisp_name, n_args, c_name##_tag, { .a ## n_args = 0 }, NULL }; \
+#define WISP_DEF(lisp_name, c_name, n_args_, evalargs) \
+  wisp_word_t c_name FUNARGS_##n_args_;                \
+  static wisp_defun_t c_name##_spec = {                \
+    .id = c_name##_tag,                                \
+    .name = lisp_name,                                 \
+    .evaluate_arguments = evalargs,                    \
+    .n_args = n_args_,                                 \
+    .params = NIL,                                     \
+    .function = { .a ## n_args_ = c_name }             \
+  };                                                   \
   wisp_word_t c_name
+
+#define WISP_DEFUN(lisp_name, c_name, n_args) \
+  WISP_DEF (lisp_name, c_name, n_args, true)
+
+#define WISP_DEFMACRO(lisp_name, c_name, n_args) \
+  WISP_DEF (lisp_name, c_name, n_args, false)
 
 #define FUNARGS_1 (wisp_word_t)
 #define FUNARGS_2 (wisp_word_t, wisp_word_t)
+#define FUNARGS_3 (wisp_word_t, wisp_word_t, wisp_word_t)
 
-#define WISP_REGISTER(c_name, ...)                              \
-  wisp_register_builtin_defun                                   \
-  (&c_name##_spec,                                              \
-   wisp_simple_params ((c_name##_spec).n_args, __VA_ARGS__))
+#define WISP_REGISTER(c_name, ...) {                            \
+  c_name##_spec.params =                                        \
+    wisp_simple_params ((c_name##_spec).n_args, __VA_ARGS__);   \
+  wisp_register_builtin_defun (c_name##_spec);                  \
+}
 
 #define WISP_DEBUG(...) (fprintf (stderr, __VA_ARGS__))
-
-typedef enum {
-  WISP_BUILTIN_LAMBDA,
-  WISP_BUILTIN_MACRO,
-  WISP_BUILTIN_CONS,
-  WISP_BUILTIN_SET_SYMBOL_FUNCTION,
-  WISP_BUILTIN_PLUS,
-  WISP_BUILTIN_SAVE_HEAP,
-  WISP_BUILTIN_CAR,
-  WISP_BUILTIN_CDR,
-  WISP_BUILTIN_EVAL,
-  WISP_BUILTIN_MAKE_INSTANCE,
-  WISP_N_BUILTINS
-} wisp_builtin_t;
 
 typedef enum {
   wisp_lambda_tag,
   wisp_macro_tag,
   wisp_cons_tag,
-  wisp_set_symbol_function_tag,
-  wisp_plus_tag,
-  wisp_save_heap_tag,
   wisp_car_tag,
   wisp_cdr_tag,
   wisp_eval_tag,
   wisp_make_instance_tag,
+  wisp_set_symbol_function_tag,
+  wisp_save_heap_tag,
+  wisp_add_tag,
+  wisp_subtract_tag,
+  wisp_multiply_tag,
+
+  WISP_N_BUILTINS
 } wisp_builtin_tag_t;
 
 #define WISP_LOWTAG_BITS 3
@@ -148,9 +157,10 @@ typedef enum wisp_widetag {
 #define WISP_ALIGNED_PROPERLY(x) \
   (((x) & WISP_LOWTAG_MASK) == 0)
 
-
 #define WISP_INSTANCE_HEADER(n) \
   (wisp_header_word ((n) + 1, WISP_WIDETAG_INSTANCE))
+
+#define WISP_IMMEDIATE_DATA(x) ((x) >> WISP_WIDETAG_BITS)
 
 #define WISP_SYMBOL_HEADER \
   (wisp_header_word (WISP_SYMBOL_SIZE, WISP_WIDETAG_SYMBOL))

@@ -41,14 +41,14 @@ wisp_find_binding (wisp_word_t scopes,
 }
 
 wisp_word_t
-wisp_make_apply_plan (wisp_word_t callee,
+wisp_make_apply_plan (wisp_word_t function,
                       wisp_word_t values,
                       wisp_word_t terms,
                       wisp_word_t scopes,
                       wisp_word_t next)
 {
   return wisp_make_instance_va
-    (APPLY, 5, callee, values, terms, scopes, next);
+    (APPLY, 5, function, values, terms, scopes, next);
 }
 
 wisp_apply_plan_t *
@@ -129,37 +129,21 @@ wisp_lambda_list_to_params (wisp_word_t lambda_list)
   return params;
 }
 
-
-wisp_machine_t
-wisp_step_into_function (wisp_machine_t *machine,
-                         bool backwards,
-                         wisp_apply_plan_t *apply_plan)
+wisp_word_t
+wisp_make_args_scope (wisp_word_t params,
+                      wisp_word_t values,
+                      bool backwards)
 {
-  // We've evaluated all the subforms of a function application.
-  // Now switch the machine term to the closure body, the machine
-  // scopes to the closure scopes extended with the bound parameters,
-  // and the machine plan to the continuation of the apply plan.
-
-  wisp_closure_t *closure =
-    wisp_get_closure (apply_plan->callee);
-
   wisp_word_t *parameter_struct =
-    wisp_deref (closure->params);
+    wisp_deref (params);
 
   wisp_word_t parameter_count =
     wisp_header_word_data (parameter_struct[0]) - 1;
-
-  /* fprintf (stderr, "; stepping into "); */
-  /* wisp_dump (apply_plan->callee); */
-  /* fprintf (stderr, " %d\n", parameter_count); */
 
   wisp_word_t *parameter_names =
     parameter_struct + 2;
 
   wisp_word_t scope_slots[2 * parameter_count];
-
-  wisp_word_t values =
-    apply_plan->values;
 
   for (int i = 0; i < parameter_count; i++)
     {
@@ -182,184 +166,108 @@ wisp_step_into_function (wisp_machine_t *machine,
       values = cdr;
     }
 
-  wisp_word_t parameter_scope =
+  wisp_word_t args_scope =
     wisp_make_instance_with_slots
     (SCOPE, 2 * parameter_count, scope_slots);
 
-  if (WISP_WIDETAG (closure->body) == WISP_WIDETAG_BUILTIN)
-    {
-      wisp_word_t builtin = closure->body >> 8;
-      /* fprintf (stderr, ";; builtin %d\n", builtin); */
+  return args_scope;
+}
 
-      switch (builtin)
+wisp_machine_t *wisp_machine;
+
+void
+wisp_do_call (wisp_machine_t *machine,
+              bool backwards,
+              wisp_apply_plan_t *plan)
+{
+  wisp_word_t function = plan->function;
+
+  if (WISP_WIDETAG (function) == WISP_WIDETAG_BUILTIN)
+    {
+      uint32_t id = WISP_IMMEDIATE_DATA (function);
+      wisp_defun_t builtin = wisp_builtins[id];
+
+      wisp_word_t values = plan->values;
+      int args_length = wisp_length (values);
+
+      if (args_length != builtin.n_args)
+        wisp_crash ("wrong arguments");
+
+      wisp_word_t args[args_length];
+
+      for (int i = 0; i < args_length; i++)
         {
-        case WISP_BUILTIN_LAMBDA:
-          {
-            wisp_word_t lambda_list = scope_slots[1];
-            wisp_word_t lambda_body = scope_slots[3];
+          int parameter_index = backwards
+            ? args_length - i - 1
+            : i;
 
-            wisp_word_t lambda_params =
-              wisp_lambda_list_to_params (lambda_list);
+          assert (values != NIL);
 
-            wisp_word_t closure = wisp_make_instance_va
-              (CLOSURE, 4,
-               lambda_params,
-               lambda_body,
-               machine->scopes,
-               NIL);
+          wisp_word_t *cons = wisp_deref (values);
+          wisp_word_t car = cons[0];
+          wisp_word_t cdr = cons[1];
 
-            return (wisp_machine_t) {
-              .term = closure,
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next
-            };
-          }
+          args[parameter_index] = car;
 
-        case WISP_BUILTIN_MACRO:
-          {
-            wisp_word_t macro_list = scope_slots[1];
-            wisp_word_t macro_body = scope_slots[3];
-
-            wisp_word_t macro_params =
-              wisp_lambda_list_to_params (macro_list);
-
-            wisp_word_t closure = wisp_make_instance_va
-              (CLOSURE, 4,
-               macro_params,
-               macro_body,
-               machine->scopes,
-               MACRO);
-
-            return (wisp_machine_t) {
-              .term = closure,
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next
-            };
-          }
-
-          // XXX: use wisp_builtins
-
-        case WISP_BUILTIN_SET_SYMBOL_FUNCTION:
-          {
-            wisp_set_symbol_function
-              (scope_slots[1], scope_slots[3]);
-
-            return (wisp_machine_t) {
-              .term = scope_slots[3],
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next
-            };
-          }
-
-        case WISP_BUILTIN_CONS:
-          {
-            return (wisp_machine_t) {
-              .term = wisp_cons (scope_slots[1], scope_slots[3]),
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next,
-            };
-          }
-
-        case WISP_BUILTIN_SAVE_HEAP:
-          {
-            return (wisp_machine_t) {
-              .term = wisp_save_heap (scope_slots[1]),
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next,
-            };
-          }
-
-        case WISP_BUILTIN_CAR:
-          {
-            return (wisp_machine_t) {
-              .term = wisp_car (scope_slots[1]),
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next,
-            };
-          }
-
-        case WISP_BUILTIN_CDR:
-          {
-            return (wisp_machine_t) {
-              .term = wisp_cdr (scope_slots[1]),
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next,
-            };
-          }
-
-        case WISP_BUILTIN_EVAL:
-          {
-            return (wisp_machine_t) {
-              .term = scope_slots[1],
-              .value = false,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next,
-            };
-          }
-
-        case WISP_BUILTIN_MAKE_INSTANCE:
-          {
-            int length = wisp_length (scope_slots[3]);
-            wisp_word_t slots[length];
-
-            wisp_word_t cons = scope_slots[3];
-            for (int i = 0; i < length; i++) {
-              slots[i] = wisp_car (cons);
-              cons = wisp_cdr (cons);
-            }
-
-            wisp_word_t instance = wisp_make_instance_with_slots
-              (scope_slots[1], length, slots);
-
-            return (wisp_machine_t) {
-              .term = instance,
-              .value = true,
-              .scopes = machine->scopes,
-              .plan = apply_plan->next,
-            };
-          }
-
-        default:
-          wisp_crash ("unknown builtin");
+          values = cdr;
         }
-    }
 
-  if (closure->macro == NIL)
-    return (wisp_machine_t) {
-      .term = closure->body,
-      .value = false,
-      .scopes = wisp_cons (parameter_scope, closure->scopes),
-      .plan = apply_plan->next
-    };
+      wisp_word_t x;
+      wisp_fun_ptr_t f = builtin.function;
 
-  else
-    {
-      wisp_word_t eval_plan =
-        wisp_make_instance_va (EVAL, 2,
-                            machine->scopes,
-                            apply_plan->next);
+      switch (builtin.n_args)
+        {
+        case 0: x = f.a0 (); break;
+        case 1: x = f.a1 (args[0]); break;
+        case 2: x = f.a2 (args[0], args[1]); break;
+        case 3: x = f.a3 (args[0], args[1], args[2]); break;
+        default: wisp_not_implemented ();
+        }
 
-      return (wisp_machine_t) {
-        .term = closure->body,
-        .value = false,
-        .scopes = wisp_cons (parameter_scope, closure->scopes),
-        .plan = eval_plan
+      *machine = (wisp_machine_t) {
+        .plan = plan->next,
+        .term = x,
+        .value = true,
+        .scopes = plan->scopes
       };
     }
+  else
+    {
+      wisp_closure_t *closure =
+        wisp_get_closure (function);
 
+      wisp_word_t args_scope =
+        wisp_make_args_scope (closure->params, plan->values, backwards);
+
+      if (closure->macro == NIL)
+        *machine = (wisp_machine_t) {
+          .term = closure->body,
+          .value = false,
+          .scopes = wisp_cons (args_scope, closure->scopes),
+          .plan = plan->next
+        };
+
+      else
+        {
+          wisp_word_t eval_plan =
+            wisp_make_instance_va (EVAL, 2,
+                                   machine->scopes,
+                                   plan->next);
+
+          *machine = (wisp_machine_t) {
+            .term = closure->body,
+            .value = false,
+            .scopes = wisp_cons (args_scope, closure->scopes),
+            .plan = eval_plan
+          };
+        }
+    }
 }
 
 bool
 wisp_follow_plan (wisp_machine_t *machine)
 {
-  wisp_word_t term = machine->term;
+  wisp_word_t value = machine->term;
   wisp_word_t scopes = machine->scopes;
   wisp_word_t plan = machine->plan;
 
@@ -375,21 +283,18 @@ wisp_follow_plan (wisp_machine_t *machine)
         wisp_get_apply_plan (header);
 
       wisp_word_t terms = apply_plan->terms;
+
       if (terms == NIL)
         {
-          wisp_word_t new_apply_plan =
-            wisp_make_apply_plan
-            (apply_plan->callee,
-             wisp_cons (term, apply_plan->values),
-             NIL,
-             apply_plan->scopes,
-             apply_plan->next);
+          wisp_apply_plan_t new_apply_plan = {
+            .function = apply_plan->function,
+            .terms = NIL,
+            .values = wisp_cons (value, apply_plan->values),
+            .scopes = apply_plan->scopes,
+            .next = apply_plan->next
+          };
 
-          *machine = wisp_step_into_function
-            (machine,
-             true,
-             wisp_get_apply_plan
-             (wisp_deref (new_apply_plan)));
+          wisp_do_call (machine, true, &new_apply_plan);
 
           return true;
         }
@@ -403,8 +308,8 @@ wisp_follow_plan (wisp_machine_t *machine)
 
           wisp_word_t next_apply_plan =
             wisp_make_apply_plan
-            (apply_plan->callee,
-             wisp_cons (term, apply_plan->values),
+            (apply_plan->function,
+             wisp_cons (value, apply_plan->values),
              cdr,
              apply_plan->scopes,
              apply_plan->next);
@@ -431,29 +336,29 @@ wisp_follow_plan (wisp_machine_t *machine)
 
 bool
 wisp_step_into_nullary_call (wisp_machine_t *machine,
-                             wisp_word_t callee)
+                             wisp_word_t function)
 {
   wisp_word_t scopes = machine->scopes;
   wisp_word_t plan = machine->plan;
 
   // XXX: It's not necessary to allocate a plan on the heap here.
 
-  wisp_word_t apply_plan =
-    wisp_make_apply_plan
-    (callee, NIL, NIL, scopes, plan);
+  wisp_apply_plan_t apply_plan = {
+    .function = function,
+    .terms = NIL,
+    .values = NIL,
+    .scopes = scopes,
+    .next = plan
+  };
 
-  *machine = wisp_step_into_function
-    (machine,
-     false,
-     wisp_get_apply_plan
-     (wisp_deref (apply_plan)));
+  wisp_do_call (machine, false, &apply_plan);
 
   return true;
 }
 
 bool
 wisp_start_evaluating_arguments (wisp_machine_t *machine,
-                                 wisp_word_t callee,
+                                 wisp_word_t function,
                                  wisp_word_t args)
 {
   wisp_word_t *term_list = wisp_deref (args);
@@ -461,7 +366,7 @@ wisp_start_evaluating_arguments (wisp_machine_t *machine,
   wisp_word_t remaining_terms = term_list[1];
 
   wisp_word_t apply_plan = wisp_make_apply_plan
-    (callee, NIL, remaining_terms,
+    (function, NIL, remaining_terms,
      machine->scopes, machine->plan);
 
   machine->term = first_term;
@@ -473,19 +378,35 @@ wisp_start_evaluating_arguments (wisp_machine_t *machine,
 
 bool
 wisp_step_into_macro_call (wisp_machine_t *machine,
-                           wisp_word_t callee,
+                           wisp_word_t function,
                            wisp_word_t args)
 {
-  wisp_word_t apply_plan = wisp_make_apply_plan
-    (callee, args, NIL, machine->scopes, machine->plan);
+  wisp_apply_plan_t apply_plan = {
+    .function = function,
+    .terms = NIL,
+    .values = args,
+    .scopes = machine->scopes,
+    .next = machine->plan
+  };
 
-  *machine = wisp_step_into_function
-    (machine,
-     false,
-     wisp_get_apply_plan
-     (wisp_deref (apply_plan)));
+  wisp_do_call (machine, false, &apply_plan);
 
   return true;
+}
+
+bool
+wisp_function_evaluates_arguments (wisp_word_t function)
+{
+  if (WISP_WIDETAG (function) == WISP_WIDETAG_BUILTIN)
+    {
+      uint32_t id = WISP_IMMEDIATE_DATA (function);
+      return wisp_builtins[id].evaluate_arguments;
+    }
+  else
+    {
+      wisp_closure_t *closure = wisp_get_closure (function);
+      return closure->macro == NIL;
+    }
 }
 
 bool
@@ -497,22 +418,23 @@ wisp_step_into_call (wisp_machine_t *machine,
   wisp_word_t scopes = machine->scopes;
   wisp_word_t plan = machine->plan;
 
-  if (wisp_is_symbol (callee))
+  wisp_word_t *symbol = wisp_is_symbol (callee);
+
+  if (symbol)
     {
-      wisp_closure_t *closure =
-        wisp_get_closure (callee);
+      wisp_word_t function = symbol[6];
 
       if (args == NIL)
         return wisp_step_into_nullary_call
-          (machine, callee);
+          (machine, function);
 
-      else if (closure->macro == NIL)
+      else if (wisp_function_evaluates_arguments (function))
         return wisp_start_evaluating_arguments
-          (machine, callee, args);
+          (machine, function, args);
 
       else
         return wisp_step_into_macro_call
-          (machine, callee, args);
+          (machine, function, args);
     }
 
   wisp_crash ("bad call");

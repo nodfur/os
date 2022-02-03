@@ -82,8 +82,11 @@ wisp_dump (FILE *f, wisp_word_t word)
         wisp_not_implemented ();
     }
 
+  else if (WISP_WIDETAG (word) == WISP_WIDETAG_BUILTIN)
+    fprintf (f, "%%%d", word >> 8);
+
   else
     {
-      fprintf (f, "{%d}\n", word);
+      fprintf (f, "{%d}", word);
     }
 }
