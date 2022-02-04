@@ -148,7 +148,6 @@ typedef enum wisp_widetag {
   (((x) + WISP_LOWTAG_MASK + 1) & ~WISP_LOWTAG_MASK)
 
 #define WISP_WORD_SIZE 4
-#define WISP_HEADER_WORD_SIZE (2 * WISP_WORD_SIZE)
 #define WISP_CONS_SIZE (2 * WISP_WORD_SIZE)
 #define WISP_SYMBOL_SIZE (wisp_align (6 * WISP_WORD_SIZE))
 
@@ -174,23 +173,50 @@ typedef enum wisp_widetag {
 #define WISP_SYMBOL_HEADER \
   (wisp_header_word (WISP_SYMBOL_SIZE, WISP_WIDETAG_SYMBOL))
 
+extern size_t heap_size;
+extern size_t heap_used;
 extern void *heap;
+extern int room;
+extern int pile;
+extern int pile_free;
+extern int pile_scan;
 
 static const wisp_word_t NIL =
   WISP_LOWTAG_LIST_PTR;
 
-extern wisp_word_t T;
-extern wisp_word_t APPLY;
-extern wisp_word_t CLOSURE;
-extern wisp_word_t WISP;
-extern wisp_word_t EVAL;
-extern wisp_word_t LAMBDA;
-extern wisp_word_t MACRO;
-extern wisp_word_t PACKAGE;
-extern wisp_word_t PARAMS;
-extern wisp_word_t QUOTE;
-extern wisp_word_t SCOPE;
-extern wisp_word_t SET_SYMBOL_FUNCTION;
+enum {
+  WISP_CACHED_APPLY,
+  WISP_CACHED_CLOSURE,
+  WISP_CACHED_EVAL,
+  WISP_CACHED_LAMBDA,
+  WISP_CACHED_MACRO,
+  WISP_CACHED_PACKAGE,
+  WISP_CACHED_PARAMS,
+  WISP_CACHED_QUOTE,
+  WISP_CACHED_SCOPE,
+  WISP_CACHED_SET_SYMBOL_FUNCTION,
+  WISP_CACHED_T,
+  WISP_CACHED_WISP,
+
+  wisp_cache_size
+};
+
+extern wisp_word_t wisp_cache[wisp_cache_size];
+
+#define WISP_CACHE(x) (wisp_cache[WISP_CACHED_##x])
+
+/* extern wisp_word_t T; */
+/* extern wisp_word_t APPLY; */
+/* extern wisp_word_t CLOSURE; */
+/* extern wisp_word_t WISP; */
+/* extern wisp_word_t EVAL; */
+/* extern wisp_word_t LAMBDA; */
+/* extern wisp_word_t MACRO; */
+/* extern wisp_word_t PACKAGE; */
+/* extern wisp_word_t PARAMS; */
+/* extern wisp_word_t QUOTE; */
+/* extern wisp_word_t SCOPE; */
+/* extern wisp_word_t SET_SYMBOL_FUNCTION; */
 
 __attribute__ ((noreturn))
 void

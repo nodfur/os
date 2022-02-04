@@ -7,24 +7,17 @@
 #include "wisp.h"
 
 void *heap;
+int room;
+int pile;
+int pile_free;
+int pile_scan;
 
 #define MEGABYTES (1024 * 1024)
 
 size_t heap_size = 4 * MEGABYTES;
 size_t heap_used = 0;
 
-wisp_word_t T;
-wisp_word_t APPLY;
-wisp_word_t CLOSURE;
-wisp_word_t WISP;
-wisp_word_t EVAL;
-wisp_word_t LAMBDA;
-wisp_word_t MACRO;
-wisp_word_t PACKAGE;
-wisp_word_t PARAMS;
-wisp_word_t QUOTE;
-wisp_word_t SCOPE;
-wisp_word_t SET_SYMBOL_FUNCTION;
+wisp_word_t wisp_cache[wisp_cache_size];
 
 wisp_word_t
 wisp_fixnum (int32_t x)
@@ -45,7 +38,7 @@ wisp_alloc_raw (wisp_word_t size, wisp_lowtag_t tag)
   uint32_t i = heap_used;
   heap_used += size;
 
-  return i ^ tag;
+  return i | tag;
 }
 
 wisp_word_t *
@@ -112,7 +105,8 @@ wisp_make_instance_va (wisp_word_t type, int n_slots, ...)
 wisp_word_t
 wisp_make_package (wisp_word_t name)
 {
-  return wisp_make_instance_va (PACKAGE, 2, name, NIL);
+  return wisp_make_instance_va
+    (WISP_CACHE (PACKAGE), 2, name, NIL);
 }
 
 char *
@@ -194,7 +188,7 @@ wisp_create_symbol (wisp_word_t name)
 
   symbol_header[0] = WISP_SYMBOL_HEADER;
   symbol_header[1] = NIL;
-  symbol_header[2] = 0xdead0003;
+  symbol_header[2] = NIL;
   symbol_header[3] = NIL;
   symbol_header[4] = name;
   symbol_header[5] = NIL;
@@ -209,7 +203,7 @@ wisp_intern_symbol (wisp_word_t name, wisp_word_t package)
   wisp_word_t *package_header = wisp_deref (package);
 
   assert (package_header[0] == WISP_INSTANCE_HEADER (2));
-  assert (package_header[1] == PACKAGE);
+  assert (package_header[1] == WISP_CACHE (PACKAGE));
 
   wisp_word_t cur = package_header[3];
 
@@ -246,7 +240,7 @@ wisp_string_n (const char *source, int length)
   // Get an OTHER-PTR pointing to a string block with an extra byte
   // for an extra zero terminator.
   wisp_word_t string_ptr
-      = wisp_alloc_raw (wisp_align (WISP_HEADER_WORD_SIZE + length + 1),
+      = wisp_alloc_raw (wisp_align (WISP_WORD_SIZE + length + 1),
                         WISP_LOWTAG_OTHER_PTR);
 
   // Get a C pointer into the Wisp heap by word.
@@ -277,7 +271,8 @@ wisp_string (const char *source)
 wisp_word_t
 wisp_intern_lisp (const char *name)
 {
-  return wisp_intern_symbol (wisp_string (name), WISP);
+  return wisp_intern_symbol
+    (wisp_string (name), WISP_CACHE (WISP));
 }
 
 void
@@ -285,7 +280,9 @@ wisp_allocate_heap ()
 {
   WISP_DEBUG ("Allocating %lu MB heap\n", heap_size / MEGABYTES);
 
-  heap = calloc (heap_size, 1);
+  heap = calloc (2 * heap_size, 1);
+  room = 0;
+  pile = heap_size / 2;
 }
 
 void
@@ -297,42 +294,47 @@ wisp_start ()
 
   words[0] = WISP_SYMBOL_HEADER;
   words[1] = NIL;
-  words[2] = 0xdead0003;
+  words[2] = NIL;
   words[3] = NIL;
   words[4] = wisp_string ("NIL");
   words[5] = NIL;
   words[6] = NIL;
 
-  PACKAGE = wisp_create_symbol (wisp_string ("PACKAGE"));
+  WISP_CACHE (PACKAGE) =
+    wisp_create_symbol (wisp_string ("PACKAGE"));
 
-  WISP = wisp_make_package (wisp_string ("WISP"));
+  WISP_CACHE (WISP) =
+    wisp_make_package (wisp_string ("WISP"));
 
   WISP_DEBUG ("Package WISP ← ");
-  wisp_dump (stderr, WISP);
+  wisp_dump (stderr, WISP_CACHE (WISP));
   fprintf (stderr, "\n");
 
-  wisp_word_t *common_lisp_header = wisp_deref (WISP);
+  wisp_word_t *common_lisp_header =
+    wisp_deref (WISP_CACHE (WISP));
 
   common_lisp_header[3] = wisp_cons (NIL, NIL);
 
-  common_lisp_header[3] = wisp_cons (PACKAGE, common_lisp_header[3]);
+  common_lisp_header[3] =
+    wisp_cons (WISP_CACHE (PACKAGE), common_lisp_header[3]);
 }
 
 void
 wisp_intern_basic_symbols ()
 {
-  T = wisp_intern_lisp ("T");
-  APPLY = wisp_intern_lisp ("APPLY");
-  CLOSURE = wisp_intern_lisp ("CLOSURE");
-  EVAL = wisp_intern_lisp ("EVAL");
-  LAMBDA = wisp_intern_lisp ("LAMBDA");
-  MACRO = wisp_intern_lisp ("MACRO");
-  PACKAGE = wisp_intern_lisp ("PACKAGE");
-  PARAMS = wisp_intern_lisp ("PARAMS");
-  QUOTE = wisp_intern_lisp ("QUOTE");
-  SCOPE = wisp_intern_lisp ("SCOPE");
+  WISP_CACHE (T) = wisp_intern_lisp ("T");
+  WISP_CACHE (APPLY) = wisp_intern_lisp ("APPLY");
+  WISP_CACHE (CLOSURE) = wisp_intern_lisp ("CLOSURE");
+  WISP_CACHE (EVAL) = wisp_intern_lisp ("EVAL");
+  WISP_CACHE (LAMBDA) = wisp_intern_lisp ("LAMBDA");
+  WISP_CACHE (MACRO) = wisp_intern_lisp ("MACRO");
+  WISP_CACHE (PACKAGE) = wisp_intern_lisp ("PACKAGE");
+  WISP_CACHE (PARAMS) = wisp_intern_lisp ("PARAMS");
+  WISP_CACHE (QUOTE) = wisp_intern_lisp ("QUOTE");
+  WISP_CACHE (SCOPE) = wisp_intern_lisp ("SCOPE");
 
-  SET_SYMBOL_FUNCTION = wisp_intern_lisp ("SET-SYMBOL-FUNCTION");
+  WISP_CACHE (SET_SYMBOL_FUNCTION) =
+    wisp_intern_lisp ("SET-SYMBOL-FUNCTION");
 }
 
 bool
@@ -341,7 +343,7 @@ wisp_is_quote (wisp_word_t word)
   if (!WISP_IS_LIST_PTR (word))
     return false;
 
-  return (wisp_deref (word))[0] == QUOTE;
+  return (wisp_deref (word))[0] == WISP_CACHE (QUOTE);
 }
 
 wisp_word_t *
@@ -380,7 +382,8 @@ wisp_is_instance (wisp_word_t word, wisp_word_t type)
 wisp_closure_t *
 wisp_ensure_function (wisp_word_t value)
 {
-  wisp_word_t *header = wisp_is_instance (value, CLOSURE);
+  wisp_word_t *header =
+    wisp_is_instance (value, WISP_CACHE (CLOSURE));
 
   return (wisp_closure_t *)(header + 2);
 }
@@ -501,10 +504,9 @@ wisp_load_heap (const char *path)
 {
   FILE *f = fopen (path, "r");
 
-  heap = calloc (heap_size, 1);
-  memset (heap, 0, heap_size);
+  wisp_allocate_heap ();
 
-  if (fscanf (f, "WISP 0 %d\n", &WISP) == 0)
+  if (fscanf (f, "WISP 0 %d\n", &(WISP_CACHE (WISP))) == 0)
     {
       wisp_crash ("heap load failed");
     }
@@ -516,14 +518,16 @@ wisp_load_heap (const char *path)
       long size = ftell (f) - start;
       fseek (f, start, SEEK_SET);
 
-      WISP_DEBUG ("Loading heap from %s (%lu bytes)\n", path, size);
+      WISP_DEBUG ("Loading heap from %s (%lu bytes)\n",
+                  path, size);
 
       if (fread (heap, 1, size, f) != size)
         wisp_crash ("heap load read failed");
 
       heap_used = wisp_align (size);
 
-      PACKAGE = wisp_deref (WISP)[1];
+      WISP_CACHE (PACKAGE) =
+        wisp_deref (WISP_CACHE (WISP))[1];
 
       wisp_intern_basic_symbols ();
     }
@@ -680,7 +684,8 @@ WISP_DEFMACRO ("LAMBDA", wisp_lambda, 2)
   wisp_word_t params = wisp_lambda_list_to_params (lambda_list);
 
   wisp_word_t closure = wisp_make_instance_va
-    (CLOSURE, 4, params, body, wisp_machine->scopes, NIL);
+    (WISP_CACHE (CLOSURE), 4,
+     params, body, wisp_machine->scopes, NIL);
 
   return closure;
 }
@@ -691,7 +696,8 @@ WISP_DEFMACRO ("MACRO", wisp_macro, 2)
   wisp_word_t params = wisp_lambda_list_to_params (lambda_list);
 
   wisp_word_t closure = wisp_make_instance_va
-    (CLOSURE, 4, params, body, wisp_machine->scopes, MACRO);
+    (WISP_CACHE (CLOSURE), 4,
+     params, body, wisp_machine->scopes, WISP_CACHE (MACRO));
 
   return closure;
 }
@@ -761,7 +767,7 @@ WISP_DEFUN ("SAVE-HEAP", wisp_save_heap, 1)
 
   FILE *f = fopen (path, "w+");
 
-  fprintf (f, "WISP 0 %d\n", WISP);
+  fprintf (f, "WISP 0 %d\n", WISP_CACHE (WISP));
 
   if (fwrite (heap, 1, heap_used, f) != heap_used)
     wisp_crash ("heap save write failed");
@@ -784,7 +790,7 @@ WISP_DEFUN ("SAVE-HEAP", wisp_save_heap, 1)
   });
 #endif
 
-  return T;
+  return WISP_CACHE (T);
 }
 
 WISP_DEFUN ("+", wisp_add, 2)

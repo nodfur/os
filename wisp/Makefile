@@ -7,7 +7,7 @@ EMCCFLAGS += -s EXPORTED_RUNTIME_METHODS=ccall,cwrap,FS,ENV,IDBFS
 EMCCFLAGS += -lidbfs.js
 EMCCFLAGS += -s MODULARIZE=1 -s 'EXPORT_NAME="loadWisp"'
 
-SOURCES = wisp.c wisp-eval.c wisp-read.c wisp-dump.c
+SOURCES = wisp.c wisp-eval.c wisp-read.c wisp-dump.c wisp-tidy.c
 
 wasm/wisp.js: $(SOURCES)
 	emcc $(CFLAGS) $^ -o $@ $(EMCCFLAGS)

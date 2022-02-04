@@ -48,7 +48,7 @@ wisp_make_apply_plan (wisp_word_t function,
                       wisp_word_t next)
 {
   return wisp_make_instance_va
-    (APPLY, 5, function, values, terms, scopes, next);
+    (WISP_CACHE (APPLY), 5, function, values, terms, scopes, next);
 }
 
 wisp_apply_plan_t *
@@ -97,8 +97,8 @@ wisp_get_closure (wisp_word_t value)
 
   wisp_word_t *closure_header =
     symbol_header
-    ? wisp_is_instance (symbol_header[6], CLOSURE)
-    : wisp_is_instance (value, CLOSURE);
+    ? wisp_is_instance (symbol_header[6], WISP_CACHE (CLOSURE))
+    : wisp_is_instance (value, WISP_CACHE (CLOSURE));
 
   if (closure_header)
     return (wisp_closure_t *) (closure_header + 2);
@@ -124,7 +124,8 @@ wisp_lambda_list_to_params (wisp_word_t lambda_list)
     }
 
   wisp_word_t params =
-    wisp_make_instance_with_slots (PARAMS, length, slots);
+    wisp_make_instance_with_slots
+    (WISP_CACHE (PARAMS), length, slots);
 
   return params;
 }
@@ -168,7 +169,7 @@ wisp_make_args_scope (wisp_word_t params,
 
   wisp_word_t args_scope =
     wisp_make_instance_with_slots
-    (SCOPE, 2 * parameter_count, scope_slots);
+    (WISP_CACHE (SCOPE), 2 * parameter_count, scope_slots);
 
   return args_scope;
 }
@@ -262,7 +263,7 @@ wisp_do_call (wisp_machine_t *machine,
       else
         {
           wisp_word_t eval_plan =
-            wisp_make_instance_va (EVAL, 2,
+            wisp_make_instance_va (WISP_CACHE (EVAL), 2,
                                    machine->scopes,
                                    plan->next);
 
@@ -289,7 +290,7 @@ wisp_follow_plan (wisp_machine_t *machine)
   wisp_word_t *header = wisp_deref (plan);
   wisp_word_t type = wisp_struct_header_type (header);
 
-  if (type == APPLY)
+  if (type == WISP_CACHE (APPLY))
     {
       wisp_apply_plan_t *apply_plan =
         wisp_get_apply_plan (header);
@@ -334,7 +335,7 @@ wisp_follow_plan (wisp_machine_t *machine)
         }
     }
 
-  else if (type == EVAL)
+  else if (type == WISP_CACHE (EVAL))
     {
       /* fprintf (stderr, "; eval\n"); */
       machine->value = false;

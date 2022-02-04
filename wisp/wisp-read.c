@@ -53,7 +53,7 @@ wisp_read_symbol (const char **stream)
 
   *stream = after - 1;
 
-  return wisp_intern_symbol (name, WISP);
+  return wisp_intern_symbol (name, WISP_CACHE (WISP));
 }
 
 wisp_word_t
@@ -129,7 +129,7 @@ wisp_read (const char **stream)
   if (c == '\'')
     {
       ++*stream;
-      return wisp_cons (QUOTE,
+      return wisp_cons (WISP_CACHE (QUOTE),
                         wisp_cons (wisp_read (stream), NIL));
     }
 
