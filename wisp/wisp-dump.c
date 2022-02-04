@@ -31,8 +31,8 @@ wisp_dump (FILE *f, wisp_word_t word)
       while (word != NIL)
         {
           wisp_word_t *cons = wisp_deref (word);
-          wisp_word_t  car = cons[0];
-          wisp_word_t  cdr = cons[1];
+          wisp_word_t  car = cons[1];
+          wisp_word_t  cdr = cons[2];
 
           wisp_dump (f, car);
 
@@ -79,7 +79,10 @@ wisp_dump (FILE *f, wisp_word_t word)
           fprintf (f, "\"%s\"", wisp_string_buffer (header));
         }
       else
-        wisp_not_implemented ();
+        {
+          WISP_DEBUG ("unknown OTHER-PTR, tag %x\n", header[0] & 0xff);
+          wisp_not_implemented ();
+        }
     }
 
   else if (WISP_WIDETAG (word) == WISP_WIDETAG_BUILTIN)

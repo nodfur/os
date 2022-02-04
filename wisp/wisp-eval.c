@@ -31,8 +31,8 @@ wisp_find_binding (wisp_word_t scopes,
 
   wisp_word_t *scopes_cons = wisp_deref (scopes);
 
-  wisp_word_t scopes_car = scopes_cons[0];
-  wisp_word_t scopes_cdr = scopes_cons[1];
+  wisp_word_t scopes_car = scopes_cons[1];
+  wisp_word_t scopes_cdr = scopes_cons[2];
 
   if (wisp_find_binding_in_scope (scopes_car, symbol, result))
     return true;
@@ -119,8 +119,8 @@ wisp_lambda_list_to_params (wisp_word_t lambda_list)
   for (int i = 0; i < length; i++)
     {
       wisp_word_t *cons = wisp_deref (lambda_list);
-      slots[i] = cons[0];
-      lambda_list = cons[1];
+      slots[i] = cons[1];
+      lambda_list = cons[2];
     }
 
   wisp_word_t params =
@@ -155,8 +155,8 @@ wisp_make_args_scope (wisp_word_t params,
       assert (values != NIL);
 
       wisp_word_t *cons = wisp_deref (values);
-      wisp_word_t car = cons[0];
-      wisp_word_t cdr = cons[1];
+      wisp_word_t car = cons[1];
+      wisp_word_t cdr = cons[2];
 
       scope_slots[parameter_index * 2] =
         parameter_names[parameter_index];
@@ -205,8 +205,8 @@ wisp_do_call (wisp_machine_t *machine,
           assert (values != NIL);
 
           wisp_word_t *cons = wisp_deref (values);
-          wisp_word_t car = cons[0];
-          wisp_word_t cdr = cons[1];
+          wisp_word_t car = cons[1];
+          wisp_word_t cdr = cons[2];
 
           args[parameter_index] = car;
 
@@ -316,8 +316,8 @@ wisp_follow_plan (wisp_machine_t *machine)
           wisp_word_t *cons =
             wisp_deref (terms);
 
-          wisp_word_t car = cons[0];
-          wisp_word_t cdr = cons[1];
+          wisp_word_t car = cons[1];
+          wisp_word_t cdr = cons[2];
 
           wisp_word_t next_apply_plan =
             wisp_make_apply_plan
@@ -474,8 +474,8 @@ wisp_step (wisp_machine_t *machine)
   else if (WISP_IS_LIST_PTR (term))
     {
       wisp_word_t *cons = wisp_deref (term);
-      wisp_word_t car = cons[0];
-      wisp_word_t cdr = cons[1];
+      wisp_word_t car = cons[1];
+      wisp_word_t cdr = cons[2];
 
       return wisp_step_into_call (machine, car, cdr);
     }

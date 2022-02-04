@@ -138,6 +138,7 @@ typedef enum wisp_lowtag {
 } wisp_lowtag_t;
 
 typedef enum wisp_widetag {
+  WISP_WIDETAG_CONS = 0x02,
   WISP_WIDETAG_INSTANCE = 0xC2,
   WISP_WIDETAG_STRING = 0x32,
   WISP_WIDETAG_SYMBOL = 0xAE,
@@ -148,7 +149,7 @@ typedef enum wisp_widetag {
   (((x) + WISP_LOWTAG_MASK + 1) & ~WISP_LOWTAG_MASK)
 
 #define WISP_WORD_SIZE 4
-#define WISP_CONS_SIZE (2 * WISP_WORD_SIZE)
+#define WISP_CONS_SIZE (4 * WISP_WORD_SIZE)
 #define WISP_SYMBOL_SIZE (wisp_align (6 * WISP_WORD_SIZE))
 
 #define WISP_IS_FIXNUM(x) (((x) & 3) == 0)
@@ -190,13 +191,13 @@ enum {
   WISP_CACHED_EVAL,
   WISP_CACHED_LAMBDA,
   WISP_CACHED_MACRO,
-  WISP_CACHED_PACKAGE,
   WISP_CACHED_PARAMS,
   WISP_CACHED_QUOTE,
   WISP_CACHED_SCOPE,
   WISP_CACHED_SET_SYMBOL_FUNCTION,
   WISP_CACHED_T,
   WISP_CACHED_WISP,
+  WISP_CACHED_PACKAGE,
 
   wisp_cache_size
 };
@@ -312,7 +313,11 @@ wisp_word_t
 wisp_intern_lisp (const char *name);
 
 void
-wisp_builtin_function (wisp_word_t builtin_name, wisp_word_t builtin_id,
+wisp_builtin_function (wisp_word_t builtin_name,
+                       wisp_word_t builtin_id,
                        wisp_word_t params);
+
+void
+wisp_tidy (void);
 
 #endif

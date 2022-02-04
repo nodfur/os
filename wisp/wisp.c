@@ -212,8 +212,8 @@ wisp_intern_symbol (wisp_word_t name, wisp_word_t package)
   while (cur != NIL)
     {
       wisp_word_t *cons = wisp_deref (cur);
-      wisp_word_t car = cons[0];
-      wisp_word_t cdr = cons[1];
+      wisp_word_t car = cons[1];
+      wisp_word_t cdr = cons[2];
 
       wisp_word_t *symbol_header = wisp_deref (car);
       wisp_word_t symbol_name = symbol_header[4];
@@ -660,6 +660,7 @@ main (int argc, char **argv)
       wisp_word_t result = wisp_eval_code (argv[2]);
       wisp_dump (stdout, result);
       printf ("\n");
+      wisp_tidy ();
     }
 #endif
 
@@ -709,8 +710,9 @@ WISP_DEFUN ("CONS", wisp_cons, 2)
       = wisp_alloc_raw (WISP_CONS_SIZE, WISP_LOWTAG_LIST_PTR);
 
   wisp_word_t *data = wisp_deref (cons);
-  data[0] = car;
-  data[1] = cdr;
+  data[0] = WISP_WIDETAG_CONS;
+  data[1] = car;
+  data[2] = cdr;
 
   return cons;
 }
@@ -718,13 +720,13 @@ WISP_DEFUN ("CONS", wisp_cons, 2)
 WISP_DEFUN ("CAR", wisp_car, 1)
 (wisp_word_t list)
 {
-  return (wisp_deref (list))[0];
+  return (wisp_deref (list))[1];
 }
 
 WISP_DEFUN ("CDR", wisp_cdr, 1)
 (wisp_word_t list)
 {
-  return (wisp_deref (list))[1];
+  return (wisp_deref (list))[2];
 }
 
 WISP_DEFUN ("MAKE-INSTANCE", wisp_make_instance, 2)

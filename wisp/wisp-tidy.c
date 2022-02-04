@@ -4,7 +4,8 @@ int
 wisp_instance_size (wisp_word_t *data)
 {
   wisp_word_t length = *data >> 8;
-  return wisp_align (WISP_WORD_SIZE * (length + 1));
+  WISP_DEBUG ("instance length %d\n", length);
+  return wisp_align (length + WISP_WORD_SIZE);
 }
 
 int
@@ -36,9 +37,22 @@ wisp_object_size (wisp_word_t *data)
 
 }
 
+static int level = 1;
+
+void prl () {
+  for (int i = 0; i < level; i++)
+    fputc ('>', stderr);
+  fputc (' ', stderr);
+}
+
 wisp_word_t
 wisp_copy (wisp_word_t ptr)
 {
+  prl ();
+  WISP_DEBUG ("copying ");
+  wisp_dump (stderr, ptr);
+  WISP_DEBUG ("\n");
+
   wisp_word_t *data = wisp_deref (ptr);
   wisp_word_t lowtag = ptr & 7;
 
@@ -54,16 +68,41 @@ wisp_copy (wisp_word_t ptr)
 wisp_word_t
 wisp_move (wisp_word_t x)
 {
+  prl ();
+  WISP_DEBUG ("moving %x ", x);
+  wisp_dump (stderr, x);
+  WISP_DEBUG ("\n");
+
   if (!WISP_IS_PTR (x))
     return x;
+
+  if ((x & 7) == WISP_LOWTAG_LIST_PTR)
+    {
+      prl ();
+      WISP_DEBUG ("list\n");
+    }
 
   wisp_word_t *header = wisp_deref (x);
 
   if (!(x >= room && x <= (room + heap_size)))
-    return x;
+    {
+      prl (); WISP_DEBUG ("not in room\n");
+      return x;
+    }
+
+  ++level;
 
   if (!(header[0] >= pile && header[0] <= (pile + heap_size)))
-    header[0] = wisp_copy (x);
+    {
+      header[0] = wisp_copy (x);
+      prl (); WISP_DEBUG ("heart: %d\n", header[0]);
+    }
+  else
+    {
+      prl (); WISP_DEBUG ("heart\n");
+    }
+
+  --level;
 
   return header[0];
 }
@@ -71,6 +110,11 @@ wisp_move (wisp_word_t x)
 void
 wisp_scavenge (void)
 {
+  prl ();
+  WISP_DEBUG ("scavenging ");
+  wisp_dump (stderr, pile_scan);
+  WISP_DEBUG ("\n");
+
   wisp_word_t *header = wisp_deref (pile_scan);
   pile_scan += WISP_WORD_SIZE;
 
@@ -119,8 +163,13 @@ wisp_flip (void)
 void
 wisp_tidy (void)
 {
-  for (int i = 0; i < wisp_cache_size; i++)
-    wisp_cache[i] = wisp_move (wisp_cache[i]);
+  /* for (int i = 0; i < wisp_cache_size; i++) */
+  /*   { */
+  /*     WISP_DEBUG ("cache %d\n", i); */
+  /*     wisp_cache[i] = wisp_move (wisp_cache[i]); */
+  /*   } */
+
+  WISP_CACHE (WISP) = wisp_move (WISP_CACHE (WISP));
 
   while (pile_scan < pile_free)
     wisp_scavenge ();
