@@ -20,7 +20,7 @@ wisp: $(SOURCES)
 	$(CC) $(CFLAGS) $^ -o wisp
 
 test:
-	./wisp test
+	./wisp -e 1
 
 clean:; rm -rf wisp dist/* wasm/*
 

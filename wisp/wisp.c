@@ -73,7 +73,7 @@ wisp_make_instance_with_slots (wisp_word_t type, int n_slots,
                                wisp_word_t *slots)
 {
   wisp_word_t pointer
-      = wisp_alloc_words (2 + n_slots, WISP_LOWTAG_STRUCT_PTR);
+    = wisp_alloc_words (2 + n_slots, WISP_LOWTAG_STRUCT_PTR);
 
   wisp_word_t *header = wisp_deref (pointer);
 
@@ -182,7 +182,8 @@ wisp_word_t
 wisp_create_symbol (wisp_word_t name)
 {
   wisp_word_t symbol
-      = wisp_alloc_raw (WISP_SYMBOL_SIZE, WISP_LOWTAG_OTHER_PTR);
+    = wisp_alloc_raw (wisp_align (WISP_WORD_SIZE * WISP_SYMBOL_SIZE),
+                      WISP_LOWTAG_OTHER_PTR);
 
   wisp_word_t *symbol_header = wisp_deref (symbol);
 
@@ -282,7 +283,7 @@ wisp_allocate_heap ()
 
   heap = calloc (2 * heap_size, 1);
   room = 0;
-  pile = heap_size / 2;
+  pile = pile_scan = pile_free = heap_size / 2;
 }
 
 void
@@ -315,6 +316,8 @@ wisp_start ()
 
   common_lisp_header[3] = wisp_cons (NIL, NIL);
 
+  WISP_DEBUG ("PACKAGE <<< 0x%x\n", WISP_CACHE (PACKAGE));
+
   common_lisp_header[3] =
     wisp_cons (WISP_CACHE (PACKAGE), common_lisp_header[3]);
 }
@@ -328,7 +331,7 @@ wisp_intern_basic_symbols ()
   WISP_CACHE (EVAL) = wisp_intern_lisp ("EVAL");
   WISP_CACHE (LAMBDA) = wisp_intern_lisp ("LAMBDA");
   WISP_CACHE (MACRO) = wisp_intern_lisp ("MACRO");
-  WISP_CACHE (PACKAGE) = wisp_intern_lisp ("PACKAGE");
+  /* WISP_CACHE (PACKAGE) = wisp_intern_lisp ("PACKAGE"); */
   WISP_CACHE (PARAMS) = wisp_intern_lisp ("PARAMS");
   WISP_CACHE (QUOTE) = wisp_intern_lisp ("QUOTE");
   WISP_CACHE (SCOPE) = wisp_intern_lisp ("SCOPE");

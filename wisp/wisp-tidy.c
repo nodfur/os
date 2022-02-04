@@ -4,8 +4,8 @@ int
 wisp_instance_size (wisp_word_t *data)
 {
   wisp_word_t length = *data >> 8;
-  WISP_DEBUG ("instance length %d\n", length);
-  return wisp_align (length + WISP_WORD_SIZE);
+  /* WISP_DEBUG ("instance length %d\n", length); */
+  return wisp_align ((1 + length) * WISP_WORD_SIZE);
 }
 
 int
@@ -32,23 +32,23 @@ wisp_object_size (wisp_word_t *data)
       }
 
     default:
-      wisp_not_implemented ();
+      WISP_DEBUG ("probably a list\n");
+      return 2 * WISP_WORD_SIZE;
     }
 
-}
-
-static int level = 1;
-
-void prl () {
-  for (int i = 0; i < level; i++)
-    fputc ('>', stderr);
-  fputc (' ', stderr);
 }
 
 wisp_word_t
 wisp_copy (wisp_word_t ptr)
 {
-  prl ();
+  if (!WISP_IS_PTR (ptr))
+    {
+      WISP_DEBUG ("leaving 0x%x ", ptr);
+      wisp_dump (stderr, ptr);
+      WISP_DEBUG ("\n");
+      return ptr;
+    }
+
   WISP_DEBUG ("copying ");
   wisp_dump (stderr, ptr);
   WISP_DEBUG ("\n");
@@ -56,67 +56,39 @@ wisp_copy (wisp_word_t ptr)
   wisp_word_t *data = wisp_deref (ptr);
   wisp_word_t lowtag = ptr & 7;
 
+  if (data[0] >= pile && data[0] <= (pile + heap_size))
+    {
+      WISP_DEBUG ("   already copied [0x%x]\n", data[0] & ~7);
+      return data[0];
+    }
+
   int n = wisp_object_size (data);
   int dst = pile_free;
 
   pile_free += n;
+  WISP_DEBUG ("   [0x%x] to [0x%x]\n", dst, dst + n);
+
   memcpy (heap + dst, data, n);
 
+  data[0] = dst | lowtag;
+
   return dst | lowtag;
-}
-
-wisp_word_t
-wisp_move (wisp_word_t x)
-{
-  prl ();
-  WISP_DEBUG ("moving %x ", x);
-  wisp_dump (stderr, x);
-  WISP_DEBUG ("\n");
-
-  if (!WISP_IS_PTR (x))
-    return x;
-
-  if ((x & 7) == WISP_LOWTAG_LIST_PTR)
-    {
-      prl ();
-      WISP_DEBUG ("list\n");
-    }
-
-  wisp_word_t *header = wisp_deref (x);
-
-  if (!(x >= room && x <= (room + heap_size)))
-    {
-      prl (); WISP_DEBUG ("not in room\n");
-      return x;
-    }
-
-  ++level;
-
-  if (!(header[0] >= pile && header[0] <= (pile + heap_size)))
-    {
-      header[0] = wisp_copy (x);
-      prl (); WISP_DEBUG ("heart: %d\n", header[0]);
-    }
-  else
-    {
-      prl (); WISP_DEBUG ("heart\n");
-    }
-
-  --level;
-
-  return header[0];
 }
 
 void
 wisp_scavenge (void)
 {
-  prl ();
-  WISP_DEBUG ("scavenging ");
-  wisp_dump (stderr, pile_scan);
+  wisp_word_t *header = wisp_deref (pile_scan);
+
+  WISP_DEBUG ("\nscavenging [0x%x] ", pile_scan);
+  wisp_dump (stderr, *header);
   WISP_DEBUG ("\n");
 
-  wisp_word_t *header = wisp_deref (pile_scan);
-  pile_scan += WISP_WORD_SIZE;
+  if (*header == 0)
+    {
+      pile_scan += WISP_WORD_SIZE;
+      return;
+    }
 
   switch (*header & 0xff)
     {
@@ -125,11 +97,13 @@ wisp_scavenge (void)
       {
         int n = *header >> 8;
 
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < n + 1; i++)
           {
-            *header = wisp_move (pile_scan);
-            pile_scan += WISP_WORD_SIZE;
+            WISP_DEBUG ("#%d ", i);
+            header[i] = wisp_copy (header[i]);
           }
+
+        pile_scan += wisp_instance_size (header);
 
         break;
       }
@@ -141,7 +115,18 @@ wisp_scavenge (void)
       }
 
     default:
-      wisp_crash ("not implemented");
+      {
+        int n = 2;
+
+        for (int i = 0; i < n; i++)
+          {
+            WISP_DEBUG ("@%d ", i);
+            header[i] = wisp_copy (header[i]);
+            pile_scan += WISP_WORD_SIZE;
+          }
+
+        break;
+      }
     }
 }
 
@@ -169,7 +154,9 @@ wisp_tidy (void)
   /*     wisp_cache[i] = wisp_move (wisp_cache[i]); */
   /*   } */
 
-  WISP_CACHE (WISP) = wisp_move (WISP_CACHE (WISP));
+  WISP_DEBUG ("\n* collecting garbage\n");
+
+  WISP_CACHE (WISP) = wisp_copy (WISP_CACHE (WISP));
 
   while (pile_scan < pile_free)
     wisp_scavenge ();

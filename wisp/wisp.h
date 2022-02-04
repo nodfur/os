@@ -19,6 +19,24 @@
 
 typedef uint32_t wisp_word_t;
 
+typedef enum wisp_lowtag {
+  /* 0 */ WISP_LOWTAG_FIXNUM_0,
+  /* 1 */ WISP_LOWTAG_FUNCTION_PTR,
+  /* 2 */ WISP_LOWTAG_OTHER_IMMEDIATE_0,
+  /* 3 */ WISP_LOWTAG_LIST_PTR,
+  /* 4 */ WISP_LOWTAG_FIXNUM_1,
+  /* 5 */ WISP_LOWTAG_STRUCT_PTR,
+  /* 6 */ WISP_LOWTAG_OTHER_IMMEDIATE_1,
+  /* 7 */ WISP_LOWTAG_OTHER_PTR,
+} wisp_lowtag_t;
+
+typedef enum wisp_widetag {
+  WISP_WIDETAG_INSTANCE = 0xC2,
+  WISP_WIDETAG_STRING = 0x32,
+  WISP_WIDETAG_SYMBOL = 0xAE,
+  WISP_WIDETAG_BUILTIN = 0xA2,
+} wisp_widetag_t;
+
 typedef struct {
   bool value;
   wisp_word_t term;
@@ -126,30 +144,12 @@ typedef enum {
 #define WISP_LOWTAG(x)  ((x) & WISP_LOWTAG_MASK)
 #define WISP_WIDETAG(x) ((x) & WISP_WIDETAG_MASK)
 
-typedef enum wisp_lowtag {
-  /* 0 */ WISP_LOWTAG_FIXNUM_0,
-  /* 1 */ WISP_LOWTAG_FUNCTION_PTR,
-  /* 2 */ WISP_LOWTAG_OTHER_IMMEDIATE_0,
-  /* 3 */ WISP_LOWTAG_LIST_PTR,
-  /* 4 */ WISP_LOWTAG_FIXNUM_1,
-  /* 5 */ WISP_LOWTAG_STRUCT_PTR,
-  /* 6 */ WISP_LOWTAG_OTHER_IMMEDIATE_1,
-  /* 7 */ WISP_LOWTAG_OTHER_PTR,
-} wisp_lowtag_t;
-
-typedef enum wisp_widetag {
-  WISP_WIDETAG_INSTANCE = 0xC2,
-  WISP_WIDETAG_STRING = 0x32,
-  WISP_WIDETAG_SYMBOL = 0xAE,
-  WISP_WIDETAG_BUILTIN = 0xA2,
-} wisp_widetag_t;
-
 #define wisp_align(x) \
   (((x) + WISP_LOWTAG_MASK + 1) & ~WISP_LOWTAG_MASK)
 
 #define WISP_WORD_SIZE 4
 #define WISP_CONS_SIZE (2 * WISP_WORD_SIZE)
-#define WISP_SYMBOL_SIZE (wisp_align (6 * WISP_WORD_SIZE))
+#define WISP_SYMBOL_SIZE (6)
 
 #define WISP_IS_FIXNUM(x) (((x) & 3) == 0)
 #define WISP_IS_OTHER_IMMEDIATE(x) (((x) & 3) == 2)

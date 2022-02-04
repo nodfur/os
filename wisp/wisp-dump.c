@@ -11,6 +11,8 @@ wisp_dump_stdout (wisp_word_t word)
 void
 wisp_dump (FILE *f, wisp_word_t word)
 {
+  wisp_word_t widetag = WISP_WIDETAG (word);
+
   if (WISP_IS_FIXNUM (word))
     fprintf (f, "%d", word >> 2);
 
@@ -80,16 +82,23 @@ wisp_dump (FILE *f, wisp_word_t word)
         }
       else
         {
-          WISP_DEBUG ("unknown OTHER-PTR, tag %x\n", header[0] & 0xff);
-          wisp_not_implemented ();
+          WISP_DEBUG ("{OTHER-PTR 0x%x tag %x}", word, header[0] & 0xff);
+          /* wisp_not_implemented (); */
         }
     }
 
-  else if (WISP_WIDETAG (word) == WISP_WIDETAG_BUILTIN)
+  else if (widetag == WISP_WIDETAG_BUILTIN)
     fprintf (f, "%%%d", word >> 8);
 
+  else if (widetag == WISP_WIDETAG_INSTANCE)
+    fprintf (f, "{instance header}");
+
+  else if (widetag == WISP_WIDETAG_STRING)
+    fprintf (f, "{string header}");
+
+  else if (widetag == WISP_WIDETAG_SYMBOL)
+    fprintf (f, "{symbol header}");
+
   else
-    {
-      fprintf (f, "{%d}", word);
-    }
+    fprintf (f, "{unknown 0x%x}", word);
 }
