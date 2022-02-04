@@ -31,8 +31,8 @@ wisp_dump (FILE *f, wisp_word_t word)
       while (word != NIL)
         {
           wisp_word_t *cons = wisp_deref (word);
-          wisp_word_t  car = cons[1];
-          wisp_word_t  cdr = cons[2];
+          wisp_word_t  car = cons[0];
+          wisp_word_t  cdr = cons[1];
 
           wisp_dump (f, car);
 
