@@ -1,4 +1,5 @@
-default: wisp test wasm/wisp.js dist/index.html
+default: wisp test
+web: wasm/wisp.js dist/index.html
 
 CFLAGS += -g
 

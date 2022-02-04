@@ -375,8 +375,8 @@ wisp_start_evaluating_arguments (wisp_machine_t *machine,
                                  wisp_word_t args)
 {
   wisp_word_t *term_list = wisp_deref (args);
-  wisp_word_t first_term = term_list[1];
-  wisp_word_t remaining_terms = term_list[2];
+  wisp_word_t first_term = term_list[0];
+  wisp_word_t remaining_terms = term_list[1];
 
   wisp_word_t apply_plan = wisp_make_apply_plan
     (function, NIL, remaining_terms,
