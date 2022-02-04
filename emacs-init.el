@@ -495,7 +495,3 @@
     (shell-command-on-region
      (mark) (point)
      "echo -n 0x; sha256sum | head -c6" t t)))
-
-(sha256 "foo")
-
-lol 0xa6e9c4 hey
