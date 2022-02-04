@@ -395,7 +395,7 @@ wisp_length (wisp_word_t list)
 
   while (list != NIL)
     {
-      list = (wisp_deref (list))[1];
+      list = wisp_cdr (list);
       ++i;
     }
 
@@ -486,6 +486,8 @@ WISP_EXPORT
 wisp_word_t
 wisp_eval_code (const char *code)
 {
+  /* WISP_DEBUG ("evaluating %s\n", code); */
+
   wisp_word_t term = wisp_read (&code);
 
   wisp_machine_t machine = wisp_initial_machine (term);
