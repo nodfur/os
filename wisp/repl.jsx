@@ -362,7 +362,7 @@ function Browser() {
   React.useEffect(() => {
     if (!booted) return
 
-    setValue(grokValue(0x7D))
+    setValue(grokValue(0x75))
 
   }, [booted])
 

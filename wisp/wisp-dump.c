@@ -60,12 +60,25 @@ wisp_dump (FILE *f, wisp_word_t word)
 
   else if (WISP_IS_STRUCT_PTR (word))
     {
-      fprintf (f, "«");
+      wisp_word_t *header = wisp_deref (word);
+      if ((header[0] & 0xff) == WISP_WIDETAG_INSTANCE)
+        {
+          fprintf (f, "«struct ");
 
-      wisp_word_t *struct_header = wisp_deref (word);
+          wisp_word_t *struct_header = wisp_deref (word);
 
-      wisp_dump (f, struct_header[1]);
-      fprintf (f, " 0x%X»", word);
+          wisp_dump (f, struct_header[1]);
+          fprintf (f, " 0x%X»", word);
+        }
+      else
+        {
+          fprintf (f, "«moved struct ");
+
+          wisp_word_t *struct_header = wisp_deref (word);
+
+          wisp_dump (f, struct_header[1]);
+          fprintf (f, " 0x%X»", word);
+        }
     }
 
   else if (WISP_IS_OTHER_PTR (word))
@@ -101,7 +114,7 @@ wisp_dump (FILE *f, wisp_word_t word)
     fprintf (f, "{string header}");
 
   else if (widetag == WISP_WIDETAG_SYMBOL)
-    fprintf (f, "{symbol header}");
+    fprintf (f, "{symbol header 0x%x}", word);
 
   else
     fprintf (f, "{unknown 0x%x}", word);

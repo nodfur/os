@@ -41,7 +41,7 @@ wisp_object_size (wisp_word_t *data)
 wisp_word_t
 wisp_copy (wisp_word_t ptr)
 {
-  if (!WISP_IS_PTR (ptr))
+  if (!WISP_IS_PTR (ptr) || ptr == NIL)
     {
       WISP_DEBUG ("leaving 0x%x ", ptr);
       wisp_dump (stderr, ptr);
