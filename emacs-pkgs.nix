@@ -2,16 +2,18 @@ pkgs: epkgs:
 
 with epkgs; [
 
+  # doom-modeline
   ag
   all-the-icons
   avy
+  citar
+  citeproc
   company
   company-nixos-options
   consult
   default-text-scale
   delight
   direnv
-  # doom-modeline
   elixir-mode
   embark
   flycheck
@@ -26,6 +28,7 @@ with epkgs; [
   nano-modeline
   nano-theme
   nix-mode
+  org
   paredit
   pdf-tools
   projectile

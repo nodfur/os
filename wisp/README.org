@@ -1,3 +1,5 @@
+#+bibliography: bibliography.bib
+
 * Wisp
 
 Wisp is a Lisp system for WebAssembly with grand intentions.
@@ -154,19 +156,19 @@ synchronized across nodes.  Especially CRDTs.
    known in the literature as the CEK machine, named after
    its three registers: Control, Environment, Kontinuation.
 
-   We call the registers `term`, `scopes`, and `plan`.
+   We call the registers ~term~, ~scopes~, and ~plan~.
 
-   See the [[file:wisp.c::wisp_step (wisp_machine_t *machine)][`wisp_step()`]] function.
+   See the [[file:wisp-eval.c::wisp_step (wisp_machine_t *machine)][~wisp_step()~]] function.
 
 *** Plans
 
     | Plan              | Meaning             |
     |-------------------+---------------------|
     | NIL               | Computation is done |
-    | [APPLY vs ts e k] |                     |
-    | [CALL vs e k]     |                     |
+    | APPLY vs ts e k   |                     |
+    | CALL vs e k       |                     |
 
-    A call like `(f x y)` ...
+    A call like ~(f x y)~ ...
 
 
 *** Lisp forms based on what they evaluate
@@ -181,21 +183,12 @@ synchronized across nodes.  Especially CRDTs.
     |-----------+-----------+--------|
 
 
+* Garbage Collection
 
-* Diary
+  I'm implementing a stop-and-copy garbage collector.
 
-** [2022-01-27 Thu]
+  C. J. Cheney published the algorithm in 1970 [cite:@cheney1970].
 
-   I've got a REPL working in the command line.
-
-   Compiling to WebAssembly works, but I don't have a way to
-   run the REPL in the browser.  That would be awesome.
-
-   The next thing to do I think is heap saving and loading.
-   That should be easy.
-
-*** TODO Output a heap image
-*** TODO Load a heap image
 
 * Local Variables :noexport:
   Local Variables:

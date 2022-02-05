@@ -15,6 +15,8 @@
     tdesktop
     unzip
     wget
+    texlive.combined.scheme-full
+    evince
   ];
 
   nix.extraOptions = ''

@@ -80,6 +80,10 @@ wisp_dump (FILE *f, wisp_word_t word)
         {
           fprintf (f, "\"%s\"", wisp_string_buffer (header));
         }
+      else if (WISP_IS_PTR (header[0]))
+        {
+          fprintf (f, "{heart 0x%x}", header[0] & ~7);
+        }
       else
         {
           WISP_DEBUG ("{OTHER-PTR 0x%x tag %x}", word, header[0] & 0xff);

@@ -11,6 +11,10 @@ in {
     openssh.authorizedKeys.keys = [keys.mbrock-ssh];
   };
 
+  environment.systemPackages = with pkgs; [
+    zotero
+  ];
+
   home-manager.users.mbrock = import ./profile.nix;
 
   nix.settings.trusted-users = ["mbrock"];

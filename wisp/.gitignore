@@ -5,3 +5,6 @@ wisp
 *.js
 node_modules
 *.dSYM
+/README.html
+/README.pdf
+/README.tex

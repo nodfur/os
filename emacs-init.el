@@ -268,13 +268,18 @@
 (setq magit-status-buffer-switch-function 'switch-to-buffer)
 (setq magit-unstage-all-confirm nil)
 
+(defun compile-without-saving (command)
+  (let ((x compile-command))
+    (compile command)
+    (setq compile-command x)))
+
 (defun restless-rebuild ()
   (interactive)
-  (compile "sudo /os/rebuild"))
+  (compile-without-saving "sudo /os/rebuild"))
 
 (defun os-restart-x ()
   (interactive)
-  (compile "sudo systemctl restart display-manager"))
+  (compile-withou-saving "sudo systemctl restart display-manager"))
 
 (global-set-key (kbd "C-c R") #'restless-rebuild)
 (global-set-key (kbd "C-c c") #'recompile)
@@ -495,3 +500,7 @@
     (shell-command-on-region
      (mark) (point)
      "echo -n 0x; sha256sum | head -c6" t t)))
+
+(setq org-cite-insert-processor 'citar
+      org-cite-follow-processor 'citar
+      org-cite-activate-processor 'citar)
