@@ -186,8 +186,10 @@ synchronized across nodes.  Especially CRDTs.
 * Garbage Collection
 
   I'm implementing a stop-and-copy garbage collector.
+  Cheney published the algorithm in 1970 [cite:@cheney1970].
 
-  C. J. Cheney published the algorithm in 1970 [cite:@cheney1970].
+  It's not working properly right now.  Somehow we're ending
+  up with a lot of broken hearts everywhere and cycles.
 
 
 * Local Variables :noexport:

@@ -56,7 +56,7 @@ wisp_copy (wisp_word_t ptr)
   wisp_word_t *data = wisp_deref (ptr);
   wisp_word_t lowtag = ptr & 7;
 
-  if (data[0] >= pile && data[0] <= (pile + heap_size))
+  if (WISP_IS_PTR (data[0]) && (data[0] & ~7) >= pile && (data[0] & ~7) <= (pile + heap_size))
     {
       WISP_DEBUG ("   already copied [0x%x]\n", data[0] & ~7);
       return data[0];
