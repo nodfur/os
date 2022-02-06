@@ -105,6 +105,7 @@ extern wisp_defun_t wisp_builtins[];
 #define WISP_DEFQUOTE(lisp_name, c_name, n_args) \
   WISP_DEF (lisp_name, c_name, n_args, false, false)
 
+#define FUNARGS_0 (void)
 #define FUNARGS_1 (wisp_word_t)
 #define FUNARGS_2 (wisp_word_t, wisp_word_t)
 #define FUNARGS_3 (wisp_word_t, wisp_word_t, wisp_word_t)
@@ -131,6 +132,9 @@ typedef enum {
   wisp_add_tag,
   wisp_subtract_tag,
   wisp_multiply_tag,
+  wisp_collect_garbage_tag,
+  wisp_print_tag,
+  wisp_progn_tag,
 
   WISP_N_BUILTINS
 } wisp_builtin_tag_t;
@@ -173,13 +177,16 @@ typedef enum {
 #define WISP_SYMBOL_HEADER \
   (wisp_header_word (WISP_SYMBOL_SIZE, WISP_WIDETAG_SYMBOL))
 
+#define WISP_STATIC_SPACE_SIZE 48
+
 extern size_t heap_size;
-extern size_t heap_used;
+/* extern size_t heap_used; */
+extern void *heap_base;
 extern void *heap;
-extern int room;
-extern int pile;
-extern int pile_free;
-extern int pile_scan;
+extern int old_heap;
+extern int new_heap;
+extern int new_heap_used;
+extern int new_heap_scan;
 
 static const wisp_word_t NIL =
   WISP_LOWTAG_LIST_PTR;

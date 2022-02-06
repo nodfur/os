@@ -1,10 +1,11 @@
 #include "wisp.h"
 
+#define WISP_DEBUG_GC 0
+
 int
 wisp_instance_size (wisp_word_t *data)
 {
   wisp_word_t length = *data >> 8;
-  /* WISP_DEBUG ("instance length %d\n", length); */
   return wisp_align ((1 + length) * WISP_WORD_SIZE);
 }
 
@@ -32,43 +33,49 @@ wisp_object_size (wisp_word_t *data)
       }
 
     default:
-      WISP_DEBUG ("probably a list\n");
       return 2 * WISP_WORD_SIZE;
     }
 
 }
 
+#define WISP_POINTS_TO_STATIC_SPACE(ptr) \
+  (((ptr) & ~7) < WISP_STATIC_SPACE_SIZE)
+
 wisp_word_t
-wisp_copy (wisp_word_t ptr)
+wisp_gc_copy_to_new_heap (wisp_word_t ptr)
 {
-  if (!WISP_IS_PTR (ptr) || ptr == NIL)
+  if (!WISP_IS_PTR (ptr) || WISP_POINTS_TO_STATIC_SPACE (ptr))
     {
-      WISP_DEBUG ("leaving 0x%x ", ptr);
-      wisp_dump (stderr, ptr);
-      WISP_DEBUG ("\n");
       return ptr;
     }
 
+#if WISP_DEBUG_GC
   WISP_DEBUG ("copying ");
   wisp_dump (stderr, ptr);
   WISP_DEBUG ("\n");
+#endif
 
   wisp_word_t *data = wisp_deref (ptr);
   wisp_word_t lowtag = ptr & 7;
 
-  if (WISP_IS_PTR (data[0]) && (data[0] & ~7) >= pile && (data[0] & ~7) <= (pile + heap_size))
+  if (WISP_IS_PTR (data[0]) && (data[0] & ~7) >= new_heap && (data[0] & ~7) <= (new_heap + heap_size))
     {
+#if WISP_DEBUG_GC
       WISP_DEBUG ("   already copied [0x%x]\n", data[0] & ~7);
+#endif
       return data[0];
     }
 
   int n = wisp_object_size (data);
-  int dst = pile_free;
+  int dst = new_heap + new_heap_used;
 
-  pile_free += n;
+  new_heap_used += n;
+
+#if WISP_DEBUG_GC
   WISP_DEBUG ("   [0x%x] to [0x%x]\n", dst, dst + n);
+#endif
 
-  memcpy (heap + dst, data, n);
+  memcpy (heap_base + dst, data, n);
 
   data[0] = dst | lowtag;
 
@@ -78,15 +85,17 @@ wisp_copy (wisp_word_t ptr)
 void
 wisp_scavenge (void)
 {
-  wisp_word_t *header = wisp_deref (pile_scan);
+  wisp_word_t *header = wisp_deref (new_heap_scan);
 
-  WISP_DEBUG ("\nscavenging [0x%x] ", pile_scan);
+#if WISP_DEBUG_GC
+  WISP_DEBUG ("scavenging [0x%x] ", new_heap_scan);
   wisp_dump (stderr, *header);
   WISP_DEBUG ("\n");
+#endif
 
   if (*header == 0)
     {
-      pile_scan += WISP_WORD_SIZE;
+      new_heap_scan += WISP_WORD_SIZE;
       return;
     }
 
@@ -99,18 +108,20 @@ wisp_scavenge (void)
 
         for (int i = 0; i < n + 1; i++)
           {
+#if WISP_DEBUG_GC
             WISP_DEBUG ("#%d ", i);
-            header[i] = wisp_copy (header[i]);
+#endif
+            header[i] = wisp_gc_copy_to_new_heap (header[i]);
           }
 
-        pile_scan += wisp_instance_size (header);
+        new_heap_scan += wisp_instance_size (header);
 
         break;
       }
 
     case WISP_WIDETAG_STRING:
       {
-        pile_scan += wisp_string_size (header);
+        new_heap_scan += wisp_string_size (header);
         break;
       }
 
@@ -120,9 +131,11 @@ wisp_scavenge (void)
 
         for (int i = 0; i < n; i++)
           {
+#if WISP_DEBUG_GC
             WISP_DEBUG ("@%d ", i);
-            header[i] = wisp_copy (header[i]);
-            pile_scan += WISP_WORD_SIZE;
+#endif
+            header[i] = wisp_gc_copy_to_new_heap (header[i]);
+            new_heap_scan += WISP_WORD_SIZE;
           }
 
         break;
@@ -133,33 +146,56 @@ wisp_scavenge (void)
 void
 wisp_flip (void)
 {
-  int new_pile = room;
-  int new_room = pile;
-  int new_heap_used = pile_free;
+  int current_old_heap = old_heap;
+  int current_new_heap = new_heap;
 
-  pile = new_pile;
-  room = new_room;
-  heap_used = new_heap_used;
+  new_heap = current_old_heap;
+  old_heap = current_new_heap;
 
-  pile_free = 0;
-  pile_scan = 0;
+  new_heap_used = WISP_STATIC_SPACE_SIZE;
+  new_heap_scan = new_heap;
+
+  heap = heap_base;
 }
 
 void
 wisp_tidy (void)
 {
-  /* for (int i = 0; i < wisp_cache_size; i++) */
-  /*   { */
-  /*     WISP_DEBUG ("cache %d\n", i); */
-  /*     wisp_cache[i] = wisp_move (wisp_cache[i]); */
-  /*   } */
-
   WISP_DEBUG ("\n* collecting garbage\n");
 
-  WISP_CACHE (WISP) = wisp_copy (WISP_CACHE (WISP));
-
-  while (pile_scan < pile_free)
-    wisp_scavenge ();
+  int old_size = new_heap_used;
 
   wisp_flip ();
+  for (int i = 0; i < wisp_cache_size; i++)
+    {
+      WISP_DEBUG ("base gc root %d: ", i);
+      wisp_dump (stderr, wisp_cache[i]);
+      WISP_DEBUG ("\n");
+      wisp_cache[i] = wisp_gc_copy_to_new_heap (wisp_cache[i]);
+    }
+
+  if (wisp_machine)
+    {
+      WISP_DEBUG ("gc root term: ");
+      wisp_dump (stderr, wisp_machine->term);
+      WISP_DEBUG ("\n");
+
+      WISP_DEBUG ("gc root scopes: ");
+      wisp_dump (stderr, wisp_machine->scopes);
+      WISP_DEBUG ("\n");
+
+      WISP_DEBUG ("gc root plan: ");
+      wisp_dump (stderr, wisp_machine->plan);
+      WISP_DEBUG ("\n");
+    }
+
+  /* WISP_CACHE (WISP) = wisp_gc_copy_to_new_heap (WISP_CACHE (WISP)); */
+
+  while (new_heap_scan < new_heap + new_heap_used)
+    wisp_scavenge ();
+
+  WISP_DEBUG ("old heap %.2f KiB, new heap %.2f KiB (%d B)\n",
+              old_size / 1024.0,
+              new_heap_used / 1024.0,
+              new_heap_used - old_size);
 }

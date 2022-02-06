@@ -174,7 +174,7 @@ wisp_make_args_scope (wisp_word_t params,
   return args_scope;
 }
 
-wisp_machine_t *wisp_machine;
+wisp_machine_t *wisp_machine = NULL;
 
 void
 wisp_do_call (wisp_machine_t *machine,

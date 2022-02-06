@@ -185,11 +185,38 @@ synchronized across nodes.  Especially CRDTs.
 
 * Garbage Collection
 
-  I'm implementing a stop-and-copy garbage collector.
-  Cheney published the algorithm in 1970 [cite:@cheney1970].
+  Wisp has a simple stop-and-copy garbage collector following
+  the algorithm published by Cheney in 1970
+  [cite:@cheney1970].
 
-  It's not working properly right now.  Somehow we're ending
-  up with a lot of broken hearts everywhere and cycles.
+  To summarize the algorithm, we divide the heap in two halves
+  or "semispaces" which we call the new heap and the old heap,
+  and to collect garbage we copy all reachable objects into
+  the new heap and update all relevant pointers with an
+  iterative breadth-first traversal.
+
+  This traversal is very simple and doesn't use any recursive
+  functions.  We first copy the objects pointed to by roots
+  like current scope and continuation into the new heap just
+  by copying their memory with no inspection other than needed
+  to determine each object's byte size.  We've now filled up a
+  small prefix of the new heap with copied structures that
+  still refer to objects in the old heap.  Now we /scavenge/,
+  iterating from the start of the new heap through every slot
+  of an instance, every list element, etc, and copy those
+  objects in the same way as we did the roots.  As we scavenge
+  we move the /scan/ pointer so that the next round of
+  scavenging begins where we left off.  For each object we
+  copy into the new heap, we update its old heap location to
+  replace the object's first word with the pointer to its new
+  location.  Before copying an object we check for such a
+  /forwarding pointer/ or /broken heart/ so we don't copy the
+  same object twice.
+
+  Some objects are so foundational that it makes no sense to
+  allocate them in a garbage-collected heap.  NIL, especially,
+  should not be moved around.  We do this by just reserving a
+  small amount of space at the beginning of both semispaces.
 
 
 * Local Variables :noexport:

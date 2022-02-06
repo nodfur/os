@@ -6,16 +6,17 @@
 
 #include "wisp.h"
 
+void *heap_base;
 void *heap;
-int room;
-int pile;
-int pile_free;
-int pile_scan;
+int old_heap;
+int new_heap;
+int new_heap_used;
+int new_heap_scan;
 
 #define MEGABYTES (1024 * 1024)
 
 size_t heap_size = 4 * MEGABYTES;
-size_t heap_used = 0;
+/* size_t heap_used = 0; */
 
 wisp_word_t wisp_cache[wisp_cache_size];
 
@@ -29,16 +30,21 @@ wisp_word_t
 wisp_alloc_raw (wisp_word_t size, wisp_lowtag_t tag)
 {
   assert (WISP_ALIGNED_PROPERLY (size));
-  assert (heap_used + size < heap_size);
+
+  if (new_heap_used + size >= heap_size)
+    {
+      wisp_tidy ();
+      assert (new_heap_used + size < heap_size);
+    }
 
 #if WISP_DEBUG_ALLOC
   WISP_DEBUG ("alloc %x %d\n", tag, size);
 #endif
 
-  uint32_t i = heap_used;
-  heap_used += size;
+  uint32_t i = new_heap_used;
+  new_heap_used += size;
 
-  return i | tag;
+  return (new_heap + i) | tag;
 }
 
 wisp_word_t *
@@ -281,17 +287,21 @@ wisp_allocate_heap ()
 {
   WISP_DEBUG ("Allocating %lu MB heap\n", heap_size / MEGABYTES);
 
-  heap = calloc (2 * heap_size, 1);
-  room = 0;
-  pile = pile_scan = pile_free = heap_size / 2;
+  heap_base = calloc (2 * heap_size, 1);
+  old_heap = heap_size / 2;
+  new_heap = 0;
+  new_heap_scan = 0;
+  heap = heap_base;
 }
+
+int wisp_static_space_size = 48;
 
 void
 wisp_start ()
 {
   wisp_word_t *words = heap;
 
-  heap_used = wisp_align (7 * sizeof *words);
+  new_heap_used = wisp_align (7 * sizeof *words);
 
   words[0] = WISP_SYMBOL_HEADER;
   words[1] = NIL;
@@ -300,6 +310,8 @@ wisp_start ()
   words[4] = wisp_string ("NIL");
   words[5] = NIL;
   words[6] = NIL;
+
+  assert (new_heap_used == wisp_static_space_size);
 
   WISP_CACHE (PACKAGE) =
     wisp_create_symbol (wisp_string ("PACKAGE"));
@@ -529,7 +541,7 @@ wisp_load_heap (const char *path)
       if (fread (heap, 1, size, f) != size)
         wisp_crash ("heap load read failed");
 
-      heap_used = wisp_align (size);
+      new_heap_used = wisp_align (size);
 
       WISP_CACHE (PACKAGE) =
         wisp_deref (WISP_CACHE (WISP))[1];
@@ -764,6 +776,21 @@ WISP_DEFUN ("SET-SYMBOL-FUNCTION", wisp_set_symbol_function, 2)
   return value;
 }
 
+WISP_DEFUN ("COLLECT-GARBAGE", wisp_collect_garbage, 0)
+(void)
+{
+  wisp_tidy ();
+  return NIL;
+}
+
+WISP_DEFUN ("PRINT", wisp_print, 1)
+(wisp_word_t x)
+{
+  wisp_dump (stdout, x);
+  putchar ('\n');
+  return x;
+}
+
 WISP_DEFUN ("SAVE-HEAP", wisp_save_heap, 1)
 (wisp_word_t pathname)
 {
@@ -775,7 +802,7 @@ WISP_DEFUN ("SAVE-HEAP", wisp_save_heap, 1)
 
   fprintf (f, "WISP 0 %d\n", WISP_CACHE (WISP));
 
-  if (fwrite (heap, 1, heap_used, f) != heap_used)
+  if (fwrite (heap, 1, new_heap_used, f) != new_heap_used)
     wisp_crash ("heap save write failed");
   WISP_DEBUG ("saved heap to %s\n", path);
   fclose (f);
@@ -847,6 +874,8 @@ wisp_defs (void)
   WISP_REGISTER (wisp_cdr, "CONS");
   WISP_REGISTER (wisp_set_symbol_function, "SYMBOL", "FUNCTION");
   WISP_REGISTER (wisp_save_heap, "HEAP-PATH");
+  WISP_REGISTER (wisp_collect_garbage, "COLLECT-GARBAGE");
+  WISP_REGISTER (wisp_print, "PRINT");
   WISP_REGISTER (wisp_make_instance, "CLASS", "SLOTS");
   WISP_REGISTER (wisp_add, "X", "Y");
   WISP_REGISTER (wisp_subtract, "X", "Y");
