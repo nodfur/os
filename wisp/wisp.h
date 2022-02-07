@@ -181,12 +181,12 @@ typedef enum {
 
 extern size_t heap_size;
 /* extern size_t heap_used; */
-extern void *heap_base;
-extern void *heap;
-extern int old_heap;
-extern int new_heap;
-extern int new_heap_used;
-extern int new_heap_scan;
+extern void *wisp_heap_base;
+extern void *wisp_heap;
+extern int wisp_old_heap;
+extern int wisp_new_heap;
+extern int wisp_heap_used;
+extern int wisp_new_heap_scan;
 
 static const wisp_word_t NIL =
   WISP_LOWTAG_LIST_PTR;

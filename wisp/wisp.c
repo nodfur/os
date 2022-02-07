@@ -6,12 +6,15 @@
 
 #include "wisp.h"
 
-void *heap_base;
-void *heap;
-int old_heap;
-int new_heap;
-int new_heap_used;
-int new_heap_scan;
+void *wisp_heap_base;
+void *wisp_heap;
+
+int wisp_heap_used;
+
+int wisp_old_heap;
+
+int wisp_new_heap;
+int wisp_new_heap_scan;
 
 #define MEGABYTES (1024 * 1024)
 
@@ -31,26 +34,26 @@ wisp_alloc_raw (wisp_word_t size, wisp_lowtag_t tag)
 {
   assert (WISP_ALIGNED_PROPERLY (size));
 
-  if (new_heap_used + size >= heap_size)
+  if (wisp_heap_used + size >= heap_size)
     {
       wisp_tidy ();
-      assert (new_heap_used + size < heap_size);
+      assert (wisp_heap_used + size < heap_size);
     }
 
 #if WISP_DEBUG_ALLOC
   WISP_DEBUG ("alloc %x %d\n", tag, size);
 #endif
 
-  uint32_t i = new_heap_used;
-  new_heap_used += size;
+  uint32_t i = wisp_heap_used;
+  wisp_heap_used += size;
 
-  return (new_heap + i) | tag;
+  return (wisp_new_heap + i) | tag;
 }
 
 wisp_word_t *
 wisp_deref (wisp_word_t ptr)
 {
-  return heap + (ptr & ~WISP_LOWTAG_MASK);
+  return wisp_heap + (ptr & ~WISP_LOWTAG_MASK);
 }
 
 wisp_word_t
@@ -287,11 +290,11 @@ wisp_allocate_heap ()
 {
   WISP_DEBUG ("Allocating %lu MB heap\n", heap_size / MEGABYTES);
 
-  heap_base = calloc (2 * heap_size, 1);
-  old_heap = heap_size / 2;
-  new_heap = 0;
-  new_heap_scan = 0;
-  heap = heap_base;
+  wisp_heap_base = calloc (2 * heap_size, 1);
+  wisp_old_heap = heap_size / 2;
+  wisp_new_heap = 0;
+  wisp_new_heap_scan = 0;
+  wisp_heap = wisp_heap_base;
 }
 
 int wisp_static_space_size = 48;
@@ -299,9 +302,9 @@ int wisp_static_space_size = 48;
 void
 wisp_start ()
 {
-  wisp_word_t *words = heap;
+  wisp_word_t *words = wisp_heap;
 
-  new_heap_used = wisp_align (7 * sizeof *words);
+  wisp_heap_used = wisp_align (7 * sizeof *words);
 
   words[0] = WISP_SYMBOL_HEADER;
   words[1] = NIL;
@@ -311,7 +314,7 @@ wisp_start ()
   words[5] = NIL;
   words[6] = NIL;
 
-  assert (new_heap_used == wisp_static_space_size);
+  assert (wisp_heap_used == wisp_static_space_size);
 
   WISP_CACHE (PACKAGE) =
     wisp_create_symbol (wisp_string ("PACKAGE"));
@@ -538,10 +541,10 @@ wisp_load_heap (const char *path)
       WISP_DEBUG ("Loading heap from %s (%lu bytes)\n",
                   path, size);
 
-      if (fread (heap, 1, size, f) != size)
+      if (fread (wisp_heap, 1, size, f) != size)
         wisp_crash ("heap load read failed");
 
-      new_heap_used = wisp_align (size);
+      wisp_heap_used = wisp_align (size);
 
       WISP_CACHE (PACKAGE) =
         wisp_deref (WISP_CACHE (WISP))[1];
@@ -641,7 +644,7 @@ WISP_EXPORT
 void *
 wisp_get_heap_pointer ()
 {
-  return heap;
+  return wisp_heap;
 }
 
 int
@@ -805,7 +808,7 @@ WISP_DEFUN ("SAVE-HEAP", wisp_save_heap, 1)
 
   fprintf (f, "WISP 0 %d\n", WISP_CACHE (WISP));
 
-  if (fwrite (heap, 1, new_heap_used, f) != new_heap_used)
+  if (fwrite (wisp_heap, 1, wisp_heap_used, f) != wisp_heap_used)
     wisp_crash ("heap save write failed");
   WISP_DEBUG ("saved heap to %s\n", path);
   fclose (f);
