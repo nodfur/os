@@ -71,6 +71,8 @@ wisp_gc_copy_to_new_heap (wisp_word_t ptr)
 
   wisp_heap_used += n;
 
+  assert (wisp_heap_used < heap_size);
+
 #if WISP_DEBUG_GC
   WISP_DEBUG ("   [0x%x] to [0x%x]\n", dst, dst + n);
 #endif
@@ -88,7 +90,7 @@ wisp_scavenge (void)
   wisp_word_t *header = wisp_deref (wisp_new_heap_scan);
 
 #if WISP_DEBUG_GC
-  WISP_DEBUG ("scavenging [0x%x] ", new_heap_scan);
+  WISP_DEBUG ("scavenging [0x%x] ", wisp_new_heap_scan);
   wisp_dump (stderr, *header);
   WISP_DEBUG ("\n");
 #endif

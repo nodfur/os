@@ -149,11 +149,11 @@ typedef enum {
 #define WISP_WIDETAG(x) ((x) & WISP_WIDETAG_MASK)
 
 #define wisp_align(x) \
-  (((x) + WISP_LOWTAG_MASK + 1) & ~WISP_LOWTAG_MASK)
+  (((x) + WISP_LOWTAG_MASK) & ~WISP_LOWTAG_MASK)
 
 #define WISP_WORD_SIZE 4
 #define WISP_CONS_SIZE (2 * WISP_WORD_SIZE)
-#define WISP_SYMBOL_SIZE (6)
+#define WISP_SYMBOL_SIZE (7)
 
 #define WISP_IS_FIXNUM(x) (((x) & 3) == 0)
 #define WISP_IS_OTHER_IMMEDIATE(x) (((x) & 3) == 2)
@@ -175,7 +175,7 @@ typedef enum {
 #define WISP_IMMEDIATE_DATA(x) ((x) >> WISP_WIDETAG_BITS)
 
 #define WISP_SYMBOL_HEADER \
-  (wisp_header_word (WISP_SYMBOL_SIZE, WISP_WIDETAG_SYMBOL))
+  (wisp_header_word (WISP_SYMBOL_SIZE - 1, WISP_WIDETAG_SYMBOL))
 
 #define WISP_STATIC_SPACE_SIZE 48
 
@@ -187,6 +187,8 @@ extern int wisp_old_heap;
 extern int wisp_new_heap;
 extern int wisp_heap_used;
 extern int wisp_new_heap_scan;
+
+extern float wisp_gc_fraction;
 
 static const wisp_word_t NIL =
   WISP_LOWTAG_LIST_PTR;

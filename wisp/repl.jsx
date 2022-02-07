@@ -8,6 +8,8 @@ import {
   RecoilRoot, atom, useRecoilState, useRecoilValue
 } from "recoil"
 
+import CytoscapeComponent from "react-cytoscapejs"
+
 const NIL = {
   type: Symbol.for("SYMBOL"),
   name: "NIL",
@@ -25,6 +27,11 @@ const Atoms = {
   booted: atom({
     key: "booted",
     default: false,
+  }),
+
+  heapGraph: atom({
+    key: "heapGraph",
+    default: []
   }),
 }
 
@@ -96,7 +103,7 @@ function Wisp() {
         height: "100%"
       }}
       className={ booted ? "fade-in now" : "fade-in later" }>
-      { booted ? <><Browser /><REPL /></> : null }
+      { booted ? <><Browser /><REPL /><Explorer /></> : null }
     </div>
   )
 }
@@ -362,12 +369,12 @@ function Browser() {
   React.useEffect(() => {
     if (!booted) return
 
-    setValue(grokValue(0x75))
+    setValue(grokValue(0x6D))
 
   }, [booted])
 
   return (
-    <div className="browser">
+    <div className="browser" style={{ display: "none" }}>
       <header className="titlebar">
         <span>
           <b>WISP</b>
@@ -574,6 +581,122 @@ function REPL() {
           value={input}
         />
       </form>
+    </div>
+  )
+}
+
+function makeHeapGraph() {
+  let heapBase = WispModule.ccall(
+    "wisp_get_heap_pointer", null, ["u8*"])
+
+  let heap = new DataView(
+    WispModule.HEAPU8.buffer,
+    heapBase,
+    16 * 1024);
+
+  let scan = 0
+  let elements = []
+  let nodes = {}
+
+  let u32 = x => heap.getUint32(x, true)
+
+  let align = i => (i + 7) & ~7
+
+  function addNode(label) {
+    let node = nodes[`${scan}`] = {
+      data: {
+        id: `${scan}`,
+        label
+      }
+    }
+
+    elements.push(node)
+  }
+
+  function addEdge(source, target) {
+    elements.push({
+      data: {
+        id: `${source}-${target}`,
+        source: `${source}`,
+        target: `${target}`,
+      }
+    })
+  }
+
+  while (scan < 16 * 1024) {
+    let header = deref(scan)
+    let thing = u32(header)
+
+    if (thing === 0) {
+      scan += 4
+    } else {
+      let tag = thing & 0xff
+      switch (tag) {
+      case 0xC2:
+      case 0xAE:
+        {
+          addNode(tag == 0xC2 ? "instance" : "symbol")
+
+          let n = thing >> 8
+          for (let i = 0; i < n; i++) {
+            let entry = u32(header + i)
+            if (entry & 1 === 1) {
+              addEdge(scan, entry & ~7)
+            }
+          }
+
+          scan += align((1 + n) * 4)
+
+          break
+        }
+
+      case 0x32:
+        {
+          let n = thing >> 8
+          scan += align(4 + n + 1)
+          break
+        }
+
+      default:
+        {
+          addNode("cons")
+
+          let n = 2
+          for (let i = 0; i < n; i++) {
+            let entry = u32(header + i)
+            if (entry & 1 === 1)
+              addEdge(scan, entry & ~7)
+          }
+
+          scan += 8
+          break
+        }
+      }
+    }
+  }
+
+  console.log(elements)
+
+  for (let x of elements) {
+    let { source, target } = x.data
+    if (source && !nodes[source])
+      console.log("missing source", source)
+    if (target && !nodes[target])
+      console.log("missing target", target)
+  }
+
+  return elements
+}
+
+function Explorer() {
+  let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
+
+  let style = { width: 800, height: 800 }
+
+  return (
+    <div>
+      <button onClick={e => setHeapGraph(makeHeapGraph())}>Load heap</button>
+      <CytoscapeComponent elements={heapGraph} style={style} />
     </div>
   )
 }

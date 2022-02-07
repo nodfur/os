@@ -18,8 +18,10 @@ int wisp_new_heap_scan;
 
 #define MEGABYTES (1024 * 1024)
 
-size_t heap_size = 4 * MEGABYTES;
+size_t heap_size = 1024 * 32;
 /* size_t heap_used = 0; */
+
+float wisp_gc_fraction = 0.5;
 
 wisp_word_t wisp_cache[wisp_cache_size];
 
@@ -34,11 +36,8 @@ wisp_alloc_raw (wisp_word_t size, wisp_lowtag_t tag)
 {
   assert (WISP_ALIGNED_PROPERLY (size));
 
-  if (wisp_heap_used + size >= heap_size)
-    {
-      wisp_tidy ();
-      assert (wisp_heap_used + size < heap_size);
-    }
+  // We should collect garbage before we really run out of space.
+  assert (wisp_heap_used + size < heap_size);
 
 #if WISP_DEBUG_ALLOC
   WISP_DEBUG ("alloc %x %d\n", tag, size);
@@ -297,7 +296,7 @@ wisp_allocate_heap ()
   wisp_heap = wisp_heap_base;
 }
 
-int wisp_static_space_size = 48;
+int wisp_static_space_size = 40;
 
 void
 wisp_start ()
@@ -511,8 +510,18 @@ wisp_eval_code (const char *code)
   wisp_machine_t machine = wisp_initial_machine (term);
   wisp_machine = &machine;
 
+  int i = 0;
+
   while (wisp_step (&machine))
-    ;
+    {
+      if (wisp_heap_used >= heap_size * wisp_gc_fraction)
+        {
+          WISP_DEBUG ("step %d gc\n", i);
+          wisp_tidy ();
+        }
+
+      ++i;
+    }
 
   wisp_machine = NULL;
 
@@ -644,7 +653,7 @@ WISP_EXPORT
 void *
 wisp_get_heap_pointer ()
 {
-  return wisp_heap;
+  return wisp_heap_base;
 }
 
 int
