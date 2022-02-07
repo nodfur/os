@@ -249,8 +249,17 @@ wisp_do_call (wisp_machine_t *machine,
       wisp_closure_t *closure =
         wisp_get_closure (function);
 
+      WISP_DEBUG ("body ");
+      wisp_dump (stderr, closure->body);
+      WISP_DEBUG ("\n");
+
       wisp_word_t args_scope =
         wisp_make_args_scope (closure->params, plan->values, backwards);
+
+      WISP_DEBUG ("made args scope\n");
+      WISP_DEBUG ("body ");
+      wisp_dump (stderr, closure->body);
+      WISP_DEBUG ("\n");
 
       if (closure->macro == NIL)
         *machine = (wisp_machine_t) {
@@ -460,8 +469,9 @@ wisp_step (wisp_machine_t *machine)
   wisp_word_t scopes = machine->scopes;
   wisp_word_t plan = machine->plan;
 
-  /* wisp_dump (stderr, term); */
-  /* fprintf (stderr, "\n"); */
+  fprintf (stderr, "step: ");
+  wisp_dump (stderr, term);
+  fprintf (stderr, "\n");
 
   if (machine->value || wisp_term_irreducible (term))
     {

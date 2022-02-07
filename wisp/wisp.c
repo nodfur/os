@@ -590,6 +590,9 @@ wisp_stdlib ()
   wisp_eval_code ("(defun tag (tag attrs body)"
                   "  (make-instance 'dom-element"
                   "    (cons tag (cons attrs (cons body nil)))))");
+
+  wisp_eval_code ("(defun infinite-loop ()"
+                  "  (infinite-loop))");
 }
 
 void wisp_defs (void);

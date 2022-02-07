@@ -179,13 +179,19 @@ wisp_tidy (void)
       WISP_DEBUG ("gc root term: ");
       wisp_dump (stderr, wisp_machine->term);
       WISP_DEBUG ("\n");
+      wisp_machine->term = wisp_gc_copy_to_new_heap (wisp_machine->term);
+      WISP_DEBUG ("gc new root term: ");
+      wisp_dump (stderr, wisp_machine->term);
+      WISP_DEBUG ("\n");
 
       WISP_DEBUG ("gc root scopes: ");
       wisp_dump (stderr, wisp_machine->scopes);
+      wisp_machine->scopes = wisp_gc_copy_to_new_heap (wisp_machine->scopes);
       WISP_DEBUG ("\n");
 
       WISP_DEBUG ("gc root plan: ");
       wisp_dump (stderr, wisp_machine->plan);
+      wisp_machine->plan = wisp_gc_copy_to_new_heap (wisp_machine->plan);
       WISP_DEBUG ("\n");
     }
 

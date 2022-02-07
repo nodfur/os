@@ -236,7 +236,8 @@
         "picom-src": "picom-src",
         "urbit-emacs": "urbit-emacs",
         "urbit-src": "urbit-src",
-        "zig": "zig"
+        "zig": "zig",
+        "zls-src": "zls-src"
       }
     },
     "urbit-emacs": {
@@ -302,6 +303,22 @@
       "original": {
         "owner": "arqv",
         "repo": "zig-overlay",
+        "type": "github"
+      }
+    },
+    "zls-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1643865177,
+        "narHash": "sha256-URiyLqaxL/2puzyZaInhZpUrxLx7a8zu7Hc8dWcKSjU=",
+        "owner": "zigtools",
+        "repo": "zls",
+        "rev": "f3aabd6b7ca424b6aa1be9ef8a215a842301b994",
+        "type": "github"
+      },
+      "original": {
+        "owner": "zigtools",
+        "repo": "zls",
         "type": "github"
       }
     }
