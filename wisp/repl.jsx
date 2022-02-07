@@ -118,16 +118,16 @@ function Line({ data }) {
   } else debugger
 }
 
-function lowtag(x) {
-  return x & ((1 << 3) - 1)
+function widetag(x) {
+  return x & 0xff
 }
 
-function widetag(x) {
-  return x & ((1 << 8) - 1)
+function lowtag(x) {
+  return x & 7
 }
 
 function deref(x) {
-  return x & ~((1 << 3) - 1)
+  return x & ~7
 }
 
 let heapCache = {}
@@ -552,7 +552,7 @@ function REPL() {
   }, [])
 
   return (
-    <div id="repl">
+    <div id="repl" style={{ display: "none" }}>
       <header className="titlebar">
         <span>
           <b>Notebook</b>
@@ -592,7 +592,7 @@ function makeHeapGraph() {
   let heap = new DataView(
     WispModule.HEAPU8.buffer,
     heapBase,
-    16 * 1024);
+    32 * 1024);
 
   let scan = 0
   let elements = []
@@ -623,12 +623,12 @@ function makeHeapGraph() {
     })
   }
 
-  while (scan < 16 * 1024) {
-    let header = deref(scan)
+  while (scan < 32 * 1024) {
+    let header = scan
     let thing = u32(header)
 
     if (thing === 0) {
-      scan += 4
+      scan += 8
     } else {
       let tag = thing & 0xff
       switch (tag) {
@@ -638,9 +638,11 @@ function makeHeapGraph() {
           addNode(tag == 0xC2 ? "instance" : "symbol")
 
           let n = thing >> 8
-          for (let i = 0; i < n; i++) {
-            let entry = u32(header + i)
-            if (entry & 1 === 1) {
+          // console.log(tag == 0xc2 ? "instance" : "symbol", n)
+
+          for (let i = 1; i < n; i++) {
+            let entry = u32(header + i * 4)
+            if ((entry & 1) === 1) {
               addEdge(scan, entry & ~7)
             }
           }
@@ -653,6 +655,7 @@ function makeHeapGraph() {
       case 0x32:
         {
           let n = thing >> 8
+          addNode(`"${grokString(heap, n, scan + 4)}"`)
           scan += align(4 + n + 1)
           break
         }
@@ -663,8 +666,8 @@ function makeHeapGraph() {
 
           let n = 2
           for (let i = 0; i < n; i++) {
-            let entry = u32(header + i)
-            if (entry & 1 === 1)
+            let entry = u32(header + i * 4)
+            if ((entry & 1) === 1)
               addEdge(scan, entry & ~7)
           }
 
@@ -691,12 +694,15 @@ function makeHeapGraph() {
 function Explorer() {
   let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
 
-  let style = { width: 800, height: 800 }
+  let style = { width: "100vw", height: "100vh", position: "absolute", top: 0, left: 0 }
+  let layout = { name: "cose", boundingBox: { x1: 0, y1: 0, w: 8000, h: 8000 } }
 
   return (
     <div>
-      <button onClick={e => setHeapGraph(makeHeapGraph())}>Load heap</button>
-      <CytoscapeComponent elements={heapGraph} style={style} />
+      { heapGraph.length == 0 ? <button onClick={e => setHeapGraph(makeHeapGraph())}>Load heap</button> : null}
+      { heapGraph.length > 0 ?
+        <CytoscapeComponent elements={heapGraph} style={style} layout={layout} />
+        : null }
     </div>
   )
 }

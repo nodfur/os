@@ -153,7 +153,7 @@ typedef enum {
 
 #define WISP_WORD_SIZE 4
 #define WISP_CONS_SIZE (2 * WISP_WORD_SIZE)
-#define WISP_SYMBOL_SIZE (7)
+#define WISP_SYMBOL_SIZE (6)
 
 #define WISP_IS_FIXNUM(x) (((x) & 3) == 0)
 #define WISP_IS_OTHER_IMMEDIATE(x) (((x) & 3) == 2)
@@ -175,9 +175,9 @@ typedef enum {
 #define WISP_IMMEDIATE_DATA(x) ((x) >> WISP_WIDETAG_BITS)
 
 #define WISP_SYMBOL_HEADER \
-  (wisp_header_word (WISP_SYMBOL_SIZE - 1, WISP_WIDETAG_SYMBOL))
+  (wisp_header_word (WISP_SYMBOL_SIZE, WISP_WIDETAG_SYMBOL))
 
-#define WISP_STATIC_SPACE_SIZE 48
+#define WISP_STATIC_SPACE_SIZE 40
 
 extern size_t heap_size;
 /* extern size_t heap_used; */

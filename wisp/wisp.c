@@ -190,7 +190,7 @@ wisp_word_t
 wisp_create_symbol (wisp_word_t name)
 {
   wisp_word_t symbol
-    = wisp_alloc_raw (wisp_align (WISP_WORD_SIZE * WISP_SYMBOL_SIZE),
+    = wisp_alloc_raw (wisp_align (WISP_WORD_SIZE * (1 + WISP_SYMBOL_SIZE)),
                       WISP_LOWTAG_OTHER_PTR);
 
   wisp_word_t *symbol_header = wisp_deref (symbol);
