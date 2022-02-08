@@ -38,6 +38,7 @@ with epkgs; [
   slime
   treemacs
   treemacs-all-the-icons
+  typescript-mode
   vterm
   which-key
   whitespace-cleanup-mode

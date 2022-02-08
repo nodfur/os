@@ -133,6 +133,7 @@
   (setq c-basic-offset 2)
   (setq css-indent-offset 2)
   (setq js-indent-level 2)
+  (setq typescript-indent-level 2)
   (setq sh-basic-offset 2))
 
 (progn

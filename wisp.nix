@@ -8,10 +8,11 @@
     emscripten
     esbuild
     gdb
+    jq
+    nodePackages.typescript-language-server
     wasmtime
     zig
     zls
-    jq
   ];
 
   system.activationScripts = {

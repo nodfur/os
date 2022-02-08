@@ -1,23 +1,39 @@
 import * as ReactDOM from "react-dom"
 
-import React, {
-  useState, useCallback, useEffect, CSSProperties
+import * as React from "react"
+
+import {
+  useState, useCallback, useEffect
 } from "react"
 
 import {
   RecoilRoot, atom, useRecoilState, useRecoilValue
 } from "recoil"
 
-import CytoscapeComponent from "react-cytoscapejs"
-
-import { UncontrolledTreeEnvironment, Tree, TreeDataProvider, TreeItemIndex, TreeItem } from "react-complex-tree"
-
-import "react-complex-tree/lib/style.css"
-
 const NIL = {
   type: Symbol.for("SYMBOL"),
   name: "NIL",
   "function": null
+}
+
+interface EmscriptenModule {
+  ccall: (arg0: string,
+          arg1: string,
+          arg2: string[],
+          arg3: string[]) => number
+  
+  HEAPU8: { 
+    buffer: ArrayBufferLike 
+  } 
+}
+
+let WispModule: EmscriptenModule
+
+declare global {
+  interface Window {
+    WispModule: EmscriptenModule
+    loadWisp: any
+  }
 }
 
 NIL["function"] = NIL
@@ -42,13 +58,6 @@ const Atoms = {
   }),
 }
 
-let WispModule: { 
-  ccall: (arg0: string, arg1: string, arg2: string[], arg3: string[]) => number;
-  HEAPU8: { 
-    buffer: ArrayBufferLike 
-  } 
-}
-
 function Wisp() {
   let [, setLines] = useRecoilState(Atoms.lines)
   let [booted, setBooted] = useRecoilState(Atoms.booted)
@@ -64,8 +73,9 @@ function Wisp() {
         if (parts[i] !== "")
           things.push({ text: parts[i], tag })
       } else {
-        if (parts[i].match(/^.*? 0x(.*)$/)) {
-          let value = grokValue(parseInt(RegExp.$1, 16))
+        let match = parts[i].match(/^.*? 0x(.*)$/)
+        if (match) {
+          let value = grokValue(parseInt(match[1], 16))
           things.push({ text: <ObjectView value={value} />, tag })
         }
       }
@@ -137,10 +147,6 @@ function Line({ data }) {
       </div>
     )
   } else debugger
-}
-
-function widetag(x: number) {
-  return x & 0xff
 }
 
 function lowtag(x: number) {
@@ -332,7 +338,7 @@ function SymbolList({ title, symbols }) {
         <header>{title}</header>
         <ul>
           {
-            symbols.map((x: { name: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal }, i: React.Key) =>
+            symbols.map((x: any, i: number) =>
               <li key={i}>
                 {x.name}
               </li>)
@@ -388,7 +394,7 @@ function Browser() {
   let booted = useRecoilValue(Atoms.booted)
 
   let [value, setValue] = React.useState(null)
-  let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
+  let [_heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
 
   React.useEffect(() => {
     if (!booted) return
@@ -513,7 +519,7 @@ function ObjectView({ value }) {
 }
 
 function REPL() {
-  let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
+  let [_heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
   let [lines, setLines] = useRecoilState(Atoms.lines)
 
   let [input, setInput] = useState("")
@@ -771,7 +777,7 @@ function Slot(
 }
 
 function HeapView({ entries } : { entries: Record<string, HeapEntry> }) {
-  let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
+  let [_heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
 
   function gc() {
     WispModule.ccall("wisp_tidy", null, [], [])
@@ -818,27 +824,12 @@ function HeapView({ entries } : { entries: Record<string, HeapEntry> }) {
 function Explorer() {
   let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
 
-  let style: CSSProperties = { 
-
-  }
-
-  let layout = { 
-    name: "cose", 
-    boundingBox: { x1: 0, y1: 0, w: 8000, h: 8000 } 
-  }
-
-  let { entries, elements } = heapGraph
+  let { entries } = heapGraph
 
   let makeHeapGraphButton = 
-    <button onClick={e => setHeapGraph(makeHeapGraph())}>
+    <button onClick={_e => setHeapGraph(makeHeapGraph())}>
       Load heap
     </button>
-
-  let graphView =
-    <CytoscapeComponent
-      elements={elements} 
-      style={style} 
-      layout={layout} />
 
   let heapView =
     <HeapView entries={entries} />
