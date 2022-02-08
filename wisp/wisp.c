@@ -35,6 +35,7 @@ wisp_word_t
 wisp_alloc_raw (wisp_word_t size, wisp_lowtag_t tag)
 {
   assert (WISP_ALIGNED_PROPERLY (size));
+  assert (WISP_IS_PTR (tag));
 
   // We should collect garbage before we really run out of space.
   assert (wisp_heap_used + size < heap_size);
@@ -52,6 +53,8 @@ wisp_alloc_raw (wisp_word_t size, wisp_lowtag_t tag)
 wisp_word_t *
 wisp_deref (wisp_word_t ptr)
 {
+  assert (WISP_IS_PTR (ptr));
+
   return wisp_heap + (ptr & ~WISP_LOWTAG_MASK);
 }
 
@@ -60,6 +63,11 @@ wisp_header_word (uint32_t data, uint8_t widetag)
 {
   assert ((data << 8) >> 8 == data);
   assert ((widetag & 3) == 2);
+
+  assert (widetag == WISP_WIDETAG_INSTANCE
+          || widetag == WISP_WIDETAG_STRING
+          || widetag == WISP_WIDETAG_SYMBOL
+          || widetag == WISP_WIDETAG_BUILTIN);
 
   return (data << 8) | widetag;
 }
@@ -80,6 +88,8 @@ wisp_word_t
 wisp_make_instance_with_slots (wisp_word_t type, int n_slots,
                                wisp_word_t *slots)
 {
+  assert (wisp_is_symbol (type));
+
   wisp_word_t pointer
     = wisp_alloc_words (2 + n_slots, WISP_LOWTAG_STRUCT_PTR);
 
@@ -190,8 +200,7 @@ wisp_word_t
 wisp_create_symbol (wisp_word_t name)
 {
   wisp_word_t symbol
-    = wisp_alloc_raw (wisp_align (WISP_WORD_SIZE * (1 + WISP_SYMBOL_SIZE)),
-                      WISP_LOWTAG_OTHER_PTR);
+    = wisp_alloc_words (1 + WISP_SYMBOL_SIZE, WISP_LOWTAG_OTHER_PTR);
 
   wisp_word_t *symbol_header = wisp_deref (symbol);
 
@@ -216,15 +225,15 @@ wisp_intern_symbol (wisp_word_t name, wisp_word_t package)
 
   wisp_word_t cur = package_header[3];
 
-  assert (WISP_IS_LIST_PTR (cur));
-
   while (cur != NIL)
     {
+      assert (WISP_IS_LIST_PTR (cur));
+
       wisp_word_t *cons = wisp_deref (cur);
       wisp_word_t car = cons[0];
       wisp_word_t cdr = cons[1];
 
-      wisp_word_t *symbol_header = wisp_deref (car);
+      wisp_word_t *symbol_header = wisp_is_symbol (car);
       wisp_word_t symbol_name = symbol_header[4];
 
       if (wisp_equal (symbol_name, name))
@@ -287,6 +296,8 @@ wisp_intern_lisp (const char *name)
 void
 wisp_allocate_heap ()
 {
+  assert (heap_size % 4096 == 0);
+
   WISP_DEBUG ("Allocating %lu MB heap\n", heap_size / MEGABYTES);
 
   wisp_heap_base = calloc (2 * heap_size, 1);
@@ -328,10 +339,8 @@ wisp_start ()
   wisp_word_t *common_lisp_header =
     wisp_deref (WISP_CACHE (WISP));
 
-  common_lisp_header[3] = wisp_cons (NIL, NIL);
-
-  WISP_DEBUG ("PACKAGE <<< 0x%x\n", WISP_CACHE (PACKAGE));
-
+  common_lisp_header[3] =
+    wisp_cons (NIL, NIL);
   common_lisp_header[3] =
     wisp_cons (WISP_CACHE (PACKAGE), common_lisp_header[3]);
 }
@@ -366,7 +375,7 @@ wisp_is_quote (wisp_word_t word)
 wisp_word_t *
 wisp_is_symbol (wisp_word_t value)
 {
-  if (!WISP_IS_OTHER_PTR (value))
+  if (!WISP_IS_OTHER_PTR (value) && value != NIL)
     return 0;
 
   wisp_word_t *header = wisp_deref (value);
@@ -408,6 +417,8 @@ wisp_ensure_function (wisp_word_t value)
 int
 wisp_length (wisp_word_t list)
 {
+  assert (WISP_IS_LIST_PTR (list));
+
   int i = 0;
 
   while (list != NIL)
@@ -603,8 +614,8 @@ wisp_stdlib ()
                   "  (make-instance 'dom-element"
                   "    (cons tag (cons attrs (cons body nil)))))");
 
-  wisp_eval_code ("(defun infinite-loop ()"
-                  "  (infinite-loop))");
+  wisp_eval_code ("(defun loop ()"
+                  "  (loop))");
 }
 
 void wisp_defs (void);
@@ -738,6 +749,8 @@ WISP_DEFMACRO ("MACRO", wisp_macro, 2)
 WISP_DEFUN ("CONS", wisp_cons, 2)
 (wisp_word_t car, wisp_word_t cdr)
 {
+  assert (WISP_IS_LIST_PTR (cdr));
+
   wisp_word_t cons
     = wisp_alloc_raw (WISP_CONS_SIZE, WISP_LOWTAG_LIST_PTR);
 
@@ -751,18 +764,22 @@ WISP_DEFUN ("CONS", wisp_cons, 2)
 WISP_DEFUN ("CAR", wisp_car, 1)
 (wisp_word_t list)
 {
+  assert (WISP_IS_LIST_PTR (list));
   return (wisp_deref (list))[0];
 }
 
 WISP_DEFUN ("CDR", wisp_cdr, 1)
 (wisp_word_t list)
 {
+  assert (WISP_IS_LIST_PTR (list));
   return (wisp_deref (list))[1];
 }
 
 WISP_DEFUN ("MAKE-INSTANCE", wisp_make_instance, 2)
 (wisp_word_t klass, wisp_word_t initargs)
 {
+  assert (wisp_is_symbol (klass));
+
   int length = wisp_length (initargs);
   wisp_word_t slots[length];
 
@@ -779,7 +796,7 @@ WISP_DEFUN ("MAKE-INSTANCE", wisp_make_instance, 2)
 WISP_DEFUN ("SET-SYMBOL-FUNCTION", wisp_set_symbol_function, 2)
 (wisp_word_t symbol, wisp_word_t value)
 {
-  wisp_word_t *header = wisp_deref (symbol);
+  wisp_word_t *header = wisp_is_symbol (symbol);
   header[6] = value;
 
   WISP_DEBUG ("Function ");
