@@ -13,7 +13,7 @@ SOURCES = wisp.c wisp-eval.c wisp-read.c wisp-dump.c wisp-tidy.c
 wasm/wisp.js: $(SOURCES)
 	emcc $(CFLAGS) $^ -o $@ $(EMCCFLAGS)
 
-dist/index.html: repl.jsx index.html wasm/wisp.js wasm/wisp.wasm build
+dist/index.html: index.tsx index.html wasm/wisp.js wasm/wisp.wasm build
 	./build
 
 wisp: $(SOURCES)

@@ -19,6 +19,15 @@
     color: var(--fg);
   }
 
+  .flex { display: flex; }
+  .row { flex-direction: row; }
+  .column { flex-direction: column; }
+  .wrap { flex-wrap: wrap; }
+  .gap { gap: .5rem; }
+  .border { border: 1px solid var(--border); }
+  .p { padding: 0.25rem; }
+  .px { padding: 0 0.25rem; }
+
   html {
     --bg: #ffff;
     --bg-tint: #fffa;
@@ -56,7 +65,7 @@
   }
 
   button, input, select, textarea {
-    font-family: inherit;
+    font-family: var(--sans);
     font-size: 100%;
   }
 
@@ -129,7 +138,10 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
   }
+
+  .bg { background: var(--bg); }
 
   .scroll-y {
     overflow-y: auto;
@@ -250,4 +262,4 @@
 </div>
 
 <script src=wisp.js></script>
-<script src=repl.js></script>
+<script src=index.js></script>

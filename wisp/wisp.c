@@ -21,7 +21,7 @@ int wisp_new_heap_scan;
 size_t heap_size = 1024 * 32;
 /* size_t heap_used = 0; */
 
-float wisp_gc_fraction = 0.5;
+float wisp_gc_fraction = 0.75;
 
 wisp_word_t wisp_cache[wisp_cache_size];
 
@@ -301,7 +301,7 @@ wisp_allocate_heap ()
   WISP_DEBUG ("Allocating %lu MB heap\n", heap_size / MEGABYTES);
 
   wisp_heap_base = calloc (2 * heap_size, 1);
-  wisp_old_heap = heap_size / 2;
+  wisp_old_heap = heap_size;
   wisp_new_heap = 0;
   wisp_new_heap_scan = 0;
   wisp_heap = wisp_heap_base;
@@ -527,7 +527,7 @@ wisp_eval_code (const char *code)
     {
       if (wisp_heap_used >= heap_size * wisp_gc_fraction)
         {
-          WISP_DEBUG ("step %d gc\n", i);
+          /* WISP_DEBUG ("step %d gc\n", i); */
           wisp_tidy ();
         }
 
@@ -614,8 +614,8 @@ wisp_stdlib ()
                   "  (make-instance 'dom-element"
                   "    (cons tag (cons attrs (cons body nil)))))");
 
-  wisp_eval_code ("(defun loop ()"
-                  "  (loop))");
+  wisp_eval_code ("(defun loop (x)"
+                  "  (loop (- x 1)))");
 }
 
 void wisp_defs (void);
@@ -667,6 +667,13 @@ wisp_get_heap_pointer ()
   return wisp_heap_base;
 }
 
+WISP_EXPORT
+wisp_word_t
+wisp_get_root_package ()
+{
+  return WISP_CACHE (WISP);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -705,6 +712,13 @@ main (int argc, char **argv)
       printf ("\n");
       wisp_tidy ();
     }
+
+  else if (argc > 1 && strcmp (argv[1], "gc") == 0)
+    {
+      wisp_tidy ();
+      wisp_tidy ();
+    }
+
 #endif
 
   return 0;
@@ -749,8 +763,6 @@ WISP_DEFMACRO ("MACRO", wisp_macro, 2)
 WISP_DEFUN ("CONS", wisp_cons, 2)
 (wisp_word_t car, wisp_word_t cdr)
 {
-  assert (WISP_IS_LIST_PTR (cdr));
-
   wisp_word_t cons
     = wisp_alloc_raw (WISP_CONS_SIZE, WISP_LOWTAG_LIST_PTR);
 
@@ -808,7 +820,7 @@ WISP_DEFUN ("SET-SYMBOL-FUNCTION", wisp_set_symbol_function, 2)
   return value;
 }
 
-WISP_DEFUN ("COLLECT-GARBAGE", wisp_collect_garbage, 0)
+WISP_DEFUN ("GC", wisp_collect_garbage, 0)
 (void)
 {
   wisp_tidy ();
@@ -906,7 +918,7 @@ wisp_defs (void)
   WISP_REGISTER (wisp_cdr, "CONS");
   WISP_REGISTER (wisp_set_symbol_function, "SYMBOL", "FUNCTION");
   WISP_REGISTER (wisp_save_heap, "HEAP-PATH");
-  WISP_REGISTER (wisp_collect_garbage, "COLLECT-GARBAGE");
+  WISP_REGISTER (wisp_collect_garbage, "GC");
   WISP_REGISTER (wisp_print, "PRINT");
   WISP_REGISTER (wisp_make_instance, "CLASS", "SLOTS");
   WISP_REGISTER (wisp_add, "X", "Y");

@@ -1,7 +1,7 @@
 import * as ReactDOM from "react-dom"
 
 import React, {
-  useState, useCallback, useEffect
+  useState, useCallback, useEffect, CSSProperties
 } from "react"
 
 import {
@@ -9,6 +9,10 @@ import {
 } from "recoil"
 
 import CytoscapeComponent from "react-cytoscapejs"
+
+import { UncontrolledTreeEnvironment, Tree, TreeDataProvider, TreeItemIndex, TreeItem } from "react-complex-tree"
+
+import "react-complex-tree/lib/style.css"
 
 const NIL = {
   type: Symbol.for("SYMBOL"),
@@ -31,17 +35,25 @@ const Atoms = {
 
   heapGraph: atom({
     key: "heapGraph",
-    default: []
+    default: {
+      entries: {},
+      elements: [],
+    }
   }),
 }
 
-let WispModule
+let WispModule: { 
+  ccall: (arg0: string, arg1: string, arg2: string[], arg3: string[]) => number;
+  HEAPU8: { 
+    buffer: ArrayBufferLike 
+  } 
+}
 
 function Wisp() {
   let [, setLines] = useRecoilState(Atoms.lines)
   let [booted, setBooted] = useRecoilState(Atoms.booted)
 
-  function print(text, tag) {
+  function print(text: string, tag: string) {
     let parts = text.split(/[«»]/)
     console.log(parts)
 
@@ -54,7 +66,7 @@ function Wisp() {
       } else {
         if (parts[i].match(/^.*? 0x(.*)$/)) {
           let value = grokValue(parseInt(RegExp.$1, 16))
-          things.push({ text: <Object value={value} />, tag })
+          things.push({ text: <ObjectView value={value} />, tag })
         }
       }
     }
@@ -62,37 +74,40 @@ function Wisp() {
     setLines(lines => [...lines, things])
   }
 
-  useEffect(async () => {
-    let Module = await loadWisp({
-      printErr: x => {
-        console.info(x)
-        print(x, "stderr")
-      },
-      print(x) {
-        console.log(x)
-        print(x, "stdout")
-      },
-      preRun(Module) {
-        Module.ENV.WISP_HEAP = "/wisp/heap"
-      }
-    })
+  useEffect(function () {
+    async function load() {
+      let Module = await window.loadWisp({
+        printErr: (x: any) => {
+          console.info(x)
+          print(x, "stderr")
+        },
+        print(x: any) {
+          console.log(x)
+          print(x, "stdout")
+        },
+        preRun(Module: { ENV: { WISP_HEAP: string } }) {
+          Module.ENV.WISP_HEAP = "/wisp/heap"
+        }
+      })
 
-    console.log("loaded Wisp")
-    Module.FS.mkdir("/wisp")
-    Module.FS.mount(Module.IDBFS, {}, "/wisp")
-    Module.FS.syncfs(true, err => {
-      if (err) {
-        throw err
-      } else {
-        console.log("syncfs loaded")
-        Module.ccall("wisp_main", null, null, [])
-        setBooted(true)
-      }
-    })
+      console.log("loaded Wisp")
+      Module.FS.mkdir("/wisp")
+      Module.FS.mount(Module.IDBFS, {}, "/wisp")
+      Module.FS.syncfs(true, (err: any) => {
+        if (err) {
+          throw err
+        } else {
+          console.log("syncfs loaded")
+          Module.ccall("wisp_main", null, null, [])
+          setBooted(true)
+        }
+      })
 
-    window.WispModule = WispModule = Module
+      window.WispModule = WispModule = Module
+    }
+
+    load()
   }, [])
-
 
   return (
     <div
@@ -103,7 +118,13 @@ function Wisp() {
         height: "100%"
       }}
       className={ booted ? "fade-in now" : "fade-in later" }>
-      { booted ? <><Browser /><REPL /><Explorer /></> : null }
+      { booted 
+        ? <>
+            <Browser />
+            <REPL />
+            <Explorer />
+          </> 
+        : null }
     </div>
   )
 }
@@ -118,21 +139,21 @@ function Line({ data }) {
   } else debugger
 }
 
-function widetag(x) {
+function widetag(x: number) {
   return x & 0xff
 }
 
-function lowtag(x) {
+function lowtag(x: number) {
   return x & 7
 }
 
-function deref(x) {
+function deref(x: number) {
   return x & ~7
 }
 
 let heapCache = {}
 
-function grok(heap, x) {
+function grok(heap: DataView, x: number) {
   switch (lowtag(x)) {
   case 0:
   case 4:
@@ -162,25 +183,20 @@ const widetags = {
   0xA2: "BUILTIN",
 }
 
-function grokImmediate(heap, x) {
-  let value = heapCache[x] = {}
-
+function grokImmediate(_heap: DataView, x: number) {
   let widetagNumber = x & ((1 << 8) - 1)
   let widetag = widetags[widetagNumber]
 
   switch (widetag) {
   case "BUILTIN":
-    value.builtin = headerData(x)
-    break
-
+    return heapCache[x] = { builtin: headerData(x) }
+    
   default:
     throw new Error(`${widetagNumber}`)
   }
-
-  return value
 }
 
-function grokPointer(heap, x) {
+function grokPointer(heap: DataView, x: number) {
   if (heapCache[x])
     return heapCache[x]
 
@@ -204,11 +220,11 @@ function grokPointer(heap, x) {
   }
 }
 
-function headerData(x) {
+function headerData(x: number) {
   return x >> 8
 }
 
-function grokInstance(heap, address, slotCount, x) {
+function grokInstance(heap: DataView, address: number, slotCount: number, x: number) {
   let value = {
     type: Symbol.for("INSTANCE"),
     address,
@@ -231,11 +247,12 @@ function grokInstance(heap, address, slotCount, x) {
   return value
 }
 
-function grokSymbol(heap, x) {
+function grokSymbol(heap: DataView, x: number) {
   let value = heapCache[x] = {
     type: Symbol.for("SYMBOL"),
     name: undefined,
     "function": undefined,
+    value: undefined,
   }
 
   value.name = grok(heap, heap.getUint32(x + 4 * 4, true))
@@ -245,7 +262,7 @@ function grokSymbol(heap, x) {
   return value
 }
 
-function grokString(heap, length, x) {
+function grokString(heap: DataView, length: number, x: number) {
   let decoder = new TextDecoder
   return decoder.decode(
     heap.buffer.slice(
@@ -255,7 +272,7 @@ function grokString(heap, length, x) {
   )
 }
 
-function grokList(heap, x) {
+function grokList(heap: DataView, x: number) {
   if (x === 3) {
     return NIL
   }
@@ -268,9 +285,9 @@ function grokList(heap, x) {
   }
 }
 
-function grokValue(x) {
+function grokValue(x: number) {
   let heapBase = WispModule.ccall(
-    "wisp_get_heap_pointer", null, ["u8*"])
+    "wisp_get_heap_pointer", null, ["u8*"], [])
 
   let heap = new DataView(
     WispModule.HEAPU8.buffer,
@@ -280,7 +297,13 @@ function grokValue(x) {
   return grok(heap, x)
 }
 
-function listElements(cons) {
+function listElements(
+  cons: { 
+    car?: any; cdr?: any; 
+    type?: symbol; 
+    name?: string; 
+    function?: any }) {
+
   let items = []
   while (cons != NIL) {
     items.push(cons.car)
@@ -290,9 +313,9 @@ function listElements(cons) {
   return items
 }
 
-function sortBy (list, key) {
+function sortBy (list: any[], key: string) {
   return list.concat().sort(
-    (a, b) => (a[key] > b[key])
+    (a: { [x: string]: number }, b: { [x: string]: number }) => (a[key] > b[key])
       ? 1
       : ((b[key] > a[key])
          ? -1
@@ -309,7 +332,7 @@ function SymbolList({ title, symbols }) {
         <header>{title}</header>
         <ul>
           {
-            symbols.map((x, i) =>
+            symbols.map((x: { name: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal }, i: React.Key) =>
               <li key={i}>
                 {x.name}
               </li>)
@@ -365,16 +388,20 @@ function Browser() {
   let booted = useRecoilValue(Atoms.booted)
 
   let [value, setValue] = React.useState(null)
+  let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
 
   React.useEffect(() => {
     if (!booted) return
 
-    setValue(grokValue(0x6D))
+    setValue(grokValue(WispModule.ccall(
+      "wisp_get_root_package", null, [], [])))
+    
+    setHeapGraph(makeHeapGraph())
 
   }, [booted])
 
   return (
-    <div className="browser" style={{ display: "none" }}>
+    <div className="browser">
       <header className="titlebar">
         <span>
           <b>WISP</b>
@@ -395,19 +422,19 @@ const slotNames = {
   "DOM-ELEMENT": ["Tag", "Attributes", "Body"],
 }
 
-function slotName(value, i) {
+function slotName(value: { klass: { name: string | number } }, i: string | number) {
   let names = slotNames[value.klass.name]
   return names ? names[i] : `Slot ${i}`
 }
 
 
-function Object({ value }) {
+function ObjectView({ value }) {
   let [expanded, setExpanded] = React.useState(false)
 
   let toggle = React.useCallback((e) => {
     e.stopPropagation()
     setExpanded(x => !x)
-  })
+  }, [setExpanded])
 
   if (value.type === Symbol.for("INSTANCE")) {
     if (expanded)
@@ -415,14 +442,14 @@ function Object({ value }) {
         <table className="instance" onClick={toggle}>
           <tbody>
             <tr>
-              <td>Class</td>
-              <td><Object value={value.klass} /></td>
+              <td>Class</td> 
+              <td><ObjectView value={value.klass} /></td>
             </tr>
             {
-              value.slots.map((slot, i) => (
+              value.slots.map((slot: any, i: React.Key) => (
                 <tr key={i}>
                   <td>{slotName(value, i)}</td>
-                  <td><Object value={slot} /></td>
+                  <td><ObjectView value={slot} /></td>
                 </tr>
               ))
             }
@@ -432,7 +459,7 @@ function Object({ value }) {
     else
       return (
         <div className="instance" onClick={toggle}>
-          <Object value={value.klass} />
+          <ObjectView value={value.klass} />
           {` @${value.address.toString(10)}`}
         </div>
       )
@@ -445,7 +472,7 @@ function Object({ value }) {
   } else if (value.type === Symbol.for("CONS")) {
     let items = []
     let list = value
-    let last
+    let last: any
 
     while (true) {
       items.push(list.car)
@@ -461,8 +488,8 @@ function Object({ value }) {
 
     return (
       <div className="list">
-        {items.map((x, i) => <Object value={x} key={i} />)}{
-          last ? <span>. <Object value={last} /></span> : null
+        {items.map((x, i) => <ObjectView value={x} key={i} />)}{
+          last ? <span>. <ObjectView value={last} /></span> : null
         }
       </div>
     )
@@ -486,6 +513,7 @@ function Object({ value }) {
 }
 
 function REPL() {
+  let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
   let [lines, setLines] = useRecoilState(Atoms.lines)
 
   let [input, setInput] = useState("")
@@ -494,9 +522,9 @@ function REPL() {
 
   let handleChange = useCallback(e => {
     setInput(e.target.value)
-  })
+  }, [])
 
-  function evalCode(code) {
+  function evalCode(code: string) {
     console.log(code)
 
     let result = WispModule.ccall(
@@ -505,6 +533,8 @@ function REPL() {
       ["string"],
       [code]
     )
+
+    setHeapGraph(makeHeapGraph())
 
     let sexp = grokValue(
       WispModule.ccall(
@@ -523,36 +553,33 @@ function REPL() {
     setLines(lines => [
       ...lines, [
         {
-          text: <Object value={sexp} />,
+          text: <ObjectView value={sexp} />,
           tag: "stdin"
         },
         {
           text: "→",
         },
         {
-          text: <Object value={value} />,
+          text: <ObjectView value={value} />,
           tag: "stdout"
         }
       ]
     ])
+
   }
 
   let handleSubmit = useCallback(e => {
     e.preventDefault()
     evalCode(input)
     setInput("")
-  })
+  }, [input])
 
   useEffect(() => {
     outputRef.current.scrollTop = outputRef.current.scrollHeight
   }, [lines])
 
-  useEffect(() => {
-    evalCode("(defun foo (x y) (cons y x))")
-  }, [])
-
   return (
-    <div id="repl" style={{ display: "none" }}>
+    <div id="repl">
       <header className="titlebar">
         <span>
           <b>Notebook</b>
@@ -566,7 +593,7 @@ function REPL() {
           lines.map((xs, i) =>
             <div key={i} className="chunk">
               {
-                xs.map((x, j) =>
+                xs.map((x: any, j: React.Key) =>
                   <Line data={x} key={j} />
                 )
               }
@@ -585,24 +612,33 @@ function REPL() {
   )
 }
 
+type HeapEntry = {
+  offset: number,
+  type: "string" | "instance" | "cons" | "symbol" | "builtin",
+  slots: number[],
+  value: string | number | null
+}
+
 function makeHeapGraph() {
   let heapBase = WispModule.ccall(
-    "wisp_get_heap_pointer", null, ["u8*"])
+    "wisp_get_heap_pointer", null, ["u8*"], [])
+
+  const heapSize = 64 * 1024
 
   let heap = new DataView(
     WispModule.HEAPU8.buffer,
     heapBase,
-    32 * 1024);
+    heapSize)
 
   let scan = 0
   let elements = []
   let nodes = {}
+  let entries: Record<number, HeapEntry> = {}
 
-  let u32 = x => heap.getUint32(x, true)
+  let u32 = (x: number) => heap.getUint32(x, true)
+  let align = (i: number) => (i + 7) & ~7
 
-  let align = i => (i + 7) & ~7
-
-  function addNode(label) {
+  function addNode(label: string) {
     let node = nodes[`${scan}`] = {
       data: {
         id: `${scan}`,
@@ -613,7 +649,7 @@ function makeHeapGraph() {
     elements.push(node)
   }
 
-  function addEdge(source, target) {
+  function addEdge(source: number, target: number) {
     elements.push({
       data: {
         id: `${source}-${target}`,
@@ -623,7 +659,7 @@ function makeHeapGraph() {
     })
   }
 
-  while (scan < 32 * 1024) {
+  while (scan < heapSize) {
     let header = scan
     let thing = u32(header)
 
@@ -638,14 +674,22 @@ function makeHeapGraph() {
           addNode(tag == 0xC2 ? "instance" : "symbol")
 
           let n = thing >> 8
-          // console.log(tag == 0xc2 ? "instance" : "symbol", n)
+          let slots = []
 
           for (let i = 1; i < n; i++) {
             let entry = u32(header + i * 4)
             if ((entry & 1) === 1) {
               addEdge(scan, entry & ~7)
+              slots.push(entry)
             }
           }
+
+          entries[scan] = {
+            offset: scan,
+            type: tag == 0xC2 ? "instance" : "symbol",
+            slots,
+            value: null,
+          } as HeapEntry
 
           scan += align((1 + n) * 4)
 
@@ -655,8 +699,17 @@ function makeHeapGraph() {
       case 0x32:
         {
           let n = thing >> 8
+
+          entries[scan] = {
+            offset: scan,
+            type: "string",
+            slots: [],
+            value: grokString(heap, n, scan + 4),
+          }
+
           addNode(`"${grokString(heap, n, scan + 4)}"`)
           scan += align(4 + n + 1)
+
           break
         }
 
@@ -664,11 +717,21 @@ function makeHeapGraph() {
         {
           addNode("cons")
 
+          let slots = []
+
           let n = 2
           for (let i = 0; i < n; i++) {
             let entry = u32(header + i * 4)
+            slots.push(entry)
             if ((entry & 1) === 1)
               addEdge(scan, entry & ~7)
+          }
+
+          entries[scan] = {
+            offset: scan,
+            type: "cons",
+            slots,
+            value: null,
           }
 
           scan += 8
@@ -678,33 +741,113 @@ function makeHeapGraph() {
     }
   }
 
-  console.log(elements)
+  console.log(entries)
 
-  for (let x of elements) {
-    let { source, target } = x.data
-    if (source && !nodes[source])
-      console.log("missing source", source)
-    if (target && !nodes[target])
-      console.log("missing target", target)
+  return { entries, elements }
+}
+
+function Slot(
+  { entries, value }: { entries: Record<string, HeapEntry>, value: number }
+) {
+  if (value == 3)
+    return <span>nil</span>
+
+  if (value & 1) {
+    let entry = entries[value & ~7]
+    if (!entry)
+      return <span style={{ color: "red" }}>({value} missing)</span>
+    else {
+      return (
+        <a 
+          style={{textDecoration: "none"}} 
+          href={`#heap-${value & ~7}`}>
+          ({value & ~7} {entry.type})
+        </a>
+      )
+    }
+  } else {
+    return <span>{value}</span>
+  }
+}
+
+function HeapView({ entries } : { entries: Record<string, HeapEntry> }) {
+  let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
+
+  function gc() {
+    WispModule.ccall("wisp_tidy", null, [], [])
+    setHeapGraph(makeHeapGraph())
   }
 
-  return elements
+  return (
+    <div className="flex column bg">
+      <header className="titlebar">
+        <span>
+          <b>Heap Inspector</b>
+        </span>
+        <button onClick={gc} className="px">
+          Collect Garbage
+        </button>
+      </header>
+      <div className="flex column gap scroll-y">
+        {makeHeapEntryViews()}
+      </div>
+    </div>
+  )
+
+  function makeHeapEntryViews(): React.ReactNode {
+    return Object.entries(entries).map(([i, entry]) => 
+      <div className="flex" key={i}>
+        <div style={{
+          width: "4rem",
+          textAlign: "right",
+          paddingRight: "0.5rem",
+          opacity: 0.5,
+        }}>{`${entry.offset} `}</div>
+        <div key={i} className="flex row gap wrap" id={`heap-${i}`}>
+          <div>{`${entry.type}`}</div>
+            {entry.slots.map((slot, j) =>
+              <Slot key={j} entries={entries} value={slot} />
+            )}
+          <div>{`${entry.value === null ? "" : entry.value}`}</div>
+        </div>
+      </div>
+    )
+  }
 }
 
 function Explorer() {
   let [heapGraph, setHeapGraph] = useRecoilState(Atoms.heapGraph)
 
-  let style = { width: "100vw", height: "100vh", position: "absolute", top: 0, left: 0 }
-  let layout = { name: "cose", boundingBox: { x1: 0, y1: 0, w: 8000, h: 8000 } }
+  let style: CSSProperties = { 
 
-  return (
-    <div>
-      { heapGraph.length == 0 ? <button onClick={e => setHeapGraph(makeHeapGraph())}>Load heap</button> : null}
-      { heapGraph.length > 0 ?
-        <CytoscapeComponent elements={heapGraph} style={style} layout={layout} />
-        : null }
-    </div>
-  )
+  }
+
+  let layout = { 
+    name: "cose", 
+    boundingBox: { x1: 0, y1: 0, w: 8000, h: 8000 } 
+  }
+
+  let { entries, elements } = heapGraph
+
+  let makeHeapGraphButton = 
+    <button onClick={e => setHeapGraph(makeHeapGraph())}>
+      Load heap
+    </button>
+
+  let graphView =
+    <CytoscapeComponent
+      elements={elements} 
+      style={style} 
+      layout={layout} />
+
+  let heapView =
+    <HeapView entries={entries} />
+
+  if (Object.keys(entries).length === 0) {
+    return makeHeapGraphButton
+  } else {
+    return heapView
+  }
 }
 
 onload = () => {

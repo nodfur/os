@@ -63,6 +63,8 @@ wisp_gc_copy_to_new_heap (wisp_word_t ptr)
 #if WISP_DEBUG_GC
       WISP_DEBUG ("   already copied [0x%x]\n", data[0] & ~7);
 #endif
+
+      assert ((data[0] & 7) == (ptr & 7));
       return data[0];
     }
 
@@ -159,8 +161,13 @@ wisp_flip (void)
   wisp_new_heap_scan = wisp_new_heap;
 
   wisp_heap = wisp_heap_base;
+
+  /* memset (wisp_heap_base + wisp_new_heap + WISP_STATIC_SPACE_SIZE, */
+  /*         0, */
+  /*         heap_size - WISP_STATIC_SPACE_SIZE); */
 }
 
+WISP_EXPORT
 void
 wisp_tidy (void)
 {
@@ -171,31 +178,31 @@ wisp_tidy (void)
   wisp_flip ();
   for (int i = 0; i < wisp_cache_size; i++)
     {
-      WISP_DEBUG ("base gc root %d: ", i);
-      wisp_dump (stderr, wisp_cache[i]);
-      WISP_DEBUG ("\n");
+      /* WISP_DEBUG ("base gc root %d: ", i); */
+      /* wisp_dump (stderr, wisp_cache[i]); */
+      /* WISP_DEBUG ("\n"); */
       wisp_cache[i] = wisp_gc_copy_to_new_heap (wisp_cache[i]);
     }
 
   if (wisp_machine)
     {
-      WISP_DEBUG ("gc root term: ");
-      wisp_dump (stderr, wisp_machine->term);
-      WISP_DEBUG ("\n");
+      /* WISP_DEBUG ("gc root term: "); */
+      /* wisp_dump (stderr, wisp_machine->term); */
+      /* WISP_DEBUG ("\n"); */
       wisp_machine->term = wisp_gc_copy_to_new_heap (wisp_machine->term);
-      WISP_DEBUG ("gc new root term: ");
-      wisp_dump (stderr, wisp_machine->term);
-      WISP_DEBUG ("\n");
+      /* WISP_DEBUG ("gc new root term: "); */
+      /* wisp_dump (stderr, wisp_machine->term); */
+      /* WISP_DEBUG ("\n"); */
 
-      WISP_DEBUG ("gc root scopes: ");
-      wisp_dump (stderr, wisp_machine->scopes);
+      /* WISP_DEBUG ("gc root scopes: "); */
+      /* wisp_dump (stderr, wisp_machine->scopes); */
+      /* WISP_DEBUG ("\n"); */
       wisp_machine->scopes = wisp_gc_copy_to_new_heap (wisp_machine->scopes);
-      WISP_DEBUG ("\n");
 
-      WISP_DEBUG ("gc root plan: ");
-      wisp_dump (stderr, wisp_machine->plan);
+      /* WISP_DEBUG ("gc root plan: "); */
+      /* wisp_dump (stderr, wisp_machine->plan); */
+      /* WISP_DEBUG ("\n"); */
       wisp_machine->plan = wisp_gc_copy_to_new_heap (wisp_machine->plan);
-      WISP_DEBUG ("\n");
     }
 
   /* WISP_CACHE (WISP) = wisp_gc_copy_to_new_heap (WISP_CACHE (WISP)); */
@@ -207,4 +214,8 @@ wisp_tidy (void)
               old_size / 1024.0,
               wisp_heap_used / 1024.0,
               wisp_heap_used - old_size);
+
+  memset (wisp_heap_base + wisp_old_heap + WISP_STATIC_SPACE_SIZE,
+          0,
+          heap_size - WISP_STATIC_SPACE_SIZE);
 }

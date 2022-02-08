@@ -2,7 +2,7 @@
 set -ex
 rm -rf dist/*
 
-esbuild repl.jsx --outdir=dist --bundle --sourcemap \
+esbuild index.tsx --outdir=dist --bundle --sourcemap \
   --entry-names=[dir]/[name]-[hash]
 cd dist
 
@@ -23,8 +23,8 @@ sed -i -e "s|wisp.wasm|$result|" wisp.js
 
 mvhash wisp.js
 
-result=$(ls repl*.js)
-sed -i -e "s|repl.js|$result|" index.html
+result=$(ls index*.js)
+sed -i -e "s|index.js|$result|" index.html
 
 result=$(ls wisp*.js)
 sed -i -e "s|wisp.js|$result|" index.html

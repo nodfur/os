@@ -47,6 +47,10 @@ in {
      ${xterm}/bin/xterm -r -s -b 18 -w 0 -fs ${toString config.os.monospace.size} -fa '${config.os.monospace.family}' "$@"
     '')
 
+    (writeShellScriptBin "os-miniterm" ''
+     ${xterm}/bin/xterm -r -s -b 18 -w 0 -fs 10 -fa '${config.os.monospace.family}' "$@"
+    '')
+
     hsetroot
     xlibs.xbacklight
   ];
