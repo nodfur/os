@@ -134,7 +134,7 @@ typedef enum {
   wisp_multiply_tag,
   wisp_collect_garbage_tag,
   wisp_print_tag,
-  wisp_progn_tag,
+  wisp_getcc_tag,
 
   WISP_N_BUILTINS
 } wisp_builtin_tag_t;
@@ -206,6 +206,7 @@ enum {
   WISP_CACHED_T,
   WISP_CACHED_WISP,
   WISP_CACHED_PACKAGE,
+  WISP_CACHED_PROGN,
 
   wisp_cache_size
 };
@@ -213,19 +214,6 @@ enum {
 extern wisp_word_t wisp_cache[wisp_cache_size];
 
 #define WISP_CACHE(x) (wisp_cache[WISP_CACHED_##x])
-
-/* extern wisp_word_t T; */
-/* extern wisp_word_t APPLY; */
-/* extern wisp_word_t CLOSURE; */
-/* extern wisp_word_t WISP; */
-/* extern wisp_word_t EVAL; */
-/* extern wisp_word_t LAMBDA; */
-/* extern wisp_word_t MACRO; */
-/* extern wisp_word_t PACKAGE; */
-/* extern wisp_word_t PARAMS; */
-/* extern wisp_word_t QUOTE; */
-/* extern wisp_word_t SCOPE; */
-/* extern wisp_word_t SET_SYMBOL_FUNCTION; */
 
 __attribute__ ((noreturn))
 void

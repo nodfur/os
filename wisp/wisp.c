@@ -354,13 +354,12 @@ wisp_intern_basic_symbols ()
   WISP_CACHE (EVAL) = wisp_intern_lisp ("EVAL");
   WISP_CACHE (LAMBDA) = wisp_intern_lisp ("LAMBDA");
   WISP_CACHE (MACRO) = wisp_intern_lisp ("MACRO");
-  /* WISP_CACHE (PACKAGE) = wisp_intern_lisp ("PACKAGE"); */
   WISP_CACHE (PARAMS) = wisp_intern_lisp ("PARAMS");
   WISP_CACHE (QUOTE) = wisp_intern_lisp ("QUOTE");
   WISP_CACHE (SCOPE) = wisp_intern_lisp ("SCOPE");
-
   WISP_CACHE (SET_SYMBOL_FUNCTION) =
     wisp_intern_lisp ("SET-SYMBOL-FUNCTION");
+  WISP_CACHE (PROGN) = wisp_intern_lisp ("PROGN");
 }
 
 bool
@@ -835,6 +834,12 @@ WISP_DEFUN ("PRINT", wisp_print, 1)
   return x;
 }
 
+WISP_DEFUN ("GET/CC", wisp_getcc, 0)
+(void)
+{
+  return wisp_machine->plan;
+}
+
 WISP_DEFUN ("SAVE-HEAP", wisp_save_heap, 1)
 (wisp_word_t pathname)
 {
@@ -918,10 +923,11 @@ wisp_defs (void)
   WISP_REGISTER (wisp_cdr, "CONS");
   WISP_REGISTER (wisp_set_symbol_function, "SYMBOL", "FUNCTION");
   WISP_REGISTER (wisp_save_heap, "HEAP-PATH");
-  WISP_REGISTER (wisp_collect_garbage, "GC");
-  WISP_REGISTER (wisp_print, "PRINT");
+  WISP_REGISTER (wisp_collect_garbage, NULL);
+  WISP_REGISTER (wisp_print, "X");
   WISP_REGISTER (wisp_make_instance, "CLASS", "SLOTS");
   WISP_REGISTER (wisp_add, "X", "Y");
   WISP_REGISTER (wisp_subtract, "X", "Y");
   WISP_REGISTER (wisp_multiply, "X", "Y");
+  WISP_REGISTER (wisp_getcc, NULL);
 }

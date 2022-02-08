@@ -218,7 +218,6 @@ synchronized across nodes.  Especially CRDTs.
   should not be moved around.  We do this by just reserving a
   small amount of space at the beginning of both semispaces.
 
-
 * Local Variables :noexport:
   Local Variables:
   fill-column: 62
