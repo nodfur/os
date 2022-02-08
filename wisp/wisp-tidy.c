@@ -87,7 +87,8 @@ wisp_gc_copy_to_new_heap (wisp_word_t ptr)
 void
 wisp_scavenge (void)
 {
-  wisp_word_t *header = wisp_deref (wisp_new_heap_scan);
+  wisp_word_t *header =
+    wisp_deref (wisp_new_heap_scan | WISP_LOWTAG_OTHER_PTR);
 
 #if WISP_DEBUG_GC
   WISP_DEBUG ("scavenging [0x%x] ", wisp_new_heap_scan);
