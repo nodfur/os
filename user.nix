@@ -8,9 +8,4 @@
     ./user-mail.nix
     ./user-basic.nix
   ];
-
-#  services.gpg-agent = {
-#    enable = true;
-#    enableSshSupport = true;
-#  };
 }

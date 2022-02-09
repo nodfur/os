@@ -11,6 +11,15 @@
     enable = true;
     userName = "Mikael Brockman";
     userEmail = "mikael@brockman.se";
+    signing = {
+      key = "7C64800F5400D9BA";
+      signByDefault = true;
+    };
+  };
+
+  services.gpg-agent = {
+    enable = true;
+    enableSshSupport = true;
   };
 
   programs.password-store = {

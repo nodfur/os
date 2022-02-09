@@ -6,6 +6,8 @@
   nixpkgs.config.allowUnfree = true;
   
   environment.systemPackages = with pkgs; [
+    evince
+    gnupg
     nix-tree
     nodejs-16_x
     python3
@@ -13,10 +15,9 @@
     ruby
     scrot
     tdesktop
+    texlive.combined.scheme-full
     unzip
     wget
-    texlive.combined.scheme-full
-    evince
   ];
 
   nix.extraOptions = ''

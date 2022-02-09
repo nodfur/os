@@ -67,7 +67,7 @@
 ;;  '(window-divider-first-pixel ((t (:foreground "#ddd"))))
 ;;  '(window-divider-last-pixel ((t (:foreground "#ddd")))))
 
-;; (require 'gmail nil t)
+(require 'gmail nil t)
 
 (setq inhibit-splash-screen t)
 

@@ -7,7 +7,8 @@ let
     (setq
       user-mail-address "${cfg.address}"
       smtpmail-smtp-user "${cfg.address}"
-      user-full-name "${cfg.name}")
+      user-full-name "${cfg.name}"
+      auth-source-pass-filename "~/.local/share/password-store")
 
     (require 'auth-source)
     (require 'auth-source-pass)
