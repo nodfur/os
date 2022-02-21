@@ -9,7 +9,7 @@
 
 (require 'cl-lib)
 
-(set-frame-font "DM Mono-14" nil t)
+(set-frame-font "DM Mono-27" nil t)
 
 (setq display-time-24hr-format t
       display-time-day-and-date nil
@@ -32,9 +32,10 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:background "#000" :height 130))))
+ '(default ((t (:background "#000"))))
  '(fringe ((t (:background "#000"))))
  '(line-number ((t (:background "#000"))))
+ '(linum ((t (:background nil :foreground "#333"))))
 
  '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
  '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
@@ -71,7 +72,7 @@
 
 (setq inhibit-splash-screen t)
 
-(setq-default line-spacing 0)
+(setq line-spacing 12)
 
 (setq frame-resize-pixelwise t)
 
@@ -292,6 +293,9 @@
 (add-hook 'elixir-mode-hook 'lsp)
 (add-hook 'c-mode-hook 'lsp)
 (add-hook 'zig-mode-hook 'lsp)
+(add-hook 'typescript-mode-hook 'lsp)
+
+(add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescript-mode))
 
 (setq lsp-idle-delay 0.1)
 (setq lsp-enable-on-type-formatting nil)
@@ -408,6 +412,8 @@
 ;;   (doom-modeline-mode 0)
 ;;   (doom-modeline-mode 1))
 
+(require 'treemacs)
+
 (setq treemacs-user-mode-line-format 'none)
 
 (setq treemacs-indentation 1)
@@ -429,28 +435,7 @@
 (with-current-buffer (treemacs-get-local-buffer)
   (my-treemacs-hook))
 
-
-
-
 (add-hook 'treemacs-mode-hook 'my-treemacs-hook)
-;; (diminish 'company-mode)
-;; (diminish 'paredit-mode)
-;; (diminish 'which-key-mode)
-;; (diminish 'whitespace-cleanup-mode)
-;; (diminish 'eldoc-mode)
-
-(delight
- '((emacs-lisp-mode "Elisp" :major)
-   (eldoc-mode nil t)
-   (paredit-mode nil t)
-   (company-mode nil t)
-   (which-key-mode nil t)
-   (whitespace-cleanup-mode nil t)
-   (projectile-mode nil t)
-   (flycheck-mode nil t)
-   (lsp-mode nil t)
-   (abbrev-mode nil t)
-   ))
 
 (server-start)
 (require 'org-protocol)
@@ -473,7 +458,7 @@
 (global-set-key (kbd "C-c P") 'narrow-to-paragraph)
 (global-set-key (kbd "C-c N") 'narrow-to-next-paragraph)
 
-(setq compilation-scroll-output t)
+(setq compilation-scroll-output 'first-error)
 
 (progn
   (require 'ansi-color)
@@ -505,3 +490,18 @@
 (setq org-cite-insert-processor 'citar
       org-cite-follow-processor 'citar
       org-cite-activate-processor 'citar)
+
+;; This doesn't work until after stuff is already loaded, so I keep it
+;; down here for easy evaluation...
+(delight
+ '((emacs-lisp-mode "Elisp" :major)
+   (eldoc-mode nil t)
+   (paredit-mode nil t)
+   (company-mode nil t)
+   (which-key-mode nil t)
+   (whitespace-cleanup-mode nil t)
+   (projectile-mode nil t)
+   (flycheck-mode nil t)
+   (lsp-mode nil t)
+   (abbrev-mode nil t)
+   ))

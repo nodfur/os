@@ -54,7 +54,7 @@
         forceSSL = true;
         useACMEHost = "node.town";
         locations."/" = {
-          root = "/os/wisp/dist";
+          root = "/src/wisp/dist";
         };
       };
 

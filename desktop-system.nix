@@ -6,7 +6,10 @@
   nixpkgs.config.allowUnfree = true;
   
   environment.systemPackages = with pkgs; [
+    deno
     evince
+    ffmpeg
+    git-filter-repo
     gnupg
     nix-tree
     nodejs-16_x

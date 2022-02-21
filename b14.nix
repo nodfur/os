@@ -115,6 +115,7 @@ in {
   location.latitude = 59.3328;
 
   hardware.bluetooth.enable = true;
+  services.blueman.enable = true;
 
   powerManagement.cpuFreqGovernor = lib.mkDefault "ondemand";
 

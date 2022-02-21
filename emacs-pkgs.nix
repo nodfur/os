@@ -36,6 +36,7 @@ with epkgs; [
   selectrum
   selectrum-prescient
   slime
+  telega
   treemacs
   treemacs-all-the-icons
   typescript-mode
