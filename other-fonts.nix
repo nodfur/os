@@ -1,1 +1,1 @@
-{ pkgs, ... }: { fonts.fonts = [pkgs.iosevka]; }
+{ pkgs, ... }: { fonts.fonts = []; }

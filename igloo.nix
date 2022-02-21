@@ -19,7 +19,6 @@
 
   fonts.fonts = with pkgs; [
     google-fonts
-    iosevka
   ];
 
   services.xserver.enable = true;
