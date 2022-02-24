@@ -6,6 +6,7 @@
   nixpkgs.config.allowUnfree = true;
   
   environment.systemPackages = with pkgs; [
+    beancount
     deno
     evince
     ffmpeg
@@ -17,6 +18,7 @@
     rlwrap
     ruby
     scrot
+    signal-desktop
     tdesktop
     texlive.combined.scheme-full
     unzip

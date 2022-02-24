@@ -9,7 +9,7 @@
 
 (require 'cl-lib)
 
-(set-frame-font "DM Mono-27" nil t)
+(set-frame-font "DM Mono-16" nil t)
 
 (setq display-time-24hr-format t
       display-time-day-and-date nil
@@ -20,7 +20,7 @@
 
 (set-fringe-mode 24)
 
-(load-theme 'zenburn t)
+;(load-theme 'zenburn t)
 
 ;;; Line 25
 
@@ -42,6 +42,8 @@
  '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
  '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
  '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
+
+ '(org-code ((t (:family inherit))))
 
  '(window-divider ((t (:foreground "#222"))))
  '(window-divider-first-pixel ((t (:foreground "#222"))))
@@ -412,30 +414,30 @@
 ;;   (doom-modeline-mode 0)
 ;;   (doom-modeline-mode 1))
 
-(require 'treemacs)
+;; (require 'treemacs)
 
-(setq treemacs-user-mode-line-format 'none)
+;; (setq treemacs-user-mode-line-format 'none)
 
-(setq treemacs-indentation 1)
-(setq treemacs-width 30)
-(setq treemacs-no-png-images t)
+;; (setq treemacs-indentation 1)
+;; (setq treemacs-width 30)
+;; (setq treemacs-no-png-images t)
 
-(treemacs)
-(treemacs-follow-mode)
-(treemacs-tag-follow-mode)
-(treemacs-git-mode 'deferred)
-(treemacs-filewatch-mode)
+;; (treemacs)
+;; (treemacs-follow-mode)
+;; (treemacs-tag-follow-mode)
+;; (treemacs-git-mode 'deferred)
+;; (treemacs-filewatch-mode)
 
-(defun my-treemacs-hook ()
-  (interactive)
-  (setq-local line-spacing 0))
+;; (defun my-treemacs-hook ()
+;;   (interactive)
+;;   (setq-local line-spacing 0))
 
-(treemacs-resize-icons 22)
+;; (treemacs-resize-icons 22)
 
-(with-current-buffer (treemacs-get-local-buffer)
-  (my-treemacs-hook))
+;; (with-current-buffer (treemacs-get-local-buffer)
+;;   (my-treemacs-hook))
 
-(add-hook 'treemacs-mode-hook 'my-treemacs-hook)
+;; (add-hook 'treemacs-mode-hook 'my-treemacs-hook)
 
 (server-start)
 (require 'org-protocol)

@@ -40,7 +40,7 @@ in {
    services.xserver.resolutions = [{ x = 3840; y = 2160; }];
 
   services.xserver.layout = "us";
-  services.xserver.xkbOptions = "ctrl:nocaps";
+  services.xserver.xkbOptions = "ctrl:nocaps,compose:ralt";
 
   environment.systemPackages = with pkgs; [
     (writeShellScriptBin "os-terminal" ''
