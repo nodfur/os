@@ -29,6 +29,7 @@ with epkgs; [
   nano-theme
   nix-mode
   org
+  page-break-lines
   paredit
   pdf-tools
   projectile

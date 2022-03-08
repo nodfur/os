@@ -24,6 +24,7 @@ in {
     ./pi-x.nix
     ./urbit.nix
     ./1password.nix
+    ./printer.nix
   ];
 
   os.gl = true;

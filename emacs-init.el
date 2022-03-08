@@ -9,7 +9,12 @@
 
 (require 'cl-lib)
 
-(set-frame-font "DM Mono-16" nil t)
+(set-frame-font "Berkeley Mono-16" nil t)
+
+(global-page-break-lines-mode)
+(set-fontset-font "fontset-default"
+                  (cons page-break-lines-char page-break-lines-char)
+                  (face-attribute 'default :family))
 
 (setq display-time-24hr-format t
       display-time-day-and-date nil
@@ -20,7 +25,7 @@
 
 (set-fringe-mode 24)
 
-;(load-theme 'zenburn t)
+(load-theme 'zenburn t)
 
 ;;; Line 25
 
@@ -81,7 +86,7 @@
 (column-number-mode)
 (setq tab-always-indent 'complete)
 
-(add-hook 'after-init-hook 'global-company-mode)
+;(add-hook 'after-init-hook 'global-company-mode)
 
 (progn
   (setq gc-cons-threshold 20000)
@@ -507,3 +512,6 @@
    (lsp-mode nil t)
    (abbrev-mode nil t)
    ))
+
+(require 'telega)
+(setq telega-tdlib-max-version "1.8.1")
