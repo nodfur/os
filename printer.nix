@@ -1,4 +1,4 @@
-{
+{ pkgs, ... }: {
   networking.firewall.allowedTCPPorts = [ 631 ];
   networking.firewall.allowedUDPPorts = [ 631 ];
   services.avahi.enable = true;
@@ -9,5 +9,4 @@
   services.printing.defaultShared = true;
   services.printing.drivers = [pkgs.cups-brother-hll2350dw];
   services.printing.enable = true;
-  services.printing.listenAddresses = [ "*:631" ];
 }

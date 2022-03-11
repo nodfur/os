@@ -4,7 +4,7 @@ with epkgs; [
 
   # doom-modeline
   ag
-  all-the-icons
+  # all-the-icons
   avy
   citar
   citeproc
@@ -14,6 +14,7 @@ with epkgs; [
   default-text-scale
   delight
   direnv
+  dirvish
   elixir-mode
   embark
   flycheck
@@ -25,8 +26,6 @@ with epkgs; [
   lsp-ui
   magit
   marginalia
-  nano-modeline
-  nano-theme
   nix-mode
   org
   page-break-lines
@@ -47,6 +46,6 @@ with epkgs; [
   zenburn-theme
   zig-mode
 
-  pkgs.urbit-emacs
+  # pkgs.urbit-emacs
   # pkgs.nano-emacs
 ]

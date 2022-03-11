@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t -*-
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 68 character box                                               ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -9,12 +11,9 @@
 
 (require 'cl-lib)
 
-(set-frame-font "Berkeley Mono-16" nil t)
+(set-frame-font "DM Mono-16" nil t)
 
 (global-page-break-lines-mode)
-(set-fontset-font "fontset-default"
-                  (cons page-break-lines-char page-break-lines-char)
-                  (face-attribute 'default :family))
 
 (setq display-time-24hr-format t
       display-time-day-and-date nil
@@ -25,34 +24,34 @@
 
 (set-fringe-mode 24)
 
-(load-theme 'zenburn t)
+(defun dark-mode ()
+  (interactive)
+  (load-theme 'zenburn t)
+  (custom-set-faces
+   ;; custom-set-faces was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(default ((t (:background "#000"))))
+   '(fringe ((t (:background "#000"))))
+   '(line-number ((t (:background "#000"))))
+   '(linum ((t (:background nil :foreground "#333"))))
 
-;;; Line 25
+   '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
+   '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
+   '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
+   '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
+   '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
 
-(setq window-divider-default-right-width 8)
+   '(org-code ((t (:family inherit))))
+
+   '(window-divider ((t (:foreground "#222"))))
+   '(window-divider-first-pixel ((t (:foreground "#222"))))
+   '(window-divider-last-pixel ((t (:foreground "#222")))))
+  )
+
+(setq window-divider-default-right-width 4)
 (window-divider-mode 1)
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:background "#000"))))
- '(fringe ((t (:background "#000"))))
- '(line-number ((t (:background "#000"))))
- '(linum ((t (:background nil :foreground "#333"))))
-
- '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
- '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
- '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
- '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
- '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
-
- '(org-code ((t (:family inherit))))
-
- '(window-divider ((t (:foreground "#222"))))
- '(window-divider-first-pixel ((t (:foreground "#222"))))
- '(window-divider-last-pixel ((t (:foreground "#222")))))
 
 ;; (custom-set-faces
 ;;  ;; custom-set-faces was added by Custom.
@@ -79,7 +78,7 @@
 
 (setq inhibit-splash-screen t)
 
-(setq line-spacing 12)
+(setq-default line-spacing 2)
 
 (setq frame-resize-pixelwise t)
 
@@ -498,20 +497,49 @@
       org-cite-follow-processor 'citar
       org-cite-activate-processor 'citar)
 
-;; This doesn't work until after stuff is already loaded, so I keep it
-;; down here for easy evaluation...
-(delight
- '((emacs-lisp-mode "Elisp" :major)
-   (eldoc-mode nil t)
-   (paredit-mode nil t)
-   (company-mode nil t)
-   (which-key-mode nil t)
-   (whitespace-cleanup-mode nil t)
-   (projectile-mode nil t)
-   (flycheck-mode nil t)
-   (lsp-mode nil t)
-   (abbrev-mode nil t)
-   ))
-
 (require 'telega)
 (setq telega-tdlib-max-version "1.8.1")
+
+(require 'zig-mode)
+(defun zig-format-buffer ()
+  "Format the current buffer using the zig fmt."
+  (interactive)
+  (when buffer-file-name
+    (let ((file-buffer (current-buffer)))
+      (let ((fmt-buffer (generate-new-buffer "*zig-fmt*")))
+        (set-process-sentinel
+         (start-process "zig-fmt"
+                        fmt-buffer
+                        zig-zig-bin
+                        "fmt"
+                        buffer-file-name)
+         (lambda (process _e)
+           (if (> (process-exit-status process) 0)
+               (when zig-format-show-buffer
+                 (progn
+                   (pop-to-buffer fmt-buffer)
+                   (when zig-ansi-color-for-format-errors
+                     (ansi-color-apply-on-region (point-min) (point-max)))
+                   (compilation-mode)
+                   (when zig-return-to-buffer-after-format
+                     (pop-to-buffer file-buffer))))
+             (revert-buffer :ignore-auto :noconfirm)
+             (kill-buffer fmt-buffer))))))))
+
+(defun fix-stuff ()
+  (interactive)
+
+  ;; This doesn't work until after stuff is already loaded, so I keep it
+  ;; down here for easy evaluation...
+  (delight
+   '((emacs-lisp-mode "Elisp" :major)
+     (eldoc-mode nil t)
+     (paredit-mode nil t)
+     (company-mode nil t)
+     (which-key-mode nil t)
+     (whitespace-cleanup-mode nil t)
+     (projectile-mode nil t)
+     (flycheck-mode nil t)
+     (lsp-mode nil t)
+     (abbrev-mode nil t)
+     (page-break-lines-mode nil t))))
