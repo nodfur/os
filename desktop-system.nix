@@ -14,6 +14,8 @@
     gnupg
     nix-tree
     nodejs-16_x
+    linuxPackages.perf
+    perf-tools
     python3
     rlwrap
     ruby
@@ -22,6 +24,8 @@
     tdesktop
     texlive.combined.scheme-full
     unzip
+    wabt
+    wasmer
     wget
   ];
 

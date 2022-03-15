@@ -26,6 +26,13 @@
     ];
   };
 
+  security.acme.certs."wisp.town" = {
+    group = "nginx";
+    credentialsFile = "/secrets/acme.env";
+    dnsProvider = "dnsimple";
+    domain = "wisp.town";
+  };
+
   services.nginx = {
     enable = true;
     virtualHosts = {
@@ -50,11 +57,19 @@
         };
       };
 
+      "wisp.town" = {
+        forceSSL = true;
+        useACMEHost = "wisp.town";
+        locations."/" = {
+          root = "/restless/www/wisp";
+        };
+      };
+
       "wisp-dev.node.town" = {
         forceSSL = true;
         useACMEHost = "node.town";
         locations."/" = {
-          root = "/src/wisp/dist";
+          root = "/src/wisp/web/dist";
         };
       };
 
