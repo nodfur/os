@@ -3,17 +3,11 @@
 let
   internet = "enp9s0";
 
-  os-fix-apple-keyboard =
-    pkgs.writeShellScriptBin "os-fix-apple-keyboard" ''
-      set -ex
-      file=/sys/module/hid_apple/parameters/swap_opt_cmd
-      test -f $file && echo 1 > $file
-    '';
-
 in {
   imports = [
     ./mbrock.nix
 
+    ./1password.nix
     ./btrfs.nix
     ./efi.nix
     ./gmail.nix
@@ -22,9 +16,9 @@ in {
     ./kernel.nix
     ./node.town.nix
     ./pi-x.nix
-    ./urbit.nix
-    ./1password.nix
     ./printer.nix
+    ./riga.nix
+    ./urbit.nix
   ];
 
   os.gl = true;
@@ -37,36 +31,22 @@ in {
     "xhci_pci" "ahci" "nvme" "usbhid" "uas" "sd_mod"
   ];
 
-  system.activationScripts = {
-    fixAppleKeyboard = ''
-      ${os-fix-apple-keyboard}/bin/os-fix-apple-keyboard
-    '';
-  };
-
   services.xserver.enable = true;
 
-  services.mongodb.enable = true;
-
   environment.systemPackages = with pkgs; [
-    gdb
     calibre
-    clang
-    clang-tools
-    emscripten
-    wasmtime
     electron_16
+    evince
     feh
     firefox
-    foliate
+    gdb
     google-chrome-beta
     google-cloud-sdk
     mpv
-    os-fix-apple-keyboard
     pavucontrol
     screen
     zls
     zoom-us
-    evince
   ];
 
   home-manager.sharedModules = [{
@@ -75,8 +55,6 @@ in {
 
   boot.initrd.kernelModules = ["amdgpu"];
   services.xserver.videoDrivers = ["amdgpu"];
-
-  time.timeZone = "Europe/Riga";
 
   os.username = "mbrock";
   os.vnc.size.height = 900;
@@ -100,20 +78,9 @@ in {
 
   networking.wireless.enable = false;
   networking.wireless.interfaces = ["wlo1"];
-
   networking.wireless.networks.Restless.psk = "hypermedia";
 
-  # services.hypocaust = {
-  #   enable = true;
-  #   domainName = "b14.beam.node.town";
-  #   user = "mbrock";
-  #   telegram.botName = "nodetownbot";
-  # };
-
   system.stateVersion = "21.05";
-
-  location.longitude = 18.0645;
-  location.latitude = 59.3328;
 
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;

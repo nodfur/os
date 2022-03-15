@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-i3-msg gaps horizontal current set $1
-i3-msg gaps vertical current set $2
