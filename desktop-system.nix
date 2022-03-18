@@ -16,9 +16,9 @@
     ffmpeg
     git-filter-repo
     gnupg
+    linuxPackages.perf
     nix-tree
     nodejs-16_x
-    linuxPackages.perf
     perf-tools
     python3
     rlwrap
@@ -31,6 +31,10 @@
     wabt
     wasmer
     wget
+    yarn
+    yarn2nix
+    elixir
+    cargo
   ];
 
   nix.extraOptions = ''

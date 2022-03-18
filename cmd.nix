@@ -4,7 +4,7 @@
   monoSizeSmall = monoSize / 2;
 
   using = pkgs: cmd: ''
-    export PATH=${lib.makeBinPath pkgs}
+    export PATH=${lib.makeBinPath pkgs}:$PATH
     ${cmd}
   '';
 
