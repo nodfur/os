@@ -68,7 +68,7 @@ in {
     pulse.enable = true;
   };
 
-  services.xserver.dpi = 160;
+  services.xserver.dpi = 180;
 
   networking.hostName = "chapel";
   networking.interfaces."${internet}".useDHCP = true;

@@ -11,7 +11,7 @@
     jq
     nodePackages.typescript-language-server
     wasmtime
-    zig
+    zigpkgs.master.latest
     zls
   ];
 

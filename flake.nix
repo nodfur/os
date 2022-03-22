@@ -164,8 +164,12 @@
         urbit-emacs-overlay
         urbit-overlay
         restless-overlay
-        # paperwm-overlay
+        zig-overlay
       ];
+
+      zig-overlay = self: super: {
+        zigpkgs = inputs.zig.packages.${super.stdenv.hostPlatform.system};
+      };
 
       # paperwm-overlay =
       #   self: super: {
@@ -526,7 +530,6 @@
             overlays = all-overlays;
           };
 
-          zigStuff = zig;
         in rec {
           devShell = packages.epap;
 
@@ -536,7 +539,7 @@
               # waveshare-epaper-demo
             ;
 
-            zig = zigStuff.packages."${system}".master."0.9.0";
+            zig = pkgs.zigpkgs.master.latest;
 
             nodfur-emacs =
               let
@@ -551,7 +554,7 @@
             epap = pkgs.callPackage ./epap/epap.nix {
               inherit (pkgs) restless-git;
               inherit nodfur-emacs nodfur-emacs-packages;
-              zig = zigStuff.packages."${system}"."0.9.0";
+              zig = pkgs.zigpkgs."0.9.0";
             };
           };
         }

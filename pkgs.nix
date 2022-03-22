@@ -21,7 +21,7 @@
 
     cachix
 
-    zig
+    zigpkgs.master.latest
 
     entr
     # netpbm
