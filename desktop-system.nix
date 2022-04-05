@@ -26,7 +26,7 @@
     scrot
     signal-desktop
     tdesktop
-    texlive.combined.scheme-full
+    # texlive.combined.scheme-full
     unzip
     wabt
     wasmer

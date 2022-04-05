@@ -10,7 +10,7 @@
     pciutils
     pstree
 
-    ag
+    silver-searcher
     cmake
     # fzf
     htop

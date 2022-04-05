@@ -27,9 +27,9 @@
 
   environment.etc.sxhkdrc.text = ''
     XF86MonBrightnessUp
-      ${pkgs.xlibs.xbacklight}/bin/xbacklight +20
+      ${pkgs.xorg.xbacklight}/bin/xbacklight +20
     XF86MonBrightnessDown
-      ${pkgs.xlibs.xbacklight}/bin/xbacklight =1
+      ${pkgs.xorg.xbacklight}/bin/xbacklight =1
     XF86AudioMute
       ${pkgs.alsaUtils}/bin/amixer set Master mute
     shift + XF86AudioMute

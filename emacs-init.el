@@ -4,14 +4,34 @@
 ;; 68 character box                                               ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(when (string-equal system-type "darwin")
-  (setq ring-bell-function 'ignore)
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier 'super))
+(set-frame-font "DM Mono-12" nil t)
+(global-linum-mode)
+(setq-default line-spacing 2)
 
-(require 'cl-lib)
+(progn
+  (load "/src/wisp/etc/wisp.el")
 
-(set-frame-font "DM Mono-16" nil t)
+  (defun setup-sexps ()
+    (interactive)
+    (lispy-mode -1)
+    (paredit-mode 1))
+
+  (add-hook 'clojure-mode-hook 'setup-sexps)
+  (add-hook 'scheme-mode-hook 'setup-sexps)
+  (add-hook 'emacs-lisp-mode-hook 'setup-sexps)
+  (add-hook 'eval-expression-minibuffer-setup-hook 'setup-sexps)
+  (add-hook 'ielm-mode-hook 'setup-sexps)
+  (add-hook 'lisp-mode-hook 'setup-sexps)
+  (add-hook 'lisp-interaction-mode-hook 'setup-sexps)
+  (add-hook 'slime-repl-mode-hook 'setup-sexps)
+  (add-hook 'wisp-mode-hook 'setup-sexps)
+
+  (defun override-slime-del-key ()
+    (define-key slime-repl-mode-map
+      (read-kbd-macro paredit-backward-delete-key) nil))
+
+  ;; (add-hook 'slime-repl-mode-hook 'override-slime-del-key)
+  )
 
 (global-page-break-lines-mode)
 
@@ -44,6 +64,7 @@
    '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
 
    '(org-code ((t (:family inherit))))
+   '(org-block ((t (:background "#111"))))
 
    '(window-divider ((t (:foreground "#222"))))
    '(window-divider-first-pixel ((t (:foreground "#222"))))
@@ -74,11 +95,11 @@
 ;;  '(window-divider-first-pixel ((t (:foreground "#ddd"))))
 ;;  '(window-divider-last-pixel ((t (:foreground "#ddd")))))
 
+(require 'cl-lib)
+
 (require 'gmail nil t)
 
 (setq inhibit-splash-screen t)
-
-(setq-default line-spacing 2)
 
 (setq frame-resize-pixelwise t)
 
@@ -110,24 +131,24 @@
   (setq whitespace-style '(face trailing lines-tail empty))
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
-  (eval-after-load 'tramp
-    '(progn
-       (add-to-list 'tramp-remote-path "/run/current-system/sw/bin")
-       (slime-setup
-        '(slime-fancy
-          slime-asdf
-          slime-banner
-          slime-media
-          slime-buffer-streams
-          slime-compiler-notes-tree
-          slime-tramp))
+  ;; (eval-after-load 'tramp
+  ;;   '(progn
+  ;;      (add-to-list 'tramp-remote-path "/run/current-system/sw/bin")
+  ;;      ;; (slime-setup
+  ;;      ;;  '(slime-fancy
+  ;;      ;;    slime-asdf
+  ;;      ;;    slime-banner
+  ;;      ;;    slime-media
+  ;;      ;;    slime-buffer-streams
+  ;;      ;;    slime-compiler-notes-tree
+  ;;      ;;    slime-tramp))
 
-       (push (list "^urbion$"
-                   (lambda (emacs-filename)
-                     (cl-subseq emacs-filename (length "/ssh:urbion:")))
-                   (lambda (lisp-filename)
-                     (concat "/ssh:urbion:" lisp-filename)))
-             slime-filename-translations)))
+  ;;      (push (list "^urbion$"
+  ;;                  (lambda (emacs-filename)
+  ;;                    (cl-subseq emacs-filename (length "/ssh:urbion:")))
+  ;;                  (lambda (lisp-filename)
+  ;;                    (concat "/ssh:urbion:" lisp-filename)))
+  ;;            slime-filename-translations)))
 
   (progn
     (put 'downcase-region 'disabled nil)
@@ -222,45 +243,15 @@
 
 (defun my-zoom-in ()
   (interactive)
-  (default-text-scale-increase)
-  ;(setq doom-modeline-height (/ (frame-char-height) 2))
-  ;; (doom-modeline-refresh-bars)
-  ;; (doom-modeline--bar)
-  )
+  (default-text-scale-increase))
 
 (defun my-zoom-out ()
   (interactive)
-  (default-text-scale-decrease)
-  ;(setq doom-modeline-height (/ (frame-char-height) 2))
-  ;; (doom-modeline-refresh-bars)
-  ;; (doom-modeline--bar)
-  )
+  (default-text-scale-decrease))
 
 (progn
   (global-set-key (kbd "C-x C-+") 'my-zoom-in)
   (global-set-key (kbd "C-x C--") 'my-zoom-out))
-
-(progn
-  (defun setup-sexps ()
-    (interactive)
-    (lispy-mode -1)
-    (paredit-mode 1))
-
-  (add-hook 'clojure-mode-hook 'setup-sexps)
-  (add-hook 'scheme-mode-hook 'setup-sexps)
-  (add-hook 'emacs-lisp-mode-hook 'setup-sexps)
-  (add-hook 'eval-expression-minibuffer-setup-hook 'setup-sexps)
-  (add-hook 'ielm-mode-hook 'setup-sexps)
-  (add-hook 'lisp-mode-hook 'setup-sexps)
-  (add-hook 'lisp-interaction-mode-hook 'setup-sexps)
-  (add-hook 'slime-repl-mode-hook 'setup-sexps)
-
-  (defun override-slime-del-key ()
-    (define-key slime-repl-mode-map
-      (read-kbd-macro paredit-backward-delete-key) nil))
-
-  ;; (add-hook 'slime-repl-mode-hook 'override-slime-del-key)
-  )
 
 (progn
   (require 'dired)
@@ -551,3 +542,9 @@
  ;; If there is more than one, they won't work right.
  '(safe-local-variable-values '((lsp-enabled-clients deno-ls)
                                 (lsp-disabled-clients ts-ls))))
+
+(when (string-equal system-type "darwin")
+  (setq ring-bell-function 'ignore)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'super))
+

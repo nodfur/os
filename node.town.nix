@@ -31,6 +31,9 @@
     credentialsFile = "/secrets/acme.env";
     dnsProvider = "dnsimple";
     domain = "wisp.town";
+    extraDomainNames = [
+      "*.wisp.town"
+    ];
   };
 
   services.nginx = {
@@ -57,6 +60,14 @@
         };
       };
 
+      "photos.node.town" = {
+        forceSSL = true;
+        useACMEHost = "node.town";
+        locations."/" = {
+          root = "/restless/www/2021-08-30";
+        };
+      };
+
       "wisp.town" = {
         forceSSL = true;
         useACMEHost = "wisp.town";
@@ -65,11 +76,48 @@
         };
       };
 
+      "git.wisp.town" = {
+        forceSSL = true;
+        useACMEHost = "wisp.town";
+        root = "/srv/git";
+        locations."~ (/.*)".extraConfig = ''
+          fastcgi_pass unix:/run/fcgiwrap.sock;
+          fastcgi_param SCRIPT_FILENAME     ${pkgs.git}/libexec/git-core/git-http-backend;
+          fastcgi_param GIT_HTTP_EXPORT_ALL "";
+          fastcgi_param GIT_PROJECT_ROOT    /srv/git;
+          fastcgi_param PATH_INFO           $1;
+          include ${pkgs.nginx}/conf/fastcgi_params;
+          include ${pkgs.nginx}/conf/fastcgi.conf;
+        '';
+      };
+
+      "cors.node.town" = {
+        forceSSL = true;
+        useACMEHost = "node.town";
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:9999";
+          extraConfig = ''
+            chunked_transfer_encoding off;
+            proxy_buffering off;
+            proxy_cache off;
+            proxy_redirect default;
+          '';
+        };
+      };
+
       "wisp-dev.node.town" = {
         forceSSL = true;
         useACMEHost = "node.town";
         locations."/" = {
           root = "/src/wisp/web/dist";
+        };
+      };
+
+      "b14.wisp.town" = {
+        forceSSL = true;
+        useACMEHost = "wisp.town";
+        locations."/" = {
+          root = "/src/wisp/web";
         };
       };
 
@@ -100,5 +148,11 @@
         useACMEHost = "node.town";
       };
     };
+  };
+
+  services.fcgiwrap = {
+    enable = true;
+    user = "git";
+    group = "wheel";
   };
 }

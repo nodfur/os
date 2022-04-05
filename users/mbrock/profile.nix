@@ -13,7 +13,7 @@
     userEmail = "mikael@brockman.se";
     signing = {
       key = "7C64800F5400D9BA";
-      signByDefault = true;
+      signByDefault = false;
     };
   };
 

@@ -5,7 +5,7 @@
         group = "guixbuild";                  # -g guixbuild
         extraGroups = ["guixbuild"];          # -G guixbuild
         home = "/var/empty";                  # -d /var/empty
-        shell = pkgs.nologin;                 # -s `which nologin`
+        shell = pkgs.shadow;                  # -s `which nologin`
         description = "Guix build user ${i}"; # -c "Guix buid user $i"
         isSystemUser = true;                  # --system
       };

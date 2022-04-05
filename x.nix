@@ -44,7 +44,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     hsetroot
-    xlibs.xbacklight
+    xorg.xbacklight
   ];
 
   fonts.fonts = with pkgs; [
