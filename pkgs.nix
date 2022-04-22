@@ -3,37 +3,35 @@
 {
   environment.systemPackages = with pkgs; [
     binutils
+    cachix
+    deno
+    entr
     file
     gcc
+    gdb
     git
     gnumake
-    pciutils
-    pstree
-
-    silver-searcher
-    cmake
-    # fzf
+    gnupg
     htop
+    linuxPackages.perf
     nix-prefetch-git
-    ripgrep
-    tmux
-    # sqlite
-
-    cachix
-
-    zigpkgs.master.latest
-
-    entr
-    # netpbm
-
-    sbcl
-    # lispPackages.cffi
-    # lispPackages.alexandria
-    # lispPackages.trivial-features
-    # lispPackages.babel
-
+    nodejs-16_x
+    pciutils
+    perf-tools
+    pstree
+    python3
     restless-emacs
-
-    # guile_3_0
+    ripgrep
+    rlwrap
+    ruby
+    sbcl
+    screen
+    silver-searcher
+    tmux
+    unzip
+    wget
+    yarn
+    zigpkgs.master.latest
+    zls
   ];
 }

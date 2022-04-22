@@ -30,6 +30,11 @@
       i3-msg gaps horizontal current set $1
       i3-msg gaps vertical current set $2
     '';
+
+    os-fix-apple = ''
+      file=/sys/module/hid_apple/parameters/swap_opt_cmd
+      test -f $file && echo 1 > $file
+    '';
   };
 
 in {

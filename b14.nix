@@ -6,26 +6,23 @@ let
 in {
   imports = [
     ./mbrock.nix
-
     ./1password.nix
     ./btrfs.nix
     ./efi.nix
-    ./gmail.nix
-    ./guix.nix
     ./intel.nix
     ./kernel.nix
     ./node.town.nix
-    ./pi-x.nix
-    ./printer.nix
     ./riga.nix
     ./urbit.nix
+
+    # ./guix.nix
+    # ./pi-x.nix
+    # ./printer.nix
   ];
 
   os.gl = true;
-  os.gmail.enable = true;
 
-  boot.kernelPackages =
-    pkgs.linuxKernel.packages.linux_5_16;
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_5_16;
 
   boot.initrd.availableKernelModules = [
     "xhci_pci" "ahci" "nvme" "usbhid" "uas" "sd_mod"
@@ -34,18 +31,13 @@ in {
   services.xserver.enable = true;
 
   environment.systemPackages = with pkgs; [
-    calibre
     electron_16
-    evince
     feh
     firefox
-    gdb
     google-chrome-beta
     google-cloud-sdk
     mpv
     pavucontrol
-    screen
-    zls
     zoom-us
   ];
 
@@ -88,4 +80,11 @@ in {
   powerManagement.cpuFreqGovernor = lib.mkDefault "ondemand";
 
   nix.settings.max-jobs = lib.mkDefault 16;
+
+  services.vault = {
+    enable = true;
+    storageBackend = "file";
+#    tlsCertFile = "/var/lib/acme/wisp.town/cert.pem";
+#    tlsKeyFile = "/var/lib/acme/wisp.town/key.pem";
+  };
 }

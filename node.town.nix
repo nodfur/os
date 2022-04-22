@@ -72,23 +72,43 @@
         forceSSL = true;
         useACMEHost = "wisp.town";
         locations."/" = {
-          root = "/restless/www/wisp";
+          root = "/src/wisp/web";
         };
+      };
+
+      "zig.wisp.town" = {
+        forceSSL = true;
+        useACMEHost = "wisp.town";
+        root = "/src/zigjs";
       };
 
       "git.wisp.town" = {
         forceSSL = true;
         useACMEHost = "wisp.town";
-        root = "/srv/git";
+        root = "/srv/git/wisp";
         locations."~ (/.*)".extraConfig = ''
           fastcgi_pass unix:/run/fcgiwrap.sock;
           fastcgi_param SCRIPT_FILENAME     ${pkgs.git}/libexec/git-core/git-http-backend;
           fastcgi_param GIT_HTTP_EXPORT_ALL "";
-          fastcgi_param GIT_PROJECT_ROOT    /srv/git;
+          fastcgi_param GIT_PROJECT_ROOT    /srv/git/wisp;
           fastcgi_param PATH_INFO           $1;
           include ${pkgs.nginx}/conf/fastcgi_params;
           include ${pkgs.nginx}/conf/fastcgi.conf;
         '';
+      };
+
+      "api.wisp.town" = {
+        forceSSL = true;
+        useACMEHost = "wisp.town";
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8000";
+          extraConfig = ''
+            chunked_transfer_encoding off;
+            proxy_buffering off;
+            proxy_cache off;
+            proxy_redirect default;
+          '';
+        };
       };
 
       "cors.node.town" = {

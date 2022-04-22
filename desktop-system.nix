@@ -10,41 +10,17 @@
   nixpkgs.config.allowUnfree = true;
   
   environment.systemPackages = with pkgs; [
-    beancount
-    deno
-    evince
     ffmpeg
-    git-filter-repo
-    gnupg
-    linuxPackages.perf
-    nix-tree
-    nodejs-16_x
-    perf-tools
-    python3
-    rlwrap
-    ruby
     scrot
     signal-desktop
     tdesktop
-    # texlive.combined.scheme-full
-    unzip
-    wabt
-    wasmer
-    wget
-    yarn
     yarn2nix
-    elixir
-    cargo
   ];
 
   nix.extraOptions = ''
     keep-outputs = true
     keep-derivations = true
   '';
-
-  nixpkgs.config.permittedInsecurePackages = [
-    "libgit2-0.27.10"
-  ];
 
   console.font = "Lat2-Terminus16";
   

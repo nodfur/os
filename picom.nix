@@ -12,7 +12,7 @@
 
     shadow = true;
     settings = {
-      "corner-radius" = 16;
+      "corner-radius" = 8;
       "shadow-radius" = 60;
       "shadow-offset-x" = -8;
       "shadow-offset-y" = -8;
