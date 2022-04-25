@@ -4,9 +4,12 @@
 ;; 68 character box                                               ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(set-frame-font "DM Mono-12" nil t)
-(global-linum-mode)
+;;(set-frame-font "DM Mono-12" nil t)
+(set-frame-font "Berkeley Mono-12" nil t)
+;(global-linum-mode)
 (setq-default line-spacing 2)
+
+(setq ag-arguments '("--smart-case" "--stats" "-W" "200"))
 
 (progn
   (load "/src/wisp/etc/wisp.el")

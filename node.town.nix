@@ -38,6 +38,40 @@
 
   services.nginx = {
     enable = true;
+
+    package = (pkgs.nginxStable.override {
+      modules = with pkgs.nginxModules; [
+        brotli
+      ];
+    });
+
+    recommendedTlsSettings = true;
+    recommendedOptimisation = true;
+    recommendedGzipSettings = false;
+
+    appendHttpConfig = let
+      compressedTypes = ''
+        text/plain
+        text/html
+        text/css
+        application/javascript
+        application/wasm
+        application/json
+      '';
+    in ''
+        gzip on;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_vary on;
+        gzip_types
+          ${compressedTypes};
+        # Enable brotli compression
+        brotli on;
+        brotli_comp_level 6;
+        brotli_types
+          ${compressedTypes};
+    '';
+
     virtualHosts = {
       "node.town" = {
         forceSSL = true;
