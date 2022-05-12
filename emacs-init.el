@@ -4,7 +4,7 @@
 ;; 68 character box                                               ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;(set-frame-font "DM Mono-12" nil t)
+;;(set-frame-font "DM Mono-15" nil t)
 (set-frame-font "Berkeley Mono-12" nil t)
 ;(global-linum-mode)
 (setq-default line-spacing 2)

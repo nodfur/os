@@ -2,8 +2,13 @@
 <title>Node.Town</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://rsms.me/inter/inter.css');
+  html { font-family: 'Inter', sans-serif; }
+  @supports (font-variation-settings: normal) {
+    html { font-family: 'Inter var', sans-serif; }
+  }
 
-  html, input { font: 22px/1.5 "DM Mono", monospace; }
+  html, input { font-size: 22px; }
   html { background: white; }
   body {
     display: flex;
@@ -16,20 +21,12 @@
   * { margin: 0; padding: 0; }
 
   h1, h2 { font-weight: 500; }
-  h1 { line-height: 1.5rem; letter-spacing: -0.04em; }
-  h2 { line-height: 1.5rem; font-size: 20px; color: #000a; }
-
-  header { padding-bottom: .5rem; }
-
-  article:not(.white) {
-    background: #fc2;
-    box-shadow: 6px 6px 0px 0px #fa2a;
+  h1 { font-size: 48px; line-height: 2rem; letter-spacing: -0.04em; }
+  h2 { line-height: 1.5rem; font-size: 19px; color: #000a; }
 
   article {
-    /* background: #fc2; */
     padding: 1.5rem;
     padding-bottom: 1rem;
-    /* box-shadow: 6px 6px 0px 0px #fa2a; */
     border-radius: 6px;
   }
 
@@ -37,7 +34,12 @@
     padding: 1.5rem;
     padding-bottom: 1rem;
     margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
+
+  p:first-of-type { margin-top: 1.5rem; }
 
   p {
     margin: 0.5em 0;
@@ -49,53 +51,31 @@
 
   a {
     text-decoration: none;
-    /* letter-spacing: -0.04em; */
   }
 </style>
 
-<!-- <article> -->
-<!--   <header> -->
-<!--     <h1>Node.Town</h1> -->
-<!--     <h2>Restless Hypermedia, Inc.</h2> -->
-<!--   </header> -->
-<!--   <p>We&rsquo;re building portable computers. -->
-<!--   <p>Not just, like, laptops or tablets. -->
-<!--   <p>Portable&mdash; um, in a spiritual sense. -->
-<!--   <h2 style="text-align: right"> -->
-<!--     <a href="https://twitter.com/nodetown">@nodetown</a> -->
-<!--   </h2> -->
-<!-- </article> -->
+<article>
+  <h1>Node.Town</h1>
+  <h2>Restless Hypermedia, Inc.</h2>
 
-<!-- <article> -->
-<!--   <header> -->
-<!--     <h1>Node.Town</h1> -->
-<!--     <h2>Restless Hypermedia, Inc.</h2> -->
-<!--   </header> -->
-<!--   <h2 style="text-align: right"> -->
-<!--     <a href="https://twitter.com/nodetown">@nodetown</a> -->
-<!--   </h2> -->
-<!-- </article> -->
-
-<!-- <article> -->
-<!--   <header> -->
-<!--     <h1>Node.Town</h1> -->
-<!--     <h2>Restless Hypermedia, Inc.</h2> -->
-<!--   </header> -->
-<!-- </article> -->
-
-<article class=white>
-  <header style="display: flex; flex-direction: column; align-items: center">
-    <h1 style="font-size: 206%; line-height: 2rem;">Node.Town</h1>
-    <h2 style="opacity: 0.8">Restless Hypermedia</h2>
-  </header>
+  <h2 style="margin-top: 2em">
+    <a href="https://twitter.com/meekaale">@meekaale</a>
+  </h2>
 </article>
 
+<!-- <article class=white> -->
+<!--   <header style="display: flex; flex-direction: column; align-items: center"> -->
+<!--     <h1 style="font-size: 206%; line-height: 2rem;">Node.Town</h1> -->
+<!--     <h2 style="opacity: 0.8">Restless Hypermedia</h2> -->
+<!--   </header> -->
+<!-- </article> -->
 
-<article class=white>
-  <header>
-    <h1 style="font-size: 206%">Node.Town</h1>
-  </header>
-</article>
+
+<!-- <article class=white> -->
+<!--   <header> -->
+<!--     <h1 style="font-size: 206%">Node.Town</h1> -->
+<!--   </header> -->
+<!-- </article> -->
 
 
 <!-- <script> -->

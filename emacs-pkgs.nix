@@ -30,7 +30,7 @@ with epkgs; [
   org
   page-break-lines
   paredit
-  pdf-tools
+  # pdf-tools
   projectile
   rainbow-delimiters
   selectrum

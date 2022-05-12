@@ -12,6 +12,7 @@
     git
     gnumake
     gnupg
+    guile_3_0
     htop
     linuxPackages.perf
     nix-prefetch-git
