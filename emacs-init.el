@@ -77,6 +77,26 @@
 (setq window-divider-default-right-width 4)
 (window-divider-mode 1)
 
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:background "#000" :height 130))))
+ '(fixed-pitch ((t (:family "DM Mono" :background "#111"))))
+ '(fringe ((t (:background "#000"))))
+ '(line-number ((t (:background "#000"))))
+
+ '(treemacs-directory-face ((t (:foreground "#bbb" :height 0.8))))
+ '(treemacs-file-face ((t (:foreground "#999" :height 0.8))))
+ '(treemacs-git-modified-face ((t (:foreground "#9c9" :height 0.8))))
+ '(treemacs-root-face ((t (:foreground "#9c9" :height 1.2))))
+ '(treemacs-tags-face ((t (:foreground "#99b" :height 0.8))))
+
+ '(window-divider ((t (:foreground "#222"))))
+ '(window-divider-first-pixel ((t (:foreground "#222"))))
+ '(window-divider-last-pixel ((t (:foreground "#222")))))
+
 ;; (custom-set-faces
 ;;  ;; custom-set-faces was added by Custom.
 ;;  ;; If you edit it by hand, you could mess it up, so be careful.

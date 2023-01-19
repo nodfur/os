@@ -90,4 +90,22 @@
     Option "AccelMethod" "sna"
     Option "TearFree" "true"
   '';
+
+  services.nginx = {
+    enable = true;
+    recommendedOptimisation = true;
+    recommendedTlsSettings = true;
+    recommendedGzipSettings = true;
+    recommendedProxySettings = true;
+    virtualHosts = {
+      igloo = {
+        locations."/" = {
+          root = "/mnt/usb/";
+          extraConfig = ''
+            autoindex on;
+          '';
+        };
+      };
+    };
+  };
 }
