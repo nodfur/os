@@ -9,8 +9,10 @@
     ./kernel.nix
     ./password.nix
     ./users/mbrock
-    ./wisp.nix
+#    ./wisp.nix
   ];
+
+  system.stateVersion = "23.05";
 
   os.gl = true;
 
@@ -55,7 +57,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
 
-    fileSystems."/" = {
+  fileSystems."/" = {
     device = "/dev/disk/by-label/root";
     fsType = "ext4";
     options = ["noatime"];
@@ -67,10 +69,6 @@
   };
 
   swapDevices = [{ device = "/dev/disk/by-label/swap"; }];
-
-#  boot.extraModulePackages = [
-#    config.boot.kernelPackages.broadcom_sta
-#  ];
 
   boot.initrd.availableKernelModules = [
     "xhci_hcd" "ehci_pci" "ahci" "usb_storage"
@@ -90,22 +88,4 @@
     Option "AccelMethod" "sna"
     Option "TearFree" "true"
   '';
-
-  services.nginx = {
-    enable = true;
-    recommendedOptimisation = true;
-    recommendedTlsSettings = true;
-    recommendedGzipSettings = true;
-    recommendedProxySettings = true;
-    virtualHosts = {
-      igloo = {
-        locations."/" = {
-          root = "/mnt/usb/";
-          extraConfig = ''
-            autoindex on;
-          '';
-        };
-      };
-    };
-  };
 }

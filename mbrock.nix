@@ -4,7 +4,7 @@
     ./dvorak.nix
     ./i3.nix
     ./users/mbrock
-    ./wisp.nix
+    # ./wisp.nix
     ./i3.nix
     ./google-fonts.nix
     ./other-fonts.nix

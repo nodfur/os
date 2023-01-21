@@ -4,6 +4,9 @@
     nixpkgs.url =
       github:nixos/nixpkgs/nixpkgs-unstable;
 
+    devenv.url =
+      github:cachix/devenv/v0.5;
+
     flake-utils.url =
       github:numtide/flake-utils;
 
@@ -76,7 +79,7 @@
     #   url = github:nodfur/nodfur-it8951;
     # };
 
-    zig.url = github:arqv/zig-overlay;
+    # zig.url = github:arqv/zig-overlay;
 
     # paperwm-src = {
     #   flake = false;
@@ -87,6 +90,7 @@
   outputs = {
     self,
     nixpkgs,
+    devenv,
     flake-utils,
     home-manager,
     emacs-overlay,
@@ -103,7 +107,7 @@
     # waveshare-epaper-demo-src,
     # papertty-src,
     # nodfur-it8951-src,
-    zig
+    # zig
     # paperwm-src
   }@inputs:
 
@@ -164,12 +168,18 @@
         urbit-emacs-overlay
         urbit-overlay
         restless-overlay
-        zig-overlay
+        # zig-overlay
+        devenv-overlay
       ];
 
-      zig-overlay = self: super: {
-        zigpkgs = inputs.zig.packages.${super.stdenv.hostPlatform.system};
+      devenv-overlay = self: super: {
+        devenv =
+          inputs.devenv.packages.${super.stdenv.hostPlatform.system}.devenv;
       };
+
+      # zig-overlay = self: super: {
+      #   zigpkgs = inputs.zig.packages.${super.stdenv.hostPlatform.system};
+      # };
 
       # paperwm-overlay =
       #   self: super: {
@@ -539,7 +549,7 @@
               # waveshare-epaper-demo
             ;
 
-            zig = pkgs.zigpkgs.master.latest;
+            # zig = pkgs.zigpkgs.master.latest;
 
             nodfur-emacs =
               let
@@ -551,11 +561,11 @@
             nodfur-emacs-packages =
               pkgs.emacsPackages;
 
-            epap = pkgs.callPackage ./epap/epap.nix {
-              inherit (pkgs) restless-git;
-              inherit nodfur-emacs nodfur-emacs-packages;
-              zig = pkgs.zigpkgs."0.9.0";
-            };
+            # epap = pkgs.callPackage ./epap/epap.nix {
+            #   inherit (pkgs) restless-git;
+            #   inherit nodfur-emacs nodfur-emacs-packages;
+            #   zig = pkgs.zigpkgs."0.9.0";
+            # };
           };
         }
       )

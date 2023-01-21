@@ -1,18 +1,18 @@
-;;; -*- lexical-binding: t -*-
+1;;; -*- lexical-binding: t -*-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 68 character box                                               ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;(set-frame-font "DM Mono-15" nil t)
-(set-frame-font "Berkeley Mono-12" nil t)
+(set-frame-font "DM Mono-12" nil t)
 ;(global-linum-mode)
 (setq-default line-spacing 2)
 
 (setq ag-arguments '("--smart-case" "--stats" "-W" "200"))
 
 (progn
-  (load "/src/wisp/etc/wisp.el")
+  ;(load "/src/wisp/etc/wisp.el")
 
   (defun setup-sexps ()
     (interactive)
@@ -73,6 +73,8 @@
    '(window-divider-first-pixel ((t (:foreground "#222"))))
    '(window-divider-last-pixel ((t (:foreground "#222")))))
   )
+
+(dark-mode)
 
 (setq window-divider-default-right-width 4)
 (window-divider-mode 1)
